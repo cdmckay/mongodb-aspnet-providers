@@ -233,6 +233,45 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.AreEqual(MembershipCreateStatus.DuplicateUserName, secondStatus);
         }
 
+        [Test]
+        public void TestGetUserNameByEmail() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test1", "123456", "test1@test.com", null, null, true, null, out status);
+            provider.CreateUser("test2", "123456", "test2@test.com", null, null, true, null, out status);
+            var retrievedUserName = provider.GetUserNameByEmail("test1@test.com");
+
+            Assert.AreEqual("test1", retrievedUserName);
+        }
+
+        [Test]
+        public void TestGetUserNameByEmailWhenNonExistent() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test1", "123456", "test1@test.com", null, null, true, null, out status);
+            provider.CreateUser("test2", "123456", "test2@test.com", null, null, true, null, out status);
+            var retrievedUserName = provider.GetUserNameByEmail("test3@test.com");
+
+            Assert.IsNull(retrievedUserName);
+        }
+
+        [Test]
+        public void TestGetUserNameByEmailWhenNonUnique() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("bbb", "123456", "test@test.com", null, null, true, null, out status);
+            provider.CreateUser("aaa", "123456", "test@test.com", null, null, true, null, out status);
+            var retrievedUserName = provider.GetUserNameByEmail("test@test.com");
+
+            Assert.AreEqual("aaa", retrievedUserName);
+        }
+
     }
 
 }

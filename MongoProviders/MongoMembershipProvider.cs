@@ -363,7 +363,11 @@ namespace DigitalLiberationFront.MongoProviders {
         }
 
         public override string GetUserNameByEmail(string email) {
-            throw new NotImplementedException();
+            var users = GetCollection<MongoMembershipUser>("users");
+            var result = users.Find(Query.EQ("Email", email)).SetSortOrder(SortBy.Ascending("UserName"));
+            var user = result.FirstOrDefault();
+
+            return user != null ? user.UserName : null;
         }
 
         public override bool DeleteUser(string username, bool deleteAllRelatedData) {
