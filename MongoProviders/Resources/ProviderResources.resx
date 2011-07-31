@@ -129,4 +129,19 @@
   <data name="Membership_CannotRetrievedHashedOrEncryptedPasswords" xml:space="preserve">
     <value>Cannot retrieve hashed or encrypted passwords.</value>
   </data>
+  <data name="Membership_FieldToMatchMustNotBeWhiteSpace">
+    <value xml:space="preserve">Field to match must not be white-space</value>
+  </data>
+  <data name="Membership_SkipMustBeGreaterThanOrEqualToZero">
+    <value xml:space="preserve">Skip must be &gt;= 0</value>
+  </data>
+  <data name="Membership_TakeMustBeGreaterThanOrEqualToZero">
+    <value xml:space="preserve">Take must be &gt;= 0</value>
+  </data>
+  <data name="Membership_PageIndexMustBeGreaterThanOrEqualToZero">
+    <value xml:space="preserve">Page index must be &gt;= 0</value>
+  </data>
+  <data name="Membership_PageSizeMustBeGreaterThanOrEqualToZero">
+    <value xml:space="preserve">Page size must be &gt;= 0</value>
+  </data>
 </root>

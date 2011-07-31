@@ -15,6 +15,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
@@ -360,7 +361,7 @@ namespace DigitalLiberationFront.MongoProviders {
             }
 
             return user != null ? user.ToMembershipUser(Name) : null;
-        }
+        }        
 
         public override string GetUserNameByEmail(string email) {
             var users = GetCollection<MongoMembershipUser>("users");
@@ -368,7 +369,7 @@ namespace DigitalLiberationFront.MongoProviders {
             var user = result.FirstOrDefault();
 
             return user != null ? user.UserName : null;
-        }
+        }        
 
         public override bool DeleteUser(string username, bool deleteAllRelatedData) {
             throw new NotImplementedException();
@@ -376,18 +377,76 @@ namespace DigitalLiberationFront.MongoProviders {
 
         public override MembershipUserCollection GetAllUsers(int pageIndex, int pageSize, out int totalRecords) {
             throw new NotImplementedException();
-        }
+        }        
 
         public override int GetNumberOfUsersOnline() {
             throw new NotImplementedException();
         }
 
-        public override MembershipUserCollection FindUsersByName(string usernameToMatch, int pageIndex, int pageSize, out int totalRecords) {
-            throw new NotImplementedException();
+        /// <summary>
+        /// An generalized version of the <see cref="FindUsersByName"/> and <see cref="FindUsersByEmail"/> methods that:
+        /// <list type="bullet">
+        /// <item><description>allows arbitrary fields to be searched,</description></item>
+        /// <item><description>allows more granular control over chunk of records is returned,</description></item>
+        /// <item><description>returns a more LINQ-friendly <see cref="IEnumerable{MembershipUser}"/> object.</description></item>
+        /// </list>
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="sortBy"></param>
+        /// <param name="skip"></param>
+        /// <param name="take"></param>
+        /// <param name="totalRecords"></param>
+        /// <returns></returns>
+        public IEnumerable<MembershipUser> FindUsers(IMongoQuery query, IMongoSortBy sortBy, int skip, int take, out int totalRecords) {
+            if (query == null) {
+                throw new ArgumentNullException("query");
+            }
+            if (skip < 0) {
+                throw new ArgumentException(ProviderResources.Membership_SkipMustBeGreaterThanOrEqualToZero, "skip");
+            }
+            if (take < 0) {
+                throw new ArgumentException(ProviderResources.Membership_TakeMustBeGreaterThanOrEqualToZero, "take");
+            }
+           
+            var users = GetCollection<MongoMembershipUser>("users");
+            var matches = users.Find(query).SetSkip(skip).SetLimit(take);
+            if (sortBy != null) {
+                matches.SetSortOrder(sortBy);
+            }
+            totalRecords = matches.Count();
+            return matches.Select(m => m.ToMembershipUser(Name));
+        }
+
+        public override MembershipUserCollection FindUsersByName(string userNameToMatch, int pageIndex, int pageSize, out int totalRecords) {
+            if (pageIndex < 0) {
+                throw new ArgumentException(ProviderResources.Membership_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+            }
+            if (pageSize < 0) {
+                throw new ArgumentException(ProviderResources.Membership_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+            }
+
+            var users = FindUsers(Query.Matches("UserName", userNameToMatch), SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
+            var collection = new MembershipUserCollection();
+            foreach (var u in users) {
+                collection.Add(u);    
+            }
+            return collection;
         }
 
         public override MembershipUserCollection FindUsersByEmail(string emailToMatch, int pageIndex, int pageSize, out int totalRecords) {
-            throw new NotImplementedException();
+            if (pageIndex < 0) {
+                throw new ArgumentException(ProviderResources.Membership_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+            }
+            if (pageSize < 0) {
+                throw new ArgumentException(ProviderResources.Membership_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+            }
+
+            var users = FindUsers(Query.Matches("Email", emailToMatch), SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
+            var collection = new MembershipUserCollection();
+            foreach (var u in users) {
+                collection.Add(u);
+            }
+            return collection;
         }
 
         /// <summary>
@@ -423,7 +482,7 @@ namespace DigitalLiberationFront.MongoProviders {
         /// 
         /// </summary>
         /// <returns></returns>
-        private string GeneratePasswordSalt() {
+        private static string GeneratePasswordSalt() {
             var buffer = new byte[16];
             (new RNGCryptoServiceProvider()).GetBytes(buffer);
             return Convert.ToBase64String(buffer);

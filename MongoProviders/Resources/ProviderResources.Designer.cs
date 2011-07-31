@@ -70,6 +70,33 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Field to match must not be white-space.
+        /// </summary>
+        internal static string Membership_FieldToMatchMustNotBeWhiteSpace {
+            get {
+                return ResourceManager.GetString("Membership_FieldToMatchMustNotBeWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page index must be &gt;= 0.
+        /// </summary>
+        internal static string Membership_PageIndexMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("Membership_PageIndexMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page size must be &gt;= 0.
+        /// </summary>
+        internal static string Membership_PageSizeMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("Membership_PageSizeMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Password format &apos;{0}&apos; not supported..
         /// </summary>
         internal static string Membership_PasswordFormatNotSupported {
@@ -93,6 +120,24 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         internal static string Membership_ProviderNameHasZeroLength {
             get {
                 return ResourceManager.GetString("Membership_ProviderNameHasZeroLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skip must be &gt;= 0.
+        /// </summary>
+        internal static string Membership_SkipMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("Membership_SkipMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Take must be &gt;= 0.
+        /// </summary>
+        internal static string Membership_TakeMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("Membership_TakeMustBeGreaterThanOrEqualToZero", resourceCulture);
             }
         }
     }

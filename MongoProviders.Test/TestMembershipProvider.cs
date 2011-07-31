@@ -17,10 +17,13 @@
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.Configuration;
 using System.Web.Security;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 using NUnit.Framework;
 
 namespace DigitalLiberationFront.MongoProviders.Test {
@@ -233,6 +236,10 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.AreEqual(MembershipCreateStatus.DuplicateUserName, secondStatus);
         }
 
+        /// <summary>
+        /// Tests if the provider will return the correct username for a given email address when
+        /// the email address is unique.
+        /// </summary>
         [Test]
         public void TestGetUserNameByEmail() {
             var provider = new MongoMembershipProvider();
@@ -246,6 +253,9 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.AreEqual("test1", retrievedUserName);
         }
 
+        /// <summary>
+        /// Tests whether the provider will return null when looking for a non-existenet email address.
+        /// </summary>
         [Test]
         public void TestGetUserNameByEmailWhenNonExistent() {
             var provider = new MongoMembershipProvider();
@@ -259,6 +269,10 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.IsNull(retrievedUserName);
         }
 
+        /// <summary>
+        /// Tests whether the provider will return the "lowest" username when the email address is
+        /// not unique.
+        /// </summary>
         [Test]
         public void TestGetUserNameByEmailWhenNonUnique() {
             var provider = new MongoMembershipProvider();
@@ -270,6 +284,103 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             var retrievedUserName = provider.GetUserNameByEmail("test@test.com");
 
             Assert.AreEqual("aaa", retrievedUserName);
+        }
+
+        /// <summary>
+        /// Tests whether the provider will find users with an arbitrary Mongo query and sort.
+        /// </summary>
+        [Test]
+        public void TestFindUsers() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+            
+            for (int i = 0; i < 100; i++) {
+                MembershipCreateStatus status;
+                provider.CreateUser("test" + i, "123456", "test@test.com", "Test Question?", null, true, null, out status);    
+            }
+
+            int totalRecords;
+            var users = provider.FindUsers(Query.Matches("UserName", new Regex(@"test1\d*")), SortBy.Ascending("UserName"), 0, 10, out totalRecords).ToArray();
+            
+            Assert.AreEqual(11, totalRecords);
+
+            for (int i = 0; i < 10; i++) {
+                Assert.IsTrue(users[i].UserName.StartsWith("test1"));
+            }
+        }
+
+        /// <summary>
+        /// Tests whether the provider will throw an argument exception for an invalid skip.
+        /// </summary>
+        [Test]
+        public void TestFindUsersWithInvalidSkip() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+            
+            Assert.Throws<ArgumentException>(() => {
+                int totalRecords;
+                provider.FindUsers(Query.EQ("UserName", "test"), SortBy.Ascending("UserName"), -1, 0, out totalRecords);
+            });
+        }
+
+        /// <summary>
+        /// Tests whether the provider will throw an argument exception for an invalid take.
+        /// </summary>
+        [Test]
+        public void TestFindUsersWithInvalidTake() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            Assert.Throws<ArgumentException>(() => {
+                int totalRecords;
+                provider.FindUsers(Query.EQ("UserName", "test"), SortBy.Ascending("UserName"), 0, -1, out totalRecords);
+            });
+        }
+
+        /// <summary>
+        /// Tests whether the provider will retrieve all users with userNames that match a certain regex.
+        /// </summary>
+        [Test]
+        public void TestFindUsersByName() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            for (int i = 0; i < 100; i++) {
+                MembershipCreateStatus status;
+                provider.CreateUser("test" + i, "123456", "test@test.com", "Test Question?", null, true, null, out status);
+            }
+
+            int totalRecords;
+            var users = provider.FindUsersByName(@"test1\d*", 0, 20, out totalRecords).Cast<MembershipUser>().ToArray();
+
+            Assert.AreEqual(11, totalRecords);
+
+            for (int i = 0; i < 10; i++) {
+                Assert.IsTrue(users[i].UserName.StartsWith("test1"));
+            }
+        }
+
+        /// <summary>
+        /// Tests whether the provider will retrieve all users with emails that match a certain regex.
+        /// </summary>
+        [Test]
+        public void TestFindUsersByEmail() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            for (int i = 0; i < 100; i++) {
+                MembershipCreateStatus status;
+                provider.CreateUser("test" + i, "123456", "test" + i + "@test.com", "Test Question?", null, true, null, out status);
+            }
+
+            int totalRecords;
+            var users = provider.FindUsersByEmail(@"test1\d*@test.com", 0, 20, out totalRecords).Cast<MembershipUser>().ToArray();
+
+            Assert.AreEqual(11, totalRecords);
+
+            for (int i = 0; i < 10; i++) {
+                Assert.IsTrue(users[i].UserName.StartsWith("test1"));
+            }
         }
 
     }
