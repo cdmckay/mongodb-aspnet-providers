@@ -18,6 +18,7 @@ using System;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Web.Configuration;
 using System.Web.Security;
@@ -45,6 +46,23 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             config.ConnectionStrings.ConnectionStrings.Clear();            
             config.ConnectionStrings.ConnectionStrings.Add(connectionStringSettings); 
 
+            // Add machine keys (for encrypted passwords).                                    
+            var rng = new RNGCryptoServiceProvider();
+
+            var validationKeyBuffer = new byte[64];
+            rng.GetBytes(validationKeyBuffer);
+            var validationKey = BitConverter.ToString(validationKeyBuffer).Replace("-", string.Empty);            
+
+            var decryptionKeyBuffer = new byte[32];
+            rng.GetBytes(decryptionKeyBuffer);
+            var decryptionKey = BitConverter.ToString(decryptionKeyBuffer).Replace("-", string.Empty);
+
+            var machineKey = (MachineKeySection) config.GetSection("system.web/machineKey");
+            machineKey.ValidationKey = validationKey;
+            machineKey.Validation = MachineKeyValidation.SHA1;
+            machineKey.DecryptionKey = decryptionKey;
+            machineKey.Decryption = "AES";
+            
             // Add the provider.            
             var membership = (MembershipSection) config.GetSection("system.web/membership");
             membership.DefaultProvider = DefaultName;
@@ -55,11 +73,12 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("connectionStrings");
-            ConfigurationManager.RefreshSection("system.web/membership");            
+            ConfigurationManager.RefreshSection("system.web/machineKey");
+            ConfigurationManager.RefreshSection("system.web/membership");
 
             _config = new NameValueCollection {
                 { "connectionStringName", DefaultConnectionStringName },
-            };
+            };           
         }
 
         [TestFixtureTearDown]
@@ -234,6 +253,72 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out secondStatus);
             
             Assert.AreEqual(MembershipCreateStatus.DuplicateUserName, secondStatus);
+        }
+
+        /// <summary>
+        /// Tests if the provider validates a user using the given password format.
+        /// </summary>
+        /// <param name="passwordFormat"></param>
+        private void TestValidateUserWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
+
+            var validated = provider.ValidateUser("test", "123456");
+            Assert.IsTrue(validated);
+        }
+
+        [Test]
+        public void TestValidateUserWithPasswordFormatClear() {
+            TestValidateUserWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestValidateUserWithPasswordFormatHashed() {
+            TestValidateUserWithPasswordFormat("hashed");
+        }
+
+        [Test]
+        public void TestValidateUserWithPasswordFormatEncrypted() {
+            TestValidateUserWithPasswordFormat("encrypted");
+        }
+
+        /// <summary>
+        /// Tests if the provider invalidates a user using the given password format.
+        /// </summary>
+        /// <param name="passwordFormat"></param>
+        private void TestValidateUserWithWrongPasswordWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
+
+            var validated = provider.ValidateUser("test", "XXXXXX");
+            Assert.IsFalse(validated);
+        }
+
+        [Test]
+        public void TestValidateUserWithWrongPasswordWithPasswordFormatClear() {
+            TestValidateUserWithWrongPasswordWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestValidateUserWithWrongPasswordWithPasswordFormatHashed() {
+            TestValidateUserWithWrongPasswordWithPasswordFormat("hashed");
+        }
+
+        [Test]
+        public void TestValidateUserWithWrongPasswordWithPasswordFormatEncrypted() {
+            TestValidateUserWithWrongPasswordWithPasswordFormat("encrypted");
         }
 
         /// <summary>

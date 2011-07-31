@@ -252,6 +252,7 @@ namespace DigitalLiberationFront.MongoProviders {
                 Id = (ObjectId) providerUserKey,
                 UserName = userName,
                 Password = EncodePassword(password, _passwordFormat, passwordSalt),
+                PasswordFormat = PasswordFormat,
                 PasswordSalt = passwordSalt,
                 PasswordQuestion = passwordQuestion,
                 PasswordAnswer = EncodePassword(passwordAnswer, _passwordFormat, passwordSalt),
@@ -267,7 +268,7 @@ namespace DigitalLiberationFront.MongoProviders {
                 LastLoginDate = DateTime.MinValue,
                 LastActivityDate = DateTime.MinValue,
                 LastPasswordChangedDate = DateTime.MinValue,
-                LastLockoutDate = DateTime.MinValue
+                LastLockedOutDate = DateTime.MinValue
             };
 
             var users = GetCollection<MongoMembershipUser>("users");            
@@ -288,7 +289,22 @@ namespace DigitalLiberationFront.MongoProviders {
         }
 
         public override bool ChangePasswordQuestionAndAnswer(string username, string password, string newPasswordQuestion, string newPasswordAnswer) {
-            throw new NotImplementedException();
+            if (username != null) {
+                username = username.Trim();                
+            }
+            if (newPasswordQuestion != null) {
+                newPasswordQuestion = newPasswordQuestion.Trim();
+            }
+            if (newPasswordAnswer != null) {
+                newPasswordAnswer = newPasswordAnswer.Trim();
+            }
+
+            var user = GetMongoUser(username);
+            if (user == null) {
+                return false;
+            }            
+
+            return false;
         }
 
         public override string GetPassword(string username, string answer) {
@@ -308,12 +324,43 @@ namespace DigitalLiberationFront.MongoProviders {
         }
 
         public override bool ValidateUser(string username, string password) {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(username)) {
+                return false;
+            }
+
+            var user = GetMongoUser(username);
+            if (user == null || user.IsLockedOut) {
+                return false;
+            }
+
+            var passwordCorrect = CheckPassword(password, user.Password, user.PasswordFormat, user.PasswordSalt);
+            if (!passwordCorrect) {
+                RecordFailedAttempt(user.Id, FailedAttemptType.Password);
+                return false;
+            } 
+            
+            if (!user.IsApproved) {
+                return false;
+            }            
+
+            var users = GetCollection<MongoMembershipUser>("users");
+            var query = Query.EQ("_id", user.Id);
+            var now = DateTime.Now;
+            var update = Update
+                .Set("LastLoginDate", now)
+                .Set("LastActivityDate", now);
+            var result = users.Update(query, update, SafeMode.True);
+
+            if (!result.Ok) {
+                throw new ProviderException("Could not update user information after validation");
+            }
+
+            return true;
         }
 
         public override bool UnlockUser(string userName) {
             throw new NotImplementedException();
-        }
+        }        
 
         public override MembershipUser GetUser(object providerUserKey, bool userIsOnline) {            
             ObjectId id;
@@ -338,7 +385,7 @@ namespace DigitalLiberationFront.MongoProviders {
             }
 
             return user != null ? user.ToMembershipUser(Name) : null;
-        }
+        }        
 
         public override MembershipUser GetUser(string userName, bool userIsOnline) {
             if (userName == null) {
@@ -464,6 +511,26 @@ namespace DigitalLiberationFront.MongoProviders {
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private MongoMembershipUser GetMongoUser(ObjectId id) {
+            var users = GetCollection<MongoMembershipUser>("users");
+            return users.FindOneAs<MongoMembershipUser>(Query.EQ("_id", id));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        private MongoMembershipUser GetMongoUser(string username) {
+            var users = GetCollection<MongoMembershipUser>("users");
+            return users.FindOneAs<MongoMembershipUser>(Query.EQ("UserName", username));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="password"></param>
         /// <returns></returns>
         private bool ValidatePassword(string password) {
@@ -523,7 +590,86 @@ namespace DigitalLiberationFront.MongoProviders {
             }
 
             return Convert.ToBase64String(encodedBytes);
-        }        
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="storedPassword"></param>
+        /// <param name="passwordFormat"></param>
+        /// <param name="passwordSalt"></param>
+        /// <returns></returns>
+        private bool CheckPassword(string password, string storedPassword, MembershipPasswordFormat passwordFormat, string passwordSalt) {
+            var encodedPassword = EncodePassword(password, passwordFormat, passwordSalt);
+            return encodedPassword == storedPassword;
+        }
+
+        /// <summary>
+        /// The possible failed attempt types.
+        /// </summary>
+        private enum FailedAttemptType {
+            Password,
+            PasswordAnswer
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="failedAttemptType"></param>
+        private void RecordFailedAttempt(ObjectId id, FailedAttemptType failedAttemptType) {
+            var user = GetMongoUser(id);
+            if (user == null) {
+                throw new ProviderException(string.Format("Could not record failed attempt: no user exists with id '{0}'", id));
+            }
+
+            int attemptCount;
+            DateTime attemptWindowEndDate;
+            string attemptCountField, attemptWindowStartDate;
+            switch (failedAttemptType) {
+                case FailedAttemptType.Password:
+                    attemptCount = user.FailedPasswordAttemptCount;
+                    attemptWindowEndDate = user.FailedPasswordAttemptWindowStartDate.AddMinutes(PasswordAttemptWindow);
+                    attemptCountField = "FailedPasswordAttemptCount";
+                    attemptWindowStartDate = "FailedPasswordAttemptWindowStartDate";
+                    break;
+                case FailedAttemptType.PasswordAnswer:
+                    attemptCount = user.FailedPasswordAnswerAttemptCount;
+                    attemptWindowEndDate = user.FailedPasswordAnswerAttemptWindowStartDate.AddMinutes(PasswordAttemptWindow);
+                    attemptCountField = "FailedPasswordAnswerAttemptCount";
+                    attemptWindowStartDate = "FailedPasswordAnswerAttemptWindowStartDate";
+                    break;
+                default:
+                    throw new ProviderException(string.Format("Unknown failed attempt type: {0}", failedAttemptType));                    
+            }
+
+            var users = GetCollection<MongoMembershipUser>("users");
+            try {                
+                var query = Query.EQ("_id", id);
+                if (attemptCount == 0 || DateTime.Now > attemptWindowEndDate) {
+                    var update = Update
+                        .Set(attemptCountField, 1)
+                        .Set(attemptWindowStartDate, DateTime.Now);
+                    users.Update(query, update, SafeMode.True);
+                }
+                else {
+                    attemptCount++;
+                    if (attemptCount >= MaxInvalidPasswordAttempts) {
+                        var update = Update
+                            .Set("IsLockedOut", true)
+                            .Set("LastLockedOutDate", DateTime.Now);
+                        users.Update(query, update, SafeMode.True);
+                    }
+                    else {
+                        var update = Update.Inc(attemptCountField, 1);
+                        users.Update(query, update);
+                    }
+                }
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not record failed attempt: " + e.Message);
+            }
+        }
 
     }
 }

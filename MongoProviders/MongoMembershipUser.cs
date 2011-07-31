@@ -42,7 +42,7 @@ namespace DigitalLiberationFront.MongoProviders {
         public DateTime LastLoginDate { get; set; }
         public DateTime LastActivityDate { get; set; }
         public DateTime LastPasswordChangedDate { get; set; }
-        public DateTime LastLockoutDate { get; set; }
+        public DateTime LastLockedOutDate { get; set; }
 
         public MembershipUser ToMembershipUser(string providerName) {
             return new MembershipUser(providerName, 
@@ -56,8 +56,8 @@ namespace DigitalLiberationFront.MongoProviders {
                 CreationDate, 
                 LastLoginDate,
                 LastActivityDate,
-                LastPasswordChangedDate, 
-                LastLockoutDate);
+                LastPasswordChangedDate,
+                LastLockedOutDate);
         }
     }
 }
