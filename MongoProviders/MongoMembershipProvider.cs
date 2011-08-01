@@ -270,9 +270,9 @@ namespace DigitalLiberationFront.MongoProviders {
                 LastPasswordChangedDate = DateTime.MinValue,
                 LastLockedOutDate = DateTime.MinValue
             };
-
-            var users = GetCollection<MongoMembershipUser>("users");            
+            
             try {
+                var users = GetCollection<MongoMembershipUser>("users");
                 users.Insert(newUser, SafeMode.True);
             } catch (MongoSafeModeException e) {
                 if (e.Message.Contains("_id_")) {
@@ -298,13 +298,29 @@ namespace DigitalLiberationFront.MongoProviders {
             if (newPasswordAnswer != null) {
                 newPasswordAnswer = newPasswordAnswer.Trim();
             }
-
+            
+            if (!ValidateUser(username, password)) {
+                return false;
+            }
+            
             var user = GetMongoUser(username);
             if (user == null) {
                 return false;
-            }            
+            }
 
-            return false;
+            var query = Query.EQ("_id", user.Id);
+            var update = Update
+                .Set("PasswordQuestion", newPasswordQuestion)
+                .Set("PasswordAnswer", EncodePassword(newPasswordAnswer, user.PasswordFormat, user.PasswordSalt));            
+
+            try {
+                var users = GetCollection<MongoMembershipUser>("users");
+                users.Update(query, update, SafeMode.True);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not change password question and answer: " + e.Message);
+            }
+
+            return true;
         }
 
         public override string GetPassword(string username, string answer) {
@@ -342,17 +358,18 @@ namespace DigitalLiberationFront.MongoProviders {
             if (!user.IsApproved) {
                 return false;
             }            
-
-            var users = GetCollection<MongoMembershipUser>("users");
+            
             var query = Query.EQ("_id", user.Id);
             var now = DateTime.Now;
             var update = Update
                 .Set("LastLoginDate", now)
                 .Set("LastActivityDate", now);
-            var result = users.Update(query, update, SafeMode.True);
-
-            if (!result.Ok) {
-                throw new ProviderException("Could not update user information after validation");
+                        
+            try {
+                var users = GetCollection<MongoMembershipUser>("users");
+                users.Update(query, update, SafeMode.True);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not record failed attempt: " + e.Message);
             }
 
             return true;
@@ -371,10 +388,10 @@ namespace DigitalLiberationFront.MongoProviders {
             } else {
                 return null;
             }
-
-            var users = GetCollection<MongoMembershipUser>("users");
+            
             var query = Query.EQ("_id", id);
 
+            var users = GetCollection<MongoMembershipUser>("users");
             MongoMembershipUser user;
             if (userIsOnline) {
                 var update = Update.Set("LastActivityDate", DateTime.Now);
@@ -394,10 +411,10 @@ namespace DigitalLiberationFront.MongoProviders {
             if (string.IsNullOrWhiteSpace(userName)) {
                 return null;
             }
-
-            var users = GetCollection<MongoMembershipUser>("users");
+            
             var query = Query.EQ("UserName", userName);
 
+            var users = GetCollection<MongoMembershipUser>("users");
             MongoMembershipUser user;
             if (userIsOnline) {
                 var update = Update.Set("LastActivityDate", DateTime.Now);

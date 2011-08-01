@@ -255,6 +255,40 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.AreEqual(MembershipCreateStatus.DuplicateUserName, secondStatus);
         }
 
+        private void TestChangePasswordQuestionAndAnswerWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
+
+            var changed = provider.ChangePasswordQuestionAndAnswer("test", "123456", "Question", "Answer");
+            Assert.IsTrue(changed);
+
+            var user = provider.GetUser("test", false);
+            Assert.IsNotNull(user);
+            Assert.AreEqual("Question", user.PasswordQuestion);
+            // TODO Check answer when GetPassword implemented.
+        }
+
+        [Test]
+        public void TestChangePasswordQuestionAndAnswerWithPasswordFormatClear() {
+            TestChangePasswordQuestionAndAnswerWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestChangePasswordQuestionAndAnswerWithPasswordFormatHashed() {
+            TestChangePasswordQuestionAndAnswerWithPasswordFormat("hashed");
+        }
+
+        [Test]
+        public void TestChangePasswordQuestionAndAnswerWithPasswordFormatEncrypted() {
+            TestChangePasswordQuestionAndAnswerWithPasswordFormat("encrypted");
+        }
+
         /// <summary>
         /// Tests if the provider validates a user using the given password format.
         /// </summary>
