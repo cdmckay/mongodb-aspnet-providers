@@ -263,7 +263,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             provider.Initialize(DefaultName, config);
 
             MembershipCreateStatus status;
-            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
+            provider.CreateUser("test", "123456", "test@test.com", "OldQuestion", "OldAnswer", true, null, out status);
 
             var changed = provider.ChangePasswordQuestionAndAnswer("test", "123456", "Question", "Answer");
             Assert.IsTrue(changed);
@@ -287,6 +287,40 @@ namespace DigitalLiberationFront.MongoProviders.Test {
         [Test]
         public void TestChangePasswordQuestionAndAnswerWithPasswordFormatEncrypted() {
             TestChangePasswordQuestionAndAnswerWithPasswordFormat("encrypted");
+        }
+
+        private void TestChangePasswordQuestionAndAnswerWithWrongPasswordWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "OldQuestion", "OldAnswer", true, null, out status);
+
+            var changed = provider.ChangePasswordQuestionAndAnswer("test", "XXXXXX", "Question", "Answer");
+            Assert.IsFalse(changed);
+
+            var user = provider.GetUser("test", false);
+            Assert.IsNotNull(user);
+            Assert.AreEqual("OldQuestion", user.PasswordQuestion);
+            // TODO Check answer when GetPassword implemented.
+        }
+
+        [Test]
+        public void TestChangePasswordQuestionAndAnswerWithWrongPasswordWithPasswordFormatClear() {
+            TestChangePasswordQuestionAndAnswerWithWrongPasswordWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestChangePasswordQuestionAndAnswerWithWrongPasswordWithPasswordFormatHashed() {
+            TestChangePasswordQuestionAndAnswerWithWrongPasswordWithPasswordFormat("hashed");
+        }
+
+        [Test]
+        public void TestChangePasswordQuestionAndAnswerWithWrongPasswordWithPasswordFormatEncrypted() {
+            TestChangePasswordQuestionAndAnswerWithWrongPasswordWithPasswordFormat("encrypted");
         }
 
         /// <summary>
