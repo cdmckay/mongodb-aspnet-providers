@@ -288,6 +288,50 @@ namespace DigitalLiberationFront.MongoProviders {
             return GetUser(userName, false);
         }
 
+        public override bool ChangePassword(string username, string oldPassword, string newPassword) {
+            if (username != null) {
+                username = username.Trim();
+            }
+            if (oldPassword != null) {
+                oldPassword = oldPassword.Trim();
+            }
+            if (newPassword != null) {
+                newPassword = newPassword.Trim();
+            }
+
+            if (!ValidateUser(username, oldPassword)) {
+                return false;
+            }
+
+            var passwordEventArgs = new ValidatePasswordEventArgs(username, newPassword, true);
+            OnValidatingPassword(passwordEventArgs);
+            if (passwordEventArgs.Cancel) {
+                throw new ProviderException("Change password cancelled");
+            } 
+            if (!ValidatePassword(newPassword)) {
+                return false;
+            }
+
+            var user = GetMongoUser(username);
+            if (user == null) {
+                return false;
+            }
+
+            var query = Query.EQ("_id", user.Id);
+            var update = Update
+                .Set("Password", EncodePassword(newPassword, user.PasswordFormat, user.PasswordSalt))
+                .Set("LastPasswordChangedDate", DateTime.Now);
+
+            try {
+                var users = GetCollection<MongoMembershipUser>("users");
+                users.Update(query, update, SafeMode.True);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException(string.Format("Could not change password: {0}", e.Message));
+            }
+
+            return true;
+        }
+
         public override bool ChangePasswordQuestionAndAnswer(string username, string password, string newPasswordQuestion, string newPasswordAnswer) {
             if (username != null) {
                 username = username.Trim();                
@@ -317,7 +361,7 @@ namespace DigitalLiberationFront.MongoProviders {
                 var users = GetCollection<MongoMembershipUser>("users");
                 users.Update(query, update, SafeMode.True);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not change password question and answer: " + e.Message);
+                throw new ProviderException(string.Format("Could not change password question and answer: {0}", e.Message));
             }
 
             return true;
@@ -325,11 +369,7 @@ namespace DigitalLiberationFront.MongoProviders {
 
         public override string GetPassword(string username, string answer) {
             throw new NotImplementedException();
-        }
-
-        public override bool ChangePassword(string username, string oldPassword, string newPassword) {
-            throw new NotImplementedException();
-        }
+        }        
 
         public override string ResetPassword(string username, string answer) {
             throw new NotImplementedException();

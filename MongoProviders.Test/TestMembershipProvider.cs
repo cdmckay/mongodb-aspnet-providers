@@ -255,6 +255,70 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.AreEqual(MembershipCreateStatus.DuplicateUserName, secondStatus);
         }
 
+        private void TestChangePasswordWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
+
+            var changed = provider.ChangePassword("test", "123456", "654321");
+            Assert.IsTrue(changed);
+
+            var validated = provider.ValidateUser("test", "654321");
+            Assert.IsTrue(validated);
+        }
+
+        [Test]
+        public void TestChangePasswordWithPasswordFormatClear() {
+            TestChangePasswordWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestChangePasswordWithPasswordFormatHashed() {
+            TestChangePasswordWithPasswordFormat("hashed");
+        }
+
+        [Test]
+        public void TestChangePasswordWithPasswordFormatEncrypted() {
+            TestChangePasswordWithPasswordFormat("encrypted");
+        }
+
+        private void TestChangePasswordWithWrongPasswordWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
+
+            var changed = provider.ChangePassword("test", "XXXXXX", "654321");
+            Assert.IsFalse(changed);
+
+            var validated = provider.ValidateUser("test", "654321");
+            Assert.IsFalse(validated);
+        }
+
+        [Test]
+        public void TestChangePasswordWithWrongPasswordWithPasswordFormatClear() {
+            TestChangePasswordWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestChangePasswordWithWrongPasswordWithPasswordFormatHashed() {
+            TestChangePasswordWithPasswordFormat("hashed");
+        }
+
+        [Test]
+        public void TestChangePasswordWithWrongPasswordWithPasswordFormatEncrypted() {
+            TestChangePasswordWithPasswordFormat("encrypted");
+        }
+
         private void TestChangePasswordQuestionAndAnswerWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
             config["passwordFormat"] = passwordFormat;
@@ -271,7 +335,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             var user = provider.GetUser("test", false);
             Assert.IsNotNull(user);
             Assert.AreEqual("Question", user.PasswordQuestion);
-            // TODO Check answer when GetPassword implemented.
+            // TODO Check the answer when ResetPassword implemented.
         }
 
         [Test]
