@@ -96,6 +96,8 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             database.Drop();
         }
 
+        #region Initialize
+
         [Test]
         public void TestInitializeWithEnablePasswordRetrievalWithIrretrievablePassword() {
             var config = new NameValueCollection(_config);
@@ -106,6 +108,10 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.Throws<ProviderException>(() => provider.Initialize(DefaultName, config));
         }
 
+        #endregion
+
+        #region CreateUser
+
         /// <summary>
         /// Tests whether a user is successfully created under normal circumstances.
         /// </summary>
@@ -115,8 +121,9 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             provider.Initialize(DefaultName, _config);
 
             MembershipCreateStatus status;
-            var createdUser = provider.CreateUser("test", "123456", "test@test.com", "Test question?", "Test answer.", true, null, out status);
-            
+            var createdUser = provider.CreateUser("test", "123456", "test@test.com", "Test question?", "Test answer.",
+                                                  true, null, out status);
+
             Assert.NotNull(createdUser);
             Assert.AreEqual("test", createdUser.UserName);
             Assert.AreEqual("test@test.com", createdUser.Email);
@@ -137,11 +144,13 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             provider.Initialize(DefaultName, config);
 
             MembershipCreateStatus status1;
-            provider.CreateUser("test1", "123456", "test@test.com", "Test question?", "Test answer.", true, null, out status1);
+            provider.CreateUser("test1", "123456", "test@test.com", "Test question?", "Test answer.", true, null,
+                                out status1);
             Assert.AreEqual(MembershipCreateStatus.Success, status1);
 
             MembershipCreateStatus status2;
-            provider.CreateUser("test2", "123456", "test@test.com", "Test question?", "Test answer.", true, null, out status2);
+            provider.CreateUser("test2", "123456", "test@test.com", "Test question?", "Test answer.", true, null,
+                                out status2);
             Assert.AreEqual(MembershipCreateStatus.DuplicateEmail, status2);
         }
 
@@ -155,8 +164,9 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
             MembershipCreateStatus status;
             var providerUserKey = ObjectId.GenerateNewId();
-            var createdUser = provider.CreateUser("test", "123456", "test@test.com", "Test question?", "Test answer.", true, providerUserKey, out status);
-            
+            var createdUser = provider.CreateUser("test", "123456", "test@test.com", "Test question?", "Test answer.",
+                                                  true, providerUserKey, out status);
+
             Assert.NotNull(createdUser);
             Assert.AreEqual(providerUserKey, createdUser.ProviderUserKey);
             Assert.AreEqual("test", createdUser.UserName);
@@ -165,6 +175,44 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.IsTrue(createdUser.IsApproved);
             Assert.AreEqual(MembershipCreateStatus.Success, status);
         }
+
+        [Test]
+        public void TestCreateUserWithDuplicateProviderUserKey() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            var providerUserKey = ObjectId.GenerateNewId();
+
+            MembershipCreateStatus firstStatus;
+            provider.CreateUser("foo", "123456", "test@test.com", null, null, true, providerUserKey, out firstStatus);
+
+            Assert.AreEqual(MembershipCreateStatus.Success, firstStatus);
+
+            MembershipCreateStatus secondStatus;
+            provider.CreateUser("bar", "123456", "test@test.com", null, null, true, providerUserKey, out secondStatus);
+
+            Assert.AreEqual(MembershipCreateStatus.DuplicateProviderUserKey, secondStatus);
+        }
+
+        [Test]
+        public void TestCreateUserWithDuplicateUserName() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            MembershipCreateStatus firstStatus;
+            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out firstStatus);
+
+            Assert.AreEqual(MembershipCreateStatus.Success, firstStatus);
+
+            MembershipCreateStatus secondStatus;
+            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out secondStatus);
+
+            Assert.AreEqual(MembershipCreateStatus.DuplicateUserName, secondStatus);
+        }
+
+        #endregion
+
+        #region GetUser
 
         /// <summary>
         /// Tests whether a user can be retrieved using its provider user key.
@@ -178,7 +226,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             MembershipCreateStatus status;
             var createdUser = provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
             var retrievedUser = provider.GetUser(createdUser.ProviderUserKey, false);
-            
+
             Assert.NotNull(retrievedUser);
             Assert.AreEqual(createdUser.ProviderUserKey, retrievedUser.ProviderUserKey);
             Assert.AreEqual(createdUser.LastActivityDate, retrievedUser.LastActivityDate);
@@ -220,7 +268,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             provider.Initialize(DefaultName, _config);
 
             MembershipCreateStatus status;
-            var createdUser = provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);                       
+            var createdUser = provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
             var retrievedUser = provider.GetUser("test", false);
 
             Assert.NotNull(retrievedUser);
@@ -251,42 +299,12 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
             var retrievedUser = provider.GetUser("foo", false);
 
-            Assert.IsNull(retrievedUser);            
+            Assert.IsNull(retrievedUser);
         }
 
-        [Test]
-        public void TestCreateUserWithDuplicateProviderUserKey() {
-            var provider = new MongoMembershipProvider();
-            provider.Initialize(DefaultName, _config);
+        #endregion
 
-            var providerUserKey = ObjectId.GenerateNewId();
-
-            MembershipCreateStatus firstStatus;
-            provider.CreateUser("foo", "123456", "test@test.com", null, null, true, providerUserKey, out firstStatus);
-
-            Assert.AreEqual(MembershipCreateStatus.Success, firstStatus);
-
-            MembershipCreateStatus secondStatus;
-            provider.CreateUser("bar", "123456", "test@test.com", null, null, true, providerUserKey, out secondStatus);
-            
-            Assert.AreEqual(MembershipCreateStatus.DuplicateProviderUserKey, secondStatus);
-        }
-
-        [Test]
-        public void TestCreateUserWithDuplicateUserName() {
-            var provider = new MongoMembershipProvider();
-            provider.Initialize(DefaultName, _config);
-
-            MembershipCreateStatus firstStatus;
-            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out firstStatus);
-
-            Assert.AreEqual(MembershipCreateStatus.Success, firstStatus);
-
-            MembershipCreateStatus secondStatus;
-            provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out secondStatus);
-            
-            Assert.AreEqual(MembershipCreateStatus.DuplicateUserName, secondStatus);
-        }
+        #region ChangePassword
 
         private void TestChangePasswordWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
@@ -339,18 +357,22 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
         [Test]
         public void TestChangePasswordWithWrongPasswordWithPasswordFormatClear() {
-            TestChangePasswordWithPasswordFormat("clear");
+            TestChangePasswordWithWrongPasswordWithPasswordFormat("clear");
         }
 
         [Test]
         public void TestChangePasswordWithWrongPasswordWithPasswordFormatHashed() {
-            TestChangePasswordWithPasswordFormat("hashed");
+            TestChangePasswordWithWrongPasswordWithPasswordFormat("hashed");
         }
 
         [Test]
         public void TestChangePasswordWithWrongPasswordWithPasswordFormatEncrypted() {
-            TestChangePasswordWithPasswordFormat("encrypted");
+            TestChangePasswordWithWrongPasswordWithPasswordFormat("encrypted");
         }
+
+        #endregion
+
+        #region ChangePasswordQuestionAndAnswer
 
         private void TestChangePasswordQuestionAndAnswerWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
@@ -420,6 +442,10 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             TestChangePasswordQuestionAndAnswerWithWrongPasswordWithPasswordFormat("encrypted");
         }
 
+        #endregion
+
+        #region GetPassword
+
         private void TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "false";
@@ -444,10 +470,10 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormat("encrypted");
         }
 
-        private void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(            
+        private void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(
             bool requiresQuestionAndAnswer,
             string passwordFormat
-        ) {
+            ) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";
             config["requiresQuestionAndAnswer"] = requiresQuestionAndAnswer.ToString();
@@ -464,28 +490,36 @@ namespace DigitalLiberationFront.MongoProviders.Test {
         }
 
         [Test]
-        public void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear() {
+        public void
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear() {
             TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true, "clear");
         }
 
         [Test]
-        public void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted() {
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true, "encrypted");
+        public void
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted() {
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true,
+                                                                                                          "encrypted");
         }
 
         [Test]
-        public void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear() {
+        public void
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear() {
             TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false, "clear");
         }
 
         [Test]
-        public void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted() {
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false, "encrypted");
+        public void
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted() {
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false,
+                                                                                                          "encrypted");
         }
 
-        private void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat(
+        private void
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat
+            (
             string passwordFormat
-        ) {
+            ) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";
             config["requiresQuestionAndAnswer"] = "true";
@@ -496,23 +530,31 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
             MembershipCreateStatus status;
             provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
-            
+
             Assert.Throws<MembershipPasswordException>(() => provider.GetPassword("test", "Wrong!"));
         }
 
         [Test]
-        public void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear() {
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat("clear");
+        public void
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear
+            () {
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat
+                ("clear");
         }
 
         [Test]
-        public void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted() {
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat("encrypted");
+        public void
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted
+            () {
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat
+                ("encrypted");
         }
 
-        private void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat(
+        private void
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat
+            (
             string passwordFormat
-        ) {
+            ) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";
             config["requiresQuestionAndAnswer"] = "false";
@@ -529,14 +571,76 @@ namespace DigitalLiberationFront.MongoProviders.Test {
         }
 
         [Test]
-        public void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear() {
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat("clear");
+        public void
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear
+            () {
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat
+                ("clear");
         }
 
         [Test]
-        public void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted() {
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat("encrypted");
+        public void
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted
+            () {
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat
+                ("encrypted");
         }
+
+        #endregion
+
+        #region ResetPassword
+
+        private void TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(
+            bool requiresQuestionAndAnswer,
+            string passwordFormat
+            ) {
+            var config = new NameValueCollection(_config);
+            config["enablePasswordReset"] = "true";
+            config["requiresQuestionAndAnswer"] = requiresQuestionAndAnswer.ToString();
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            provider.ResetPassword("test", "Answer");
+        }
+
+        [Test]
+        public void
+            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear() {
+            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true,
+                                                                                                            "clear");
+        }
+
+        [Test]
+        public void
+            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted
+            () {
+            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true,
+                                                                                                            "encrypted");
+        }
+
+        [Test]
+        public void
+            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear() {
+            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false,
+                                                                                                            "clear");
+        }
+
+        [Test]
+        public void
+            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted
+            () {
+            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false,
+                                                                                                            "encrypted");
+        }
+
+        #endregion
+
+        #region ValidateUser
 
         /// <summary>
         /// Tests if the provider validates a user using the given password format.
@@ -604,6 +708,10 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             TestValidateUserWithWrongPasswordWithPasswordFormat("encrypted");
         }
 
+        #endregion
+
+        #region GetUserNameByEmail
+
         /// <summary>
         /// Tests if the provider will return the correct username for a given email address when
         /// the email address is unique.
@@ -654,6 +762,10 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.AreEqual("aaa", retrievedUserName);
         }
 
+        #endregion
+
+        #region FindUsers
+
         /// <summary>
         /// Tests whether the provider will find users with an arbitrary Mongo query and sort.
         /// </summary>
@@ -661,15 +773,18 @@ namespace DigitalLiberationFront.MongoProviders.Test {
         public void TestFindUsers() {
             var provider = new MongoMembershipProvider();
             provider.Initialize(DefaultName, _config);
-            
+
             for (int i = 0; i < 100; i++) {
                 MembershipCreateStatus status;
-                provider.CreateUser("test" + i, "123456", "test@test.com", "Test Question?", null, true, null, out status);    
+                provider.CreateUser("test" + i, "123456", "test@test.com", "Test Question?", null, true, null,
+                                    out status);
             }
 
             int totalRecords;
-            var users = provider.FindUsers(Query.Matches("UserName", new Regex(@"test1\d*")), SortBy.Ascending("UserName"), 0, 10, out totalRecords).ToArray();
-            
+            var users =
+                provider.FindUsers(Query.Matches("UserName", new Regex(@"test1\d*")), SortBy.Ascending("UserName"), 0,
+                                   10, out totalRecords).ToArray();
+
             Assert.AreEqual(11, totalRecords);
 
             for (int i = 0; i < 10; i++) {
@@ -684,7 +799,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
         public void TestFindUsersWithInvalidSkip() {
             var provider = new MongoMembershipProvider();
             provider.Initialize(DefaultName, _config);
-            
+
             Assert.Throws<ArgumentException>(() => {
                 int totalRecords;
                 provider.FindUsers(Query.EQ("UserName", "test"), SortBy.Ascending("UserName"), -1, 0, out totalRecords);
@@ -705,6 +820,10 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             });
         }
 
+        #endregion
+
+        #region FindUsersByName
+
         /// <summary>
         /// Tests whether the provider will retrieve all users with userNames that match a certain regex.
         /// </summary>
@@ -715,7 +834,8 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
             for (int i = 0; i < 100; i++) {
                 MembershipCreateStatus status;
-                provider.CreateUser("test" + i, "123456", "test@test.com", "Test Question?", null, true, null, out status);
+                provider.CreateUser("test" + i, "123456", "test@test.com", "Test Question?", null, true, null,
+                                    out status);
             }
 
             int totalRecords;
@@ -728,6 +848,10 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             }
         }
 
+        #endregion
+
+        #region FindUsersByEmail
+
         /// <summary>
         /// Tests whether the provider will retrieve all users with emails that match a certain regex.
         /// </summary>
@@ -738,11 +862,13 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
             for (int i = 0; i < 100; i++) {
                 MembershipCreateStatus status;
-                provider.CreateUser("test" + i, "123456", "test" + i + "@test.com", "Test Question?", null, true, null, out status);
+                provider.CreateUser("test" + i, "123456", "test" + i + "@test.com", "Test Question?", null, true, null,
+                                    out status);
             }
 
             int totalRecords;
-            var users = provider.FindUsersByEmail(@"test1\d*@test.com", 0, 20, out totalRecords).Cast<MembershipUser>().ToArray();
+            var users =
+                provider.FindUsersByEmail(@"test1\d*@test.com", 0, 20, out totalRecords).Cast<MembershipUser>().ToArray();
 
             Assert.AreEqual(11, totalRecords);
 
@@ -750,6 +876,8 @@ namespace DigitalLiberationFront.MongoProviders.Test {
                 Assert.IsTrue(users[i].UserName.StartsWith("test1"));
             }
         }
+
+        #endregion
 
     }
 
