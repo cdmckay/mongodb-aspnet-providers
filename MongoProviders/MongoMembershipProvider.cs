@@ -721,7 +721,7 @@ namespace DigitalLiberationFront.MongoProviders {
         private bool ValidatePassword(string password) {
             bool passwordIsLongEnough = password.Length >= MinRequiredPasswordLength;
             bool passwordHasEnoughAlphnumericCharacters =
-                password.Where(char.IsLetterOrDigit).Sum(ch => 1) >= MinRequiredNonAlphanumericCharacters;
+                password.Where(ch => !char.IsLetterOrDigit(ch)).Sum(ch => 1) >= MinRequiredNonAlphanumericCharacters;
             bool passwordIsStrongEnough = PasswordStrengthRegularExpression.Length == 0
                 || Regex.IsMatch(password, PasswordStrengthRegularExpression);
 

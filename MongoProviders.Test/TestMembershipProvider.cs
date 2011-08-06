@@ -79,6 +79,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
             _config = new NameValueCollection {
                 { "connectionStringName", DefaultConnectionStringName },
+                { "minRequiredNonAlphanumericCharacters", "0" },
                 { "requiresUniqueEmail", "false" }
             };           
         }
