@@ -127,7 +127,7 @@
     <value>The name of the provider has a length of zero.</value>
   </data>
   <data name="Membership_CannotRetrievePasswords" xml:space="preserve">
-    <value>Cannot retrieve passwords with '{0}' password format.</value>
+    <value>Cannot retrieve passwords when '{0}' is the password format.</value>
   </data>
   <data name="Membership_FieldToMatchMustNotBeWhiteSpace" xml:space="preserve">
     <value>Field to match must not be white-space.</value>

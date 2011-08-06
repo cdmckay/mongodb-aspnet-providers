@@ -31,7 +31,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
 namespace DigitalLiberationFront.MongoProviders {
-    public class MongoMembershipProvider : MembershipProvider {
+    public class MongoMembershipProvider : MembershipProvider {        
 
         private bool _enablePasswordRetrieval;
         public override bool EnablePasswordRetrieval {
@@ -678,7 +678,9 @@ namespace DigitalLiberationFront.MongoProviders {
                     password = encodedPassword;
                     break;
                 case MembershipPasswordFormat.Encrypted:
-                    password = Encoding.Unicode.GetString (DecryptPassword (Convert.FromBase64String (encodedPassword)));
+                    // Grab the salt + password and lop off the salt (16 bytes).
+                    var combinedBytes = DecryptPassword(Convert.FromBase64String(encodedPassword));
+                    password = Encoding.Unicode.GetString(combinedBytes, 16, combinedBytes.Length - 16);
                     break;
                 default:
                     throw new ProviderException(ProviderResources.Membership_CannotDecodePassword);

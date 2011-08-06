@@ -70,7 +70,7 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot retrieve passwords with &apos;{0}&apos; password format..
+        ///   Looks up a localized string similar to Cannot retrieve passwords when &apos;{0}&apos; is the password format..
         /// </summary>
         internal static string Membership_CannotRetrievePasswords {
             get {
