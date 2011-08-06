@@ -31,7 +31,17 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
 namespace DigitalLiberationFront.MongoProviders {
-    public class MongoMembershipProvider : MembershipProvider {        
+    public class MongoMembershipProvider : MembershipProvider {
+        
+        /// <summary>
+        /// The length of the password salt.
+        /// </summary>
+        private const int PasswordSaltLength = 16;
+
+        /// <summary>
+        /// When resetting a password, the length it should it be.
+        /// </summary>
+        private const int NewPasswordLength = 8;
 
         private bool _enablePasswordRetrieval;
         public override bool EnablePasswordRetrieval {
@@ -278,7 +288,7 @@ namespace DigitalLiberationFront.MongoProviders {
             
             try {
                 var users = GetCollection<MongoMembershipUser>("users");
-                users.Insert(newUser, SafeMode.True);
+                users.Insert(newUser);
             } catch (MongoSafeModeException e) {
                 if (e.Message.Contains("_id_")) {
                     status = MembershipCreateStatus.DuplicateProviderUserKey;
@@ -329,9 +339,9 @@ namespace DigitalLiberationFront.MongoProviders {
 
             try {
                 var users = GetCollection<MongoMembershipUser>("users");
-                users.Update(query, update, SafeMode.True);
+                users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(string.Format(ProviderResources.Membership_CouldNotChangePassword, e.Message));
+                throw new ProviderException(ProviderResources.Membership_CouldNotChangePassword, e);
             }
 
             return true;
@@ -364,9 +374,9 @@ namespace DigitalLiberationFront.MongoProviders {
 
             try {
                 var users = GetCollection<MongoMembershipUser>("users");
-                users.Update(query, update, SafeMode.True);
+                users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(string.Format(ProviderResources.Membership_CouldNotChangePasswordQuestionAndAnswer, e.Message));
+                throw new ProviderException(ProviderResources.Membership_CouldNotChangePasswordQuestionAndAnswer, e);
             }
 
             return true;
@@ -374,7 +384,7 @@ namespace DigitalLiberationFront.MongoProviders {
 
         public override string GetPassword(string username, string answer) {
             if (!EnablePasswordRetrieval) {
-                throw new ProviderException("Password retrieval not supported with this password format.");
+                throw new ProviderException("Password retrieval not enabled.");
             }
 
             var user = GetMongoUser(username);
@@ -395,7 +405,44 @@ namespace DigitalLiberationFront.MongoProviders {
         }        
 
         public override string ResetPassword(string username, string answer) {
-            throw new NotImplementedException();
+            if (!EnablePasswordReset) {
+                throw new ProviderException("Password reset not enabled.");
+            }
+
+            var user = GetMongoUser(username);
+            if (user == null) {
+                throw new ProviderException("User not found.");
+            }
+            if (user.IsLockedOut) {
+                throw new ProviderException("User is locked out.");
+            }
+
+            if (RequiresQuestionAndAnswer
+                && !CheckPassword(answer, user.PasswordAnswer, user.PasswordFormat, user.PasswordSalt)) {
+                RecordFailedAttempt(user.Id, FailedAttemptType.PasswordAnswer);
+                throw new MembershipPasswordException(ProviderResources.Membership_IncorrectPasswordAnswer);
+            }
+
+            var newPassword = Membership.GeneratePassword(NewPasswordLength, MinRequiredNonAlphanumericCharacters);
+            var passwordEventArgs = new ValidatePasswordEventArgs(username, newPassword, true);
+            OnValidatingPassword(passwordEventArgs);
+            if (passwordEventArgs.Cancel) {
+                throw new ProviderException("Change password cancelled.");
+            }
+
+            var query = Query.EQ("_id", user.Id);
+            var update = Update
+                .Set("Password", EncodePassword(newPassword, user.PasswordFormat, user.PasswordSalt))
+                .Set("LastPasswordChangedDate", DateTime.Now);
+
+            try {
+                var users = GetCollection<MongoMembershipUser>("users");
+                users.Update(query, update);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException(ProviderResources.Membership_CouldNotChangePassword, e);
+            }
+
+            return newPassword;
         }
 
         public override void UpdateUser(MembershipUser user) {
@@ -430,9 +477,9 @@ namespace DigitalLiberationFront.MongoProviders {
                         
             try {
                 var users = GetCollection<MongoMembershipUser>("users");
-                users.Update(query, update, SafeMode.True);
+                users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not record failed attempt: " + e.Message);
+                throw new ProviderException("Could not record failed attempt.", e);
             }
 
             return true;
@@ -458,7 +505,7 @@ namespace DigitalLiberationFront.MongoProviders {
             MongoMembershipUser user;
             if (userIsOnline) {
                 var update = Update.Set("LastActivityDate", DateTime.Now);
-                var result = users.FindAndModify(query, SortBy.Null, update, true);
+                var result = users.FindAndModify(query, SortBy.Null, update, returnNew: true);
                 user = result.GetModifiedDocumentAs<MongoMembershipUser>();
             } else {
                 user = users.FindOneAs<MongoMembershipUser>(query);
@@ -481,7 +528,7 @@ namespace DigitalLiberationFront.MongoProviders {
             MongoMembershipUser user;
             if (userIsOnline) {
                 var update = Update.Set("LastActivityDate", DateTime.Now);
-                var result = users.FindAndModify(query, SortBy.Null, update, true);
+                var result = users.FindAndModify(query, SortBy.Null, update, returnNew: true);
                 user = result.GetModifiedDocumentAs<MongoMembershipUser>();
             } else {
                 user = users.FindOneAs<MongoMembershipUser>(query);
@@ -584,7 +631,7 @@ namespace DigitalLiberationFront.MongoProviders {
         /// <returns></returns>
         private MongoCollection<TDefaultDocument> GetCollection<TDefaultDocument>(string collectionName) {
             var server = MongoServer.Create(_connectionString);
-            var database = server.GetDatabase(_databaseName);
+            var database = server.GetDatabase(_databaseName, SafeMode.True);
             return database.GetCollection<TDefaultDocument>(ApplicationName + "." + collectionName);
         }
 
@@ -630,7 +677,7 @@ namespace DigitalLiberationFront.MongoProviders {
         /// </summary>
         /// <returns></returns>
         private static string GeneratePasswordSalt() {
-            var buffer = new byte[16];
+            var buffer = new byte[PasswordSaltLength];
             (new RNGCryptoServiceProvider()).GetBytes(buffer);
             return Convert.ToBase64String(buffer);
         }
@@ -687,7 +734,9 @@ namespace DigitalLiberationFront.MongoProviders {
                 case MembershipPasswordFormat.Encrypted:
                     // Grab the salt + password and lop off the salt (16 bytes).
                     var combinedBytes = DecryptPassword(Convert.FromBase64String(encodedPassword));
-                    password = Encoding.Unicode.GetString(combinedBytes, 16, combinedBytes.Length - 16);
+                    password = Encoding.Unicode.GetString(combinedBytes, 
+                        PasswordSaltLength, 
+                        combinedBytes.Length - PasswordSaltLength);
                     break;
                 default:
                     throw new ProviderException(ProviderResources.Membership_CannotDecodePassword);
@@ -754,7 +803,7 @@ namespace DigitalLiberationFront.MongoProviders {
                     var update = Update
                         .Set(attemptCountField, 1)
                         .Set(attemptWindowStartDate, DateTime.Now);
-                    users.Update(query, update, SafeMode.True);
+                    users.Update(query, update);
                 }
                 else {
                     attemptCount++;
@@ -762,7 +811,7 @@ namespace DigitalLiberationFront.MongoProviders {
                         var update = Update
                             .Set("IsLockedOut", true)
                             .Set("LastLockedOutDate", DateTime.Now);
-                        users.Update(query, update, SafeMode.True);
+                        users.Update(query, update);
                     }
                     else {
                         var update = Update.Inc(attemptCountField, 1);
@@ -770,7 +819,7 @@ namespace DigitalLiberationFront.MongoProviders {
                     }
                 }
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(string.Format("Could not record failed attempt: {0}.", e.Message));
+                throw new ProviderException("Could not record failed attempt.", e);
             }
         }
 

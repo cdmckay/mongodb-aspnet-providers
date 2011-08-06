@@ -79,7 +79,7 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not change password: {0}..
+        ///   Looks up a localized string similar to Could not change password..
         /// </summary>
         internal static string Membership_CouldNotChangePassword {
             get {
@@ -88,7 +88,7 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not change password question and answer: {0}..
+        ///   Looks up a localized string similar to Could not change password question and answer..
         /// </summary>
         internal static string Membership_CouldNotChangePasswordQuestionAndAnswer {
             get {

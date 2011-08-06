@@ -148,10 +148,10 @@
     <value>Cannot decode passwords with '{0}' password format.</value>
   </data>
   <data name="Membership_CouldNotChangePassword" xml:space="preserve">
-    <value>Could not change password: {0}.</value>
+    <value>Could not change password.</value>
   </data>
   <data name="Membership_CouldNotChangePasswordQuestionAndAnswer" xml:space="preserve">
-    <value>Could not change password question and answer: {0}.</value>
+    <value>Could not change password question and answer.</value>
   </data>
   <data name="Membership_IncorrectPasswordAnswer" xml:space="preserve">
     <value>Incorrect password answer.</value>
