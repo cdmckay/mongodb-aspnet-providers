@@ -79,6 +79,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
             _config = new NameValueCollection {
                 { "connectionStringName", DefaultConnectionStringName },
+                { "requiresUniqueEmail", "false" }
             };           
         }
 
@@ -129,7 +130,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
         [Test]
         public void TestCreateUserWithRequireUniqueEmailWithDuplicateEmail() {
             var config = new NameValueCollection(_config);
-            config["requireUniqueEmail"] = "true";
+            config["requiresUniqueEmail"] = "true";
 
             var provider = new MongoMembershipProvider();
             provider.Initialize(DefaultName, config);
@@ -418,7 +419,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             TestChangePasswordQuestionAndAnswerWithWrongPasswordWithPasswordFormat("encrypted");
         }
 
-        private void TestGetPasswordWithRetrieveablePasswordFormatWhenPasswordRetrievalDisabledWithPasswordFormat(string passwordFormat) {
+        private void TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "false";
             config["passwordFormat"] = passwordFormat;
@@ -433,23 +434,22 @@ namespace DigitalLiberationFront.MongoProviders.Test {
         }
 
         [Test]
-        public void TestGetPasswordWithRetrieveablePasswordFormatWhenPasswordRetrievalDisabledWithPasswordFormatClear() {
-            TestGetPasswordWithRetrieveablePasswordFormatWhenPasswordRetrievalDisabledWithPasswordFormat("clear");
+        public void TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormatClear() {
+            TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormat("clear");
         }
 
         [Test]
-        public void TestGetPasswordWithRetrieveablePasswordFormatWhenPasswordRetrievalDisabledWithPasswordFormatHashed() {
-            TestGetPasswordWithRetrieveablePasswordFormatWhenPasswordRetrievalDisabledWithPasswordFormat("clear");
+        public void TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormatEncrypted() {
+            TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormat("encrypted");
         }
 
-        [Test]
-        public void TestGetPasswordWithRetrieveablePasswordFormatWhenPasswordRetrievalDisabledWithPasswordFormatEncrypted() {
-            TestGetPasswordWithRetrieveablePasswordFormatWhenPasswordRetrievalDisabledWithPasswordFormat("encrypted");
-        }
-
-        private void TestGetPasswordWithRetrieveablePasswordFormat(string passwordFormat) {
+        private void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(            
+            bool requiresQuestionAndAnswer,
+            string passwordFormat
+        ) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";
+            config["requiresQuestionAndAnswer"] = requiresQuestionAndAnswer.ToString();
             config["passwordFormat"] = passwordFormat;
 
             var provider = new MongoMembershipProvider();
@@ -463,14 +463,79 @@ namespace DigitalLiberationFront.MongoProviders.Test {
         }
 
         [Test]
-        public void TestGetPasswordWithRetrieveablePasswordFormatWithPasswordFormatClear() {
-            TestGetPasswordWithRetrieveablePasswordFormat("clear");
+        public void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear() {
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true, "clear");
         }
 
         [Test]
-        public void TestGetPasswordWithRetrieveablePasswordFormatWithPasswordFormatEncrypted() {
-            TestGetPasswordWithRetrieveablePasswordFormat("encrypted");
-        }        
+        public void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted() {
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true, "encrypted");
+        }
+
+        [Test]
+        public void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear() {
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false, "clear");
+        }
+
+        [Test]
+        public void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted() {
+            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false, "encrypted");
+        }
+
+        private void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat(
+            string passwordFormat
+        ) {
+            var config = new NameValueCollection(_config);
+            config["enablePasswordRetrieval"] = "true";
+            config["requiresQuestionAndAnswer"] = "true";
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+            
+            Assert.Throws<MembershipPasswordException>(() => provider.GetPassword("test", "Wrong!"));
+        }
+
+        [Test]
+        public void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear() {
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted() {
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat("encrypted");
+        }
+
+        private void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat(
+            string passwordFormat
+        ) {
+            var config = new NameValueCollection(_config);
+            config["enablePasswordRetrieval"] = "true";
+            config["requiresQuestionAndAnswer"] = "false";
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            var password = provider.GetPassword("test", "Wrong!");
+            Assert.AreEqual("123456", password);
+        }
+
+        [Test]
+        public void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear() {
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted() {
+            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat("encrypted");
+        }
 
         /// <summary>
         /// Tests if the provider validates a user using the given password format.

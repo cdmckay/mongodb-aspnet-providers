@@ -250,8 +250,8 @@ namespace DigitalLiberationFront.MongoProviders {
                 return null;
             }
 
-            string passwordSalt = GeneratePasswordSalt();
-            DateTime creationDate = DateTime.Now;
+            var passwordSalt = GeneratePasswordSalt();
+            var creationDate = DateTime.Now;
 
             var newUser = new MongoMembershipUser {
                 Id = (ObjectId) providerUserKey,
@@ -386,7 +386,7 @@ namespace DigitalLiberationFront.MongoProviders {
             }
 
             if (RequiresQuestionAndAnswer 
-                && CheckPassword(answer, user.PasswordAnswer, user.PasswordFormat, user.PasswordSalt)) {
+                && !CheckPassword(answer, user.PasswordAnswer, user.PasswordFormat, user.PasswordSalt)) {
                 RecordFailedAttempt(user.Id, FailedAttemptType.PasswordAnswer);
                 throw new MembershipPasswordException(ProviderResources.Membership_IncorrectPasswordAnswer);
             }
