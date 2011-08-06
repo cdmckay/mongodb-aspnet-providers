@@ -210,10 +210,7 @@ namespace DigitalLiberationFront.MongoProviders {
             OnValidatingPassword(passwordEventArgs);
             if (passwordEventArgs.Cancel) {
                 status = MembershipCreateStatus.InvalidPassword;
-                hasFailedValidation = true;
-                //} else if (RequiresUniqueEmail) {
-                //    status = MembershipCreateStatus.DuplicateEmail;
-                //    hasInvalidArgument = true;
+                hasFailedValidation = true;            
             } else if (RequiresQuestionAndAnswer && string.IsNullOrWhiteSpace(passwordQuestion)) {
                 status = MembershipCreateStatus.InvalidQuestion;
                 hasFailedValidation = true;
@@ -233,10 +230,20 @@ namespace DigitalLiberationFront.MongoProviders {
                 providerUserKey = ObjectId.GenerateNewId();
             }
 
-            MembershipUser oldUser = GetUser(userName, false);
+            var oldUser = GetUser(userName, false);
             if (oldUser != null) {
                 status = MembershipCreateStatus.DuplicateUserName;
                 hasFailedValidation = true;
+            }
+
+            if (RequiresUniqueEmail) {
+                var query = Query.EQ("Email", email);
+                var users = GetCollection<MongoMembershipUser>("users");                
+                var duplicates = users.Count(query);
+                if (duplicates > 0) {
+                    status = MembershipCreateStatus.DuplicateEmail;
+                    hasFailedValidation = true;
+                }                
             }
 
             if (hasFailedValidation) {

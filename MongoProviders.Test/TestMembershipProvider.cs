@@ -124,6 +124,26 @@ namespace DigitalLiberationFront.MongoProviders.Test {
         }
 
         /// <summary>
+        /// Tests whether a user is successfully created under normal circumstances.
+        /// </summary>
+        [Test]
+        public void TestCreateUserWithRequireUniqueEmailWithDuplicateEmail() {
+            var config = new NameValueCollection(_config);
+            config["requireUniqueEmail"] = "true";
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status1;
+            provider.CreateUser("test1", "123456", "test@test.com", "Test question?", "Test answer.", true, null, out status1);
+            Assert.AreEqual(MembershipCreateStatus.Success, status1);
+
+            MembershipCreateStatus status2;
+            provider.CreateUser("test2", "123456", "test@test.com", "Test question?", "Test answer.", true, null, out status2);
+            Assert.AreEqual(MembershipCreateStatus.DuplicateEmail, status2);
+        }
+
+        /// <summary>
         /// Tests whether a user can be successfully created when passed a custom provider user key.
         /// </summary>
         [Test]
