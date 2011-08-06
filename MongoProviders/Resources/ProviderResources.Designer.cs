@@ -97,6 +97,24 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not reset password..
+        /// </summary>
+        internal static string Membership_CouldNotResetPassword {
+            get {
+                return ResourceManager.GetString("Membership_CouldNotResetPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not update user..
+        /// </summary>
+        internal static string Membership_CouldNotUpdateUser {
+            get {
+                return ResourceManager.GetString("Membership_CouldNotUpdateUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field to match must not be white-space..
         /// </summary>
         internal static string Membership_FieldToMatchMustNotBeWhiteSpace {

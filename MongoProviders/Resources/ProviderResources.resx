@@ -153,6 +153,12 @@
   <data name="Membership_CouldNotChangePasswordQuestionAndAnswer" xml:space="preserve">
     <value>Could not change password question and answer.</value>
   </data>
+  <data name="Membership_CouldNotResetPassword" xml:space="preserve">
+    <value>Could not reset password.</value>
+  </data>
+  <data name="Membership_CouldNotUpdateUser" xml:space="preserve">
+    <value>Could not update user.</value>
+  </data>
   <data name="Membership_IncorrectPasswordAnswer" xml:space="preserve">
     <value>Incorrect password answer.</value>
   </data>

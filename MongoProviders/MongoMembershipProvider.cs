@@ -183,7 +183,7 @@ namespace DigitalLiberationFront.MongoProviders {
                 users.EnsureIndex(IndexKeys.Ascending("UserName"), IndexOptions.SetUnique(true));
                 users.EnsureIndex(IndexKeys.Ascending("Email"));
             }
-        }
+        }        
 
         public override MembershipUser CreateUser(string userName, string password, string email, string passwordQuestion, string passwordAnswer,
             bool isApproved, object providerUserKey, out MembershipCreateStatus status) {
@@ -220,7 +220,10 @@ namespace DigitalLiberationFront.MongoProviders {
             OnValidatingPassword(passwordEventArgs);
             if (passwordEventArgs.Cancel) {
                 status = MembershipCreateStatus.InvalidPassword;
-                hasFailedValidation = true;            
+                hasFailedValidation = true;
+            } else if (RequiresUniqueEmail && EmailIsDuplicate(email)) {
+                status = MembershipCreateStatus.DuplicateEmail;
+                hasFailedValidation = true;                
             } else if (RequiresQuestionAndAnswer && string.IsNullOrWhiteSpace(passwordQuestion)) {
                 status = MembershipCreateStatus.InvalidQuestion;
                 hasFailedValidation = true;
@@ -244,17 +247,7 @@ namespace DigitalLiberationFront.MongoProviders {
             if (oldUser != null) {
                 status = MembershipCreateStatus.DuplicateUserName;
                 hasFailedValidation = true;
-            }
-
-            if (RequiresUniqueEmail) {
-                var query = Query.EQ("Email", email);
-                var users = GetCollection<MongoMembershipUser>("users");                
-                var duplicates = users.Count(query);
-                if (duplicates > 0) {
-                    status = MembershipCreateStatus.DuplicateEmail;
-                    hasFailedValidation = true;
-                }                
-            }
+            }                        
 
             if (hasFailedValidation) {
                 return null;
@@ -439,14 +432,41 @@ namespace DigitalLiberationFront.MongoProviders {
                 var users = GetCollection<MongoMembershipUser>("users");
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.Membership_CouldNotChangePassword, e);
+                throw new ProviderException(ProviderResources.Membership_CouldNotResetPassword, e);
             }
 
             return newPassword;
         }
 
         public override void UpdateUser(MembershipUser user) {
-            throw new NotImplementedException();
+            if (user == null) {
+                throw new ArgumentNullException("user");
+            }
+
+            var id = ConvertProviderUserKeyToObjectId(user.ProviderUserKey);
+            if (!id.HasValue) {
+                throw new ProviderException("User does not exist.");
+            }
+
+            if (RequiresUniqueEmail && EmailIsDuplicate(user.Email)) {
+                throw new ProviderException("User has a duplicate email address.");
+            }
+
+            var query = Query.EQ("_id", id.Value);
+            var update = Update
+                .Set("UserName", user.UserName)
+                .Set("Email", user.Email)
+                .Set("Comment", user.Comment)
+                .Set("IsApproved", user.IsApproved)
+                .Set("LastLoginDate", user.LastLoginDate)
+                .Set("LastActivityDate", user.LastActivityDate);
+
+            try {
+                var users = GetCollection<MongoMembershipUser>("users");
+                users.Update(query, update);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException(ProviderResources.Membership_CouldNotUpdateUser, e);
+            }
         }
 
         public override bool ValidateUser(string username, string password) {
@@ -489,17 +509,15 @@ namespace DigitalLiberationFront.MongoProviders {
             throw new NotImplementedException();
         }        
 
+        
+
         public override MembershipUser GetUser(object providerUserKey, bool userIsOnline) {            
-            ObjectId id;
-            if (providerUserKey is ObjectId) {
-                id = (ObjectId) providerUserKey;
-            } else if (ObjectId.TryParse(providerUserKey.ToString(), out id)) {
-                // Assigned in parse.                                    
-            } else {
+            var id = ConvertProviderUserKeyToObjectId(providerUserKey);
+            if (!id.HasValue) {
                 return null;
             }
             
-            var query = Query.EQ("_id", id);
+            var query = Query.EQ("_id", id.Value);
 
             var users = GetCollection<MongoMembershipUser>("users");
             MongoMembershipUser user;
@@ -636,6 +654,24 @@ namespace DigitalLiberationFront.MongoProviders {
         }
 
         /// <summary>
+        /// Attempts to convert an <see cref="object"/> to an <see cref="ObjectId"/>.
+        /// </summary>
+        /// <param name="providerUserKey">An <see cref="ObjectId"/> or a <see cref="string"/> equivalent of one.</param>
+        /// <returns>The <see cref="ObjectId"/>, or null.</returns>
+        private ObjectId? ConvertProviderUserKeyToObjectId(object providerUserKey) {
+            if (providerUserKey is ObjectId) {
+                return (ObjectId) providerUserKey;
+            }
+
+            ObjectId id;
+            if (ObjectId.TryParse(providerUserKey.ToString(), out id)) {
+                return id;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="id"></param>
@@ -653,6 +689,18 @@ namespace DigitalLiberationFront.MongoProviders {
         private MongoMembershipUser GetMongoUser(string username) {
             var users = GetCollection<MongoMembershipUser>("users");
             return users.FindOneAs<MongoMembershipUser>(Query.EQ("UserName", username));
+        }
+
+        /// <summary>
+        /// Checks if the email address is a duplicate.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        private bool EmailIsDuplicate(string email) {
+            var query = Query.EQ("Email", email);
+            var users = GetCollection<MongoMembershipUser>("users");
+            var duplicates = users.Count(query);
+            return duplicates > 0;
         }
 
         /// <summary>
