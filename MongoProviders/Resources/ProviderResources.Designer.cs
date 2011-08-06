@@ -61,16 +61,43 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot retrieve hashed or encrypted passwords..
+        ///   Looks up a localized string similar to Cannot decode passwords with &apos;{0}&apos; password format..
         /// </summary>
-        internal static string Membership_CannotRetrievedHashedOrEncryptedPasswords {
+        internal static string Membership_CannotDecodePassword {
             get {
-                return ResourceManager.GetString("Membership_CannotRetrievedHashedOrEncryptedPasswords", resourceCulture);
+                return ResourceManager.GetString("Membership_CannotDecodePassword", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field to match must not be white-space.
+        ///   Looks up a localized string similar to Cannot retrieve passwords with &apos;{0}&apos; password format..
+        /// </summary>
+        internal static string Membership_CannotRetrievePasswords {
+            get {
+                return ResourceManager.GetString("Membership_CannotRetrievePasswords", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not change password: {0}..
+        /// </summary>
+        internal static string Membership_CouldNotChangePassword {
+            get {
+                return ResourceManager.GetString("Membership_CouldNotChangePassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not change password question and answer: {0}..
+        /// </summary>
+        internal static string Membership_CouldNotChangePasswordQuestionAndAnswer {
+            get {
+                return ResourceManager.GetString("Membership_CouldNotChangePasswordQuestionAndAnswer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field to match must not be white-space..
         /// </summary>
         internal static string Membership_FieldToMatchMustNotBeWhiteSpace {
             get {
@@ -79,7 +106,16 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Page index must be &gt;= 0.
+        ///   Looks up a localized string similar to Incorrect password answer..
+        /// </summary>
+        internal static string Membership_IncorrectPasswordAnswer {
+            get {
+                return ResourceManager.GetString("Membership_IncorrectPasswordAnswer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page index must be &gt;= 0..
         /// </summary>
         internal static string Membership_PageIndexMustBeGreaterThanOrEqualToZero {
             get {
@@ -88,7 +124,7 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Page size must be &gt;= 0.
+        ///   Looks up a localized string similar to Page size must be &gt;= 0..
         /// </summary>
         internal static string Membership_PageSizeMustBeGreaterThanOrEqualToZero {
             get {
@@ -124,7 +160,7 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Skip must be &gt;= 0.
+        ///   Looks up a localized string similar to Skip must be &gt;= 0..
         /// </summary>
         internal static string Membership_SkipMustBeGreaterThanOrEqualToZero {
             get {
@@ -133,7 +169,7 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Take must be &gt;= 0.
+        ///   Looks up a localized string similar to Take must be &gt;= 0..
         /// </summary>
         internal static string Membership_TakeMustBeGreaterThanOrEqualToZero {
             get {

@@ -154,11 +154,9 @@ namespace DigitalLiberationFront.MongoProviders {
                     throw new ProviderException(string.Format(ProviderResources.Membership_PasswordFormatNotSupported, passwordFormat));
             }
 
-            bool passwordsAreIrretrievable = PasswordFormat == MembershipPasswordFormat.Hashed
-                                             || PasswordFormat == MembershipPasswordFormat.Encrypted;
-
+            bool passwordsAreIrretrievable = PasswordFormat == MembershipPasswordFormat.Hashed;
             if (_enablePasswordRetrieval && passwordsAreIrretrievable) {
-                throw new ProviderException(ProviderResources.Membership_CannotRetrievedHashedOrEncryptedPasswords);
+                throw new ProviderException(string.Format(ProviderResources.Membership_CannotRetrievePasswords, PasswordFormat));
             }
 
             // Get the connection string.
@@ -306,7 +304,7 @@ namespace DigitalLiberationFront.MongoProviders {
             var passwordEventArgs = new ValidatePasswordEventArgs(username, newPassword, true);
             OnValidatingPassword(passwordEventArgs);
             if (passwordEventArgs.Cancel) {
-                throw new ProviderException("Change password cancelled");
+                throw new ProviderException("Change password cancelled.");
             } 
             if (!ValidatePassword(newPassword)) {
                 return false;
@@ -326,7 +324,7 @@ namespace DigitalLiberationFront.MongoProviders {
                 var users = GetCollection<MongoMembershipUser>("users");
                 users.Update(query, update, SafeMode.True);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(string.Format("Could not change password: {0}", e.Message));
+                throw new ProviderException(string.Format(ProviderResources.Membership_CouldNotChangePassword, e.Message));
             }
 
             return true;
@@ -361,14 +359,32 @@ namespace DigitalLiberationFront.MongoProviders {
                 var users = GetCollection<MongoMembershipUser>("users");
                 users.Update(query, update, SafeMode.True);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(string.Format("Could not change password question and answer: {0}", e.Message));
+                throw new ProviderException(string.Format(ProviderResources.Membership_CouldNotChangePasswordQuestionAndAnswer, e.Message));
             }
 
             return true;
         }
 
         public override string GetPassword(string username, string answer) {
-            throw new NotImplementedException();
+            if (!EnablePasswordRetrieval) {
+                throw new ProviderException("Password retrieval not supported with this password format.");
+            }
+
+            var user = GetMongoUser(username);
+            if (user == null) {
+                throw new ProviderException("User not found.");
+            }
+            if (user.IsLockedOut) {
+                throw new ProviderException("User is locked out.");
+            }
+
+            if (RequiresQuestionAndAnswer 
+                && CheckPassword(answer, user.PasswordAnswer, user.PasswordFormat, user.PasswordSalt)) {
+                RecordFailedAttempt(user.Id, FailedAttemptType.PasswordAnswer);
+                throw new MembershipPasswordException(ProviderResources.Membership_IncorrectPasswordAnswer);
+            }
+
+            return DecodePassword(user.Password, user.PasswordFormat);
         }        
 
         public override string ResetPassword(string username, string answer) {
@@ -652,14 +668,35 @@ namespace DigitalLiberationFront.MongoProviders {
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="encodedPassword"></param>
+        /// <param name="passwordFormat"></param>
+        /// <returns></returns>
+        private string DecodePassword(string encodedPassword, MembershipPasswordFormat passwordFormat) {
+            string password;
+            switch (passwordFormat) {
+                case MembershipPasswordFormat.Clear:
+                    password = encodedPassword;
+                    break;
+                case MembershipPasswordFormat.Encrypted:
+                    password = Encoding.Unicode.GetString (DecryptPassword (Convert.FromBase64String (encodedPassword)));
+                    break;
+                default:
+                    throw new ProviderException(ProviderResources.Membership_CannotDecodePassword);
+            }
+            return password;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="password"></param>
-        /// <param name="storedPassword"></param>
+        /// <param name="preEncodedPassword"></param>
         /// <param name="passwordFormat"></param>
         /// <param name="passwordSalt"></param>
         /// <returns></returns>
-        private bool CheckPassword(string password, string storedPassword, MembershipPasswordFormat passwordFormat, string passwordSalt) {
+        private bool CheckPassword(string password, string preEncodedPassword, MembershipPasswordFormat passwordFormat, string passwordSalt) {
             var encodedPassword = EncodePassword(password, passwordFormat, passwordSalt);
-            return encodedPassword == storedPassword;
+            return encodedPassword == preEncodedPassword;
         }
 
         /// <summary>
@@ -678,7 +715,7 @@ namespace DigitalLiberationFront.MongoProviders {
         private void RecordFailedAttempt(ObjectId id, FailedAttemptType failedAttemptType) {
             var user = GetMongoUser(id);
             if (user == null) {
-                throw new ProviderException(string.Format("Could not record failed attempt: no user exists with id '{0}'", id));
+                throw new ProviderException(string.Format("Could not record failed attempt: no user exists with id '{0}'.", id));
             }
 
             int attemptCount;
@@ -698,7 +735,7 @@ namespace DigitalLiberationFront.MongoProviders {
                     attemptWindowStartDate = "FailedPasswordAnswerAttemptWindowStartDate";
                     break;
                 default:
-                    throw new ProviderException(string.Format("Unknown failed attempt type: {0}", failedAttemptType));                    
+                    throw new ProviderException(string.Format("Unknown failed attempt type: {0}.", failedAttemptType));                    
             }
 
             var users = GetCollection<MongoMembershipUser>("users");
@@ -724,7 +761,7 @@ namespace DigitalLiberationFront.MongoProviders {
                     }
                 }
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not record failed attempt: " + e.Message);
+                throw new ProviderException(string.Format("Could not record failed attempt: {0}.", e.Message));
             }
         }
 

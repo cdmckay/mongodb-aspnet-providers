@@ -126,22 +126,34 @@
   <data name="Membership_ProviderNameHasZeroLength" xml:space="preserve">
     <value>The name of the provider has a length of zero.</value>
   </data>
-  <data name="Membership_CannotRetrievedHashedOrEncryptedPasswords" xml:space="preserve">
-    <value>Cannot retrieve hashed or encrypted passwords.</value>
+  <data name="Membership_CannotRetrievePasswords" xml:space="preserve">
+    <value>Cannot retrieve passwords with '{0}' password format.</value>
   </data>
-  <data name="Membership_FieldToMatchMustNotBeWhiteSpace">
-    <value xml:space="preserve">Field to match must not be white-space</value>
+  <data name="Membership_FieldToMatchMustNotBeWhiteSpace" xml:space="preserve">
+    <value>Field to match must not be white-space.</value>
   </data>
-  <data name="Membership_SkipMustBeGreaterThanOrEqualToZero">
-    <value xml:space="preserve">Skip must be &gt;= 0</value>
+  <data name="Membership_SkipMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+    <value>Skip must be &gt;= 0.</value>
   </data>
-  <data name="Membership_TakeMustBeGreaterThanOrEqualToZero">
-    <value xml:space="preserve">Take must be &gt;= 0</value>
+  <data name="Membership_TakeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+    <value>Take must be &gt;= 0.</value>
   </data>
-  <data name="Membership_PageIndexMustBeGreaterThanOrEqualToZero">
-    <value xml:space="preserve">Page index must be &gt;= 0</value>
+  <data name="Membership_PageIndexMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+    <value>Page index must be &gt;= 0.</value>
   </data>
-  <data name="Membership_PageSizeMustBeGreaterThanOrEqualToZero">
-    <value xml:space="preserve">Page size must be &gt;= 0</value>
+  <data name="Membership_PageSizeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+    <value>Page size must be &gt;= 0.</value>
+  </data>
+  <data name="Membership_CannotDecodePassword" xml:space="preserve">
+    <value>Cannot decode passwords with '{0}' password format.</value>
+  </data>
+  <data name="Membership_CouldNotChangePassword" xml:space="preserve">
+    <value>Could not change password: {0}.</value>
+  </data>
+  <data name="Membership_CouldNotChangePasswordQuestionAndAnswer" xml:space="preserve">
+    <value>Could not change password question and answer: {0}.</value>
+  </data>
+  <data name="Membership_IncorrectPasswordAnswer" xml:space="preserve">
+    <value>Incorrect password answer.</value>
   </data>
 </root>
