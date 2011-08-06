@@ -29,7 +29,7 @@ using MongoDB.Driver.Builders;
 using NUnit.Framework;
 
 namespace DigitalLiberationFront.MongoProviders.Test {
-    
+
     [TestFixture]
     public class TestMembershipProvider {
 
@@ -38,21 +38,24 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
         private NameValueCollection _config;
 
+        #region Test SetUp and TearDown
+
         [TestFixtureSetUp]
         public void TestFixtureSetUp() {
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);            
-            
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
             // Add connection string.
-            var connectionStringSettings = new ConnectionStringSettings(DefaultConnectionStringName, "mongodb://localhost/aspnet");
-            config.ConnectionStrings.ConnectionStrings.Clear();            
-            config.ConnectionStrings.ConnectionStrings.Add(connectionStringSettings); 
+            var connectionStringSettings = new ConnectionStringSettings(DefaultConnectionStringName,
+                                                                        "mongodb://localhost/aspnet");
+            config.ConnectionStrings.ConnectionStrings.Clear();
+            config.ConnectionStrings.ConnectionStrings.Add(connectionStringSettings);
 
             // Add machine keys (for encrypted passwords).                                    
             var rng = new RNGCryptoServiceProvider();
 
             var validationKeyBuffer = new byte[64];
             rng.GetBytes(validationKeyBuffer);
-            var validationKey = BitConverter.ToString(validationKeyBuffer).Replace("-", string.Empty);            
+            var validationKey = BitConverter.ToString(validationKeyBuffer).Replace("-", string.Empty);
 
             var decryptionKeyBuffer = new byte[32];
             rng.GetBytes(decryptionKeyBuffer);
@@ -63,11 +66,11 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             machineKey.Validation = MachineKeyValidation.SHA1;
             machineKey.DecryptionKey = decryptionKey;
             machineKey.Decryption = "AES";
-            
+
             // Add the provider.            
             var membership = (MembershipSection) config.GetSection("system.web/membership");
             membership.DefaultProvider = DefaultName;
-            var provider = new ProviderSettings(DefaultName, typeof (MongoMembershipProvider).AssemblyQualifiedName);            
+            var provider = new ProviderSettings(DefaultName, typeof(MongoMembershipProvider).AssemblyQualifiedName);
             provider.Parameters["connectionStringName"] = DefaultConnectionStringName;
             membership.Providers.Clear();
             membership.Providers.Add(provider);
@@ -78,16 +81,16 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             ConfigurationManager.RefreshSection("system.web/membership");
 
             _config = new NameValueCollection {
-                { "connectionStringName", DefaultConnectionStringName },
-                { "minRequiredNonAlphanumericCharacters", "0" },
-                { "requiresUniqueEmail", "false" }
-            };           
+                {"connectionStringName", DefaultConnectionStringName},
+                {"minRequiredNonAlphanumericCharacters", "0"},
+                {"requiresUniqueEmail", "false"}
+            };
         }
 
         [TestFixtureTearDown]
         public void TestFixtureTearDown() {
-            
-        }        
+
+        }
 
         [SetUp]
         public void SetUp() {
@@ -95,6 +98,8 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             var database = server.GetDatabase("aspnet");
             database.Drop();
         }
+
+        #endregion
 
         #region Initialize
 
@@ -446,7 +451,7 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
         #region GetPassword
 
-        private void TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormat(string passwordFormat) {
+        private void TestGetPasswordWithoutPasswordRetrievalWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "false";
             config["passwordFormat"] = passwordFormat;
@@ -460,23 +465,30 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.Throws<ProviderException>(() => provider.GetPassword("test", "Answer"));
         }
 
+        /// <summary>
+        /// Test to make sure that GetPassword will fail when password retrieval is disabled and
+        /// the password format is clear.
+        /// </summary>
         [Test]
-        public void TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormatClear() {
-            TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormat("clear");
+        public void TestGetPasswordWithoutPasswordRetrievalWithPasswordFormatClear() {
+            TestGetPasswordWithoutPasswordRetrievalWithPasswordFormat("clear");
         }
 
+        /// <summary>
+        /// Test to make sure that GetPassword will fail when password retrieval is disabled and
+        /// the password format is encrypted.
+        /// </summary>
         [Test]
-        public void TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormatEncrypted() {
-            TestGetPasswordWithEnablePasswordRetrievalFalseWithPasswordFormat("encrypted");
+        public void TestGetPasswordWithoutPasswordRetrievalWithPasswordFormatEncrypted() {
+            TestGetPasswordWithoutPasswordRetrievalWithPasswordFormat("encrypted");
         }
 
-        private void TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(
-            bool requiresQuestionAndAnswer,
+        private void TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat(
             string passwordFormat
             ) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";
-            config["requiresQuestionAndAnswer"] = requiresQuestionAndAnswer.ToString();
+            config["requiresQuestionAndAnswer"] = "true";
             config["passwordFormat"] = passwordFormat;
 
             var provider = new MongoMembershipProvider();
@@ -489,34 +501,66 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             Assert.AreEqual("123456", password);
         }
 
+        /// <summary>
+        /// Test to make sure that GetPassword works when password retrieval is enabled and a password question/answer
+        /// is required and the password format is clear.
+        /// </summary>
         [Test]
         public void
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear() {
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true, "clear");
+            TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatClear() {
+            TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat("clear");
         }
 
+        /// <summary>
+        /// Test to make sure that GetPassword works when password retrieval is enabled and a password question/answer
+        /// is required and the password format is encrypted.
+        /// </summary>
         [Test]
         public void
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted() {
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true,
-                                                                                                          "encrypted");
+            TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatEncrypted() {
+            TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat("encrypted");
         }
 
-        [Test]
-        public void
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear() {
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false, "clear");
+        private void TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat(
+            string passwordFormat
+            ) {
+            var config = new NameValueCollection(_config);
+            config["enablePasswordRetrieval"] = "true";
+            config["requiresQuestionAndAnswer"] = "false";
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            var password = provider.GetPassword("test", "Wrong!");
+            Assert.AreEqual("123456", password);
         }
 
+        /// <summary>
+        /// Test to make sure that GetPassword works when password retrieval is enabled and a password question/answer
+        /// is NOT required and the password format is clear.
+        /// </summary>
         [Test]
         public void
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted() {
-            TestGetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false,
-                                                                                                          "encrypted");
+            TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatClear() {
+            TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat("clear");
+        }
+
+        /// <summary>
+        /// Test to make sure that GetPassword works when password retrieval is enabled and a password question/answer
+        /// is NOT required and the password format is encrypted.
+        /// </summary>
+        [Test]
+        public void
+            TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatEncrypted() {
+            TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat("encrypted");
         }
 
         private void
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat
             (
             string passwordFormat
             ) {
@@ -536,22 +580,18 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
         [Test]
         public void
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear
-            () {
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat
-                ("clear");
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatClear() {
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat("clear");
         }
 
         [Test]
         public void
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted
-            () {
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormat
-                ("encrypted");
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatEncrypted() {
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat("encrypted");
         }
 
         private void
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat
             (
             string passwordFormat
             ) {
@@ -572,25 +612,21 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
         [Test]
         public void
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear
-            () {
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat
-                ("clear");
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatClear() {
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat("clear");
         }
 
         [Test]
         public void
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted
-            () {
-            TestGetPasswordWithWrongAnswerWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormat
-                ("encrypted");
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatEncrypted() {
+            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat("encrypted");
         }
 
         #endregion
 
         #region ResetPassword
 
-        private void TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(
+        private void TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(
             bool requiresQuestionAndAnswer,
             string passwordFormat
             ) {
@@ -610,32 +646,26 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
         [Test]
         public void
-            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatClear() {
-            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true,
-                                                                                                            "clear");
+            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQAndAWithPasswordFormatClear() {
+            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true, "clear");
         }
 
         [Test]
         public void
-            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerTrueWithPasswordFormatEncrypted
-            () {
-            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true,
-                                                                                                            "encrypted");
+            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQAndAWithPasswordFormatEncrypted() {
+            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true, "encrypted");
         }
 
         [Test]
         public void
-            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatClear() {
-            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false,
-                                                                                                            "clear");
+            TestResetPasswordWithEnablePasswordResetTrueWithoutRequiresQAndAWithPasswordFormatClear() {
+            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false, "clear");
         }
 
         [Test]
         public void
-            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerFalseWithPasswordFormatEncrypted
-            () {
-            TestResetPasswordWithEnablePasswordRetrievalTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false,
-                                                                                                            "encrypted");
+            TestResetPasswordWithEnablePasswordResetTrueWithoutRequiresQAndAWithPasswordFormatEncrypted() {
+            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false, "encrypted");
         }
 
         #endregion
