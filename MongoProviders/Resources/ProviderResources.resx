@@ -165,4 +165,7 @@
   <data name="Membership_UserDoesNotExist" xml:space="preserve">
     <value>User does not exist.</value>
   </data>
+  <data name="Membership_UserHasADuplicateEmailAddress" xml:space="preserve">
+    <value>User has a duplicate e-mail address.</value>
+  </data>
 </root>

@@ -203,5 +203,14 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
                 return ResourceManager.GetString("Membership_UserDoesNotExist", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User has a duplicate e-mail address..
+        /// </summary>
+        internal static string Membership_UserHasADuplicateEmailAddress {
+            get {
+                return ResourceManager.GetString("Membership_UserHasADuplicateEmailAddress", resourceCulture);
+            }
+        }
     }
 }
