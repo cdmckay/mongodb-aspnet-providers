@@ -626,13 +626,51 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
         #region ResetPassword
 
-        private void TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(
-            bool requiresQuestionAndAnswer,
-            string passwordFormat
-            ) {
+        private void TestResetPasswordWithoutPasswordRetrievalWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["enablePasswordReset"] = "false";
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            Assert.Throws<ProviderException>(() => provider.ResetPassword("test", "Answer"));
+        }
+
+        /// <summary>
+        /// Test to make sure that ResetPassword will fail when password reset is disabled and
+        /// the password format is clear.
+        /// </summary>
+        [Test]
+        public void TestResetPasswordWithoutPasswordRetrievalWithPasswordFormatClear() {
+            TestResetPasswordWithoutPasswordRetrievalWithPasswordFormat("clear");
+        }
+
+        /// <summary>
+        /// Test to make sure that ResetPassword will fail when password reset is disabled and
+        /// the password format is hashed.
+        /// </summary>
+        [Test]
+        public void TestResetPasswordWithoutPasswordRetrievalWithPasswordFormatHashed() {
+            TestResetPasswordWithoutPasswordRetrievalWithPasswordFormat("hashed");
+        }
+
+        /// <summary>
+        /// Test to make sure that ResetPassword will fail when password reset is disabled and
+        /// the password format is encrypted.
+        /// </summary>
+        [Test]
+        public void TestResetPasswordWithoutPasswordRetrievalWithPasswordFormatEncrypted() {
+            TestResetPasswordWithoutPasswordRetrievalWithPasswordFormat("encrypted");
+        }
+
+        private void TestResetPasswordWithEnablePasswordResetWithRequiresQAndAWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
             config["enablePasswordReset"] = "true";
-            config["requiresQuestionAndAnswer"] = requiresQuestionAndAnswer.ToString();
+            config["requiresQuestionAndAnswer"] = "true";
             config["passwordFormat"] = passwordFormat;
 
             var provider = new MongoMembershipProvider();
@@ -646,26 +684,53 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
         [Test]
         public void
-            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQAndAWithPasswordFormatClear() {
-            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true, "clear");
+            TestResetPasswordWithEnablePasswordResetWithRequiresQAndAWithPasswordFormatClear() {
+            TestResetPasswordWithEnablePasswordResetWithRequiresQAndAWithPasswordFormat("clear");
         }
 
         [Test]
         public void
-            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQAndAWithPasswordFormatEncrypted() {
-            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(true, "encrypted");
+            TestResetPasswordWithEnablePasswordResetWithRequiresQAndAWithPasswordFormatHashed() {
+            TestResetPasswordWithEnablePasswordResetWithRequiresQAndAWithPasswordFormat("hashed");
         }
 
         [Test]
         public void
-            TestResetPasswordWithEnablePasswordResetTrueWithoutRequiresQAndAWithPasswordFormatClear() {
-            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false, "clear");
+            TestResetPasswordWithEnablePasswordResetWithRequiresQAndAWithPasswordFormatEncrypted() {
+            TestResetPasswordWithEnablePasswordResetWithRequiresQAndAWithPasswordFormat("encrypted");
+        }
+
+        private void TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["enablePasswordReset"] = "true";
+            config["requiresQuestionAndAnswer"] = "false";
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            provider.ResetPassword("test", "Wrong!");
         }
 
         [Test]
         public void
-            TestResetPasswordWithEnablePasswordResetTrueWithoutRequiresQAndAWithPasswordFormatEncrypted() {
-            TestResetPasswordWithEnablePasswordResetTrueWithRequiresQuestionAndAnswerWithPasswordFormat(false, "encrypted");
+            TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormatClear() {
+                TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void
+            TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormatHashed() {
+                TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat("hashed");
+        }
+
+        [Test]
+        public void
+            TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormatEncrypted() {
+                TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat("encrypted");
         }
 
         #endregion
