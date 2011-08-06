@@ -445,7 +445,7 @@ namespace DigitalLiberationFront.MongoProviders {
 
             var id = ConvertProviderUserKeyToObjectId(user.ProviderUserKey);
             if (!id.HasValue) {
-                throw new ProviderException("User does not exist.");
+                throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
             }
 
             if (RequiresUniqueEmail && EmailIsDuplicate(user.Email)) {
@@ -463,8 +463,11 @@ namespace DigitalLiberationFront.MongoProviders {
 
             try {
                 var users = GetCollection<MongoMembershipUser>("users");
-                users.Update(query, update);
-            } catch (MongoSafeModeException e) {
+                var result = users.Update(query, update);
+                if (result.DocumentsAffected == 0) {
+                    throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
+                }
+            } catch (MongoSafeModeException e) {                
                 throw new ProviderException(ProviderResources.Membership_CouldNotUpdateUser, e);
             }
         }
@@ -821,7 +824,7 @@ namespace DigitalLiberationFront.MongoProviders {
         private void RecordFailedAttempt(ObjectId id, FailedAttemptType failedAttemptType) {
             var user = GetMongoUser(id);
             if (user == null) {
-                throw new ProviderException(string.Format("Could not record failed attempt: no user exists with id '{0}'.", id));
+                throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
             }
 
             int attemptCount;

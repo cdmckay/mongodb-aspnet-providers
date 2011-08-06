@@ -162,4 +162,7 @@
   <data name="Membership_IncorrectPasswordAnswer" xml:space="preserve">
     <value>Incorrect password answer.</value>
   </data>
+  <data name="Membership_UserDoesNotExist" xml:space="preserve">
+    <value>User does not exist.</value>
+  </data>
 </root>

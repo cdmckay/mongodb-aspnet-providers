@@ -194,5 +194,14 @@ namespace DigitalLiberationFront.MongoProviders.Resources {
                 return ResourceManager.GetString("Membership_TakeMustBeGreaterThanOrEqualToZero", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User does not exist..
+        /// </summary>
+        internal static string Membership_UserDoesNotExist {
+            get {
+                return ResourceManager.GetString("Membership_UserDoesNotExist", resourceCulture);
+            }
+        }
     }
 }
