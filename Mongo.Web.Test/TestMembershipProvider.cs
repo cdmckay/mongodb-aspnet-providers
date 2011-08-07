@@ -483,9 +483,7 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
             TestGetPasswordWithoutPasswordRetrievalWithPasswordFormat("encrypted");
         }
 
-        private void TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat(
-            string passwordFormat
-            ) {
+        private void TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";
             config["requiresQuestionAndAnswer"] = "true";
@@ -506,8 +504,7 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
         /// is required and the password format is clear.
         /// </summary>
         [Test]
-        public void
-            TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatClear() {
+        public void TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatClear() {
             TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat("clear");
         }
 
@@ -516,14 +513,11 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
         /// is required and the password format is encrypted.
         /// </summary>
         [Test]
-        public void
-            TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatEncrypted() {
+        public void TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatEncrypted() {
             TestGetPasswordWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat("encrypted");
         }
 
-        private void TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat(
-            string passwordFormat
-            ) {
+        private void TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";
             config["requiresQuestionAndAnswer"] = "false";
@@ -544,8 +538,7 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
         /// is NOT required and the password format is clear.
         /// </summary>
         [Test]
-        public void
-            TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatClear() {
+        public void TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatClear() {
             TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat("clear");
         }
 
@@ -554,16 +547,11 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
         /// is NOT required and the password format is encrypted.
         /// </summary>
         [Test]
-        public void
-            TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatEncrypted() {
+        public void TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatEncrypted() {
             TestGetPasswordWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat("encrypted");
         }
 
-        private void
-            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat
-            (
-            string passwordFormat
-            ) {
+        private void TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";
             config["requiresQuestionAndAnswer"] = "true";
@@ -579,22 +567,16 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
         }
 
         [Test]
-        public void
-            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatClear() {
+        public void TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatClear() {
             TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat("clear");
         }
 
         [Test]
-        public void
-            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatEncrypted() {
+        public void TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormatEncrypted() {
             TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithRequiresQAndAWithPasswordFormat("encrypted");
         }
 
-        private void
-            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat
-            (
-            string passwordFormat
-            ) {
+        private void TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat(string passwordFormat) {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";
             config["requiresQuestionAndAnswer"] = "false";
@@ -611,15 +593,88 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
         }
 
         [Test]
-        public void
-            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatClear() {
+        public void TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatClear() {
             TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat("clear");
         }
 
         [Test]
-        public void
-            TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatEncrypted() {
+        public void TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormatEncrypted() {
             TestGetPasswordWithWrongAnswerWithPasswordRetrievalWithoutRequiresQAndAWithPasswordFormat("encrypted");
+        }
+
+        private void TestGetPasswordWithTooManyWrongAnswersWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["enablePasswordRetrieval"] = "true";
+            config["requiresQuestionAndAnswer"] = "true";
+            config["maxInvalidPasswordAttempts"] = "2";
+            config["passwordFormat"] = passwordFormat;            
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            // This is used later to make sure the last lockout date was updated.
+            var dateTimeAtStart = DateTime.Now;
+
+            try {
+                provider.GetPassword("test", "Wrong!");
+            } catch (MembershipPasswordException) {                
+            }
+
+            try {
+                provider.GetPassword("test", "Wrong!");
+            } catch (MembershipPasswordException) {
+            }
+
+            var user = provider.GetUser("test", false);
+
+            Assert.IsTrue(user.IsLockedOut);
+            Assert.GreaterOrEqual(user.LastLockoutDate, dateTimeAtStart);
+        }
+
+        [Test]
+        public void TestGetPasswordWithTooManyWrongAnswersWithPasswordFormatClear() {
+            TestGetPasswordWithTooManyWrongAnswersWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestGetPasswordWithTooManyWrongAnswersWithPasswordFormatEncrypted() {
+            TestGetPasswordWithTooManyWrongAnswersWithPasswordFormat("encrypted");
+        }
+
+        private void TestGetPasswordWithTooFewWrongAnswersWithPasswordFormat(string passwordFormat) {
+            var config = new NameValueCollection(_config);
+            config["enablePasswordRetrieval"] = "true";
+            config["requiresQuestionAndAnswer"] = "true";
+            config["maxInvalidPasswordAttempts"] = "2";
+            config["passwordFormat"] = passwordFormat;
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            try {
+                provider.GetPassword("test", "Wrong!");
+            } catch (MembershipPasswordException) {
+            }
+            
+            var user = provider.GetUser("test", false);
+
+            Assert.IsFalse(user.IsLockedOut);
+        }
+
+        [Test]
+        public void TestGetPasswordWithTooFewWrongAnswersWithPasswordFormatClear() {
+            TestGetPasswordWithTooFewWrongAnswersWithPasswordFormat("clear");
+        }
+
+        [Test]
+        public void TestGetPasswordWithTooFewWrongAnswersWithPasswordFormatEncrypted() {
+            TestGetPasswordWithTooFewWrongAnswersWithPasswordFormat("encrypted");
         }
 
         #endregion
@@ -718,19 +773,19 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
         [Test]
         public void
             TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormatClear() {
-                TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat("clear");
+            TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat("clear");
         }
 
         [Test]
         public void
             TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormatHashed() {
-                TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat("hashed");
+            TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat("hashed");
         }
 
         [Test]
         public void
             TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormatEncrypted() {
-                TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat("encrypted");
+            TestResetPasswordWithEnablePasswordResetWithoutRequiresQAndAWithPasswordFormat("encrypted");
         }
 
         #endregion
@@ -749,7 +804,7 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
             createdUser.IsApproved = false;
             createdUser.LastLoginDate = new DateTime(1982, 04, 28);
             createdUser.LastActivityDate = new DateTime(1982, 04, 30);
-            
+
             provider.UpdateUser(createdUser);
             var updatedUser = provider.GetUser(createdUser.ProviderUserKey, false);
             Assert.NotNull(updatedUser);
@@ -831,7 +886,7 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
 
             // Change the email to match the first user's email.
             user.Email = "test1@test.com";
-            
+
             // No exception as duplicate emails are allowed.
             provider.UpdateUser(user);
         }
@@ -890,6 +945,12 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
             // Exception as duplicate usernames are NOT allowed.
             Assert.Throws<ProviderException>(() => provider.UpdateUser(duplicateUser));
         }
+
+        #endregion
+
+        #region UnlockUser
+
+
 
         #endregion
 
