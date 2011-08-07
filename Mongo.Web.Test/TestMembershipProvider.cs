@@ -950,7 +950,35 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
 
         #region UnlockUser
 
+        [Test]
+        public void TestUnlockUser() {
+            var config = new NameValueCollection(_config);
+            config["enablePasswordRetrieval"] = "true";
+            config["requiresQuestionAndAnswer"] = "true";
+            config["maxInvalidPasswordAttempts"] = "1";
+            config["passwordFormat"] = "clear";
 
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            try {
+                provider.GetPassword("test", "Wrong!");    
+            } catch (MembershipPasswordException) {                
+            }                      
+
+            // User will now be locked.
+            var lockedOutUser = provider.GetUser("test", false);
+            Assert.IsTrue(lockedOutUser.IsLockedOut);
+
+            provider.UnlockUser("test");
+
+            // User will now be unlocked.
+            var user = provider.GetUser("test", false);
+            Assert.IsFalse(user.IsLockedOut);
+        }
 
         #endregion
 

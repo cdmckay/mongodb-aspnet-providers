@@ -32,7 +32,7 @@ using MongoDB.Driver.Builders;
 
 namespace DigitalLiberationFront.Mongo.Web {
     public class MongoMembershipProvider : MembershipProvider {
-        
+
         /// <summary>
         /// The length of the password salt.
         /// </summary>
@@ -184,7 +184,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 users.EnsureIndex(IndexKeys.Ascending("UserName"), IndexOptions.SetUnique(true));
                 users.EnsureIndex(IndexKeys.Ascending("Email"));
             }
-        }        
+        }
 
         public override MembershipUser CreateUser(string userName, string password, string email, string passwordQuestion, string passwordAnswer,
             bool isApproved, object providerUserKey, out MembershipCreateStatus status) {
@@ -224,7 +224,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 hasFailedValidation = true;
             } else if (RequiresUniqueEmail && EmailIsDuplicate(email)) {
                 status = MembershipCreateStatus.DuplicateEmail;
-                hasFailedValidation = true;                
+                hasFailedValidation = true;
             } else if (RequiresQuestionAndAnswer && string.IsNullOrWhiteSpace(passwordQuestion)) {
                 status = MembershipCreateStatus.InvalidQuestion;
                 hasFailedValidation = true;
@@ -248,7 +248,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             if (oldUser != null) {
                 status = MembershipCreateStatus.DuplicateUserName;
                 hasFailedValidation = true;
-            }                        
+            }
 
             if (hasFailedValidation) {
                 return null;
@@ -279,7 +279,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 LastPasswordChangedDate = DateTime.MinValue,
                 LastLockedOutDate = DateTime.MinValue
             };
-            
+
             try {
                 var users = GetCollection<MongoMembershipUser>("users");
                 users.Insert(newUser);
@@ -316,7 +316,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             OnValidatingPassword(passwordEventArgs);
             if (passwordEventArgs.Cancel) {
                 throw new ProviderException("Change password cancelled.");
-            } 
+            }
             if (!ValidatePassword(newPassword)) {
                 return false;
             }
@@ -343,7 +343,7 @@ namespace DigitalLiberationFront.Mongo.Web {
 
         public override bool ChangePasswordQuestionAndAnswer(string username, string password, string newPasswordQuestion, string newPasswordAnswer) {
             if (username != null) {
-                username = username.Trim();                
+                username = username.Trim();
             }
             if (newPasswordQuestion != null) {
                 newPasswordQuestion = newPasswordQuestion.Trim();
@@ -351,11 +351,11 @@ namespace DigitalLiberationFront.Mongo.Web {
             if (newPasswordAnswer != null) {
                 newPasswordAnswer = newPasswordAnswer.Trim();
             }
-            
+
             if (!ValidateUser(username, password)) {
                 return false;
             }
-            
+
             var user = GetMongoUser(username);
             if (user == null) {
                 return false;
@@ -364,7 +364,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             var query = Query.EQ("_id", user.Id);
             var update = Update
                 .Set("PasswordQuestion", newPasswordQuestion)
-                .Set("PasswordAnswer", EncodePassword(newPasswordAnswer, user.PasswordFormat, user.PasswordSalt));            
+                .Set("PasswordAnswer", EncodePassword(newPasswordAnswer, user.PasswordFormat, user.PasswordSalt));
 
             try {
                 var users = GetCollection<MongoMembershipUser>("users");
@@ -389,14 +389,14 @@ namespace DigitalLiberationFront.Mongo.Web {
                 throw new ProviderException("User is locked out.");
             }
 
-            if (RequiresQuestionAndAnswer 
+            if (RequiresQuestionAndAnswer
                 && !CheckPassword(answer, user.PasswordAnswer, user.PasswordFormat, user.PasswordSalt)) {
                 HandleFailedAttempt(user.Id, FailedAttemptType.PasswordAnswer);
                 throw new MembershipPasswordException(ProviderResources.Membership_IncorrectPasswordAnswer);
             }
 
             return DecodePassword(user.Password, user.PasswordFormat);
-        }        
+        }
 
         public override string ResetPassword(string username, string answer) {
             if (!EnablePasswordReset) {
@@ -468,7 +468,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 if (result.DocumentsAffected == 0) {
                     throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
                 }
-            } catch (MongoSafeModeException e) {                
+            } catch (MongoSafeModeException e) {
                 if (e.Message.Contains("UserName_1")) {
                     throw new ProviderException("User has a duplicate name.");
                 }
@@ -491,18 +491,18 @@ namespace DigitalLiberationFront.Mongo.Web {
             if (!passwordCorrect) {
                 HandleFailedAttempt(user.Id, FailedAttemptType.Password);
                 return false;
-            } 
-            
+            }
+
             if (!user.IsApproved) {
                 return false;
-            }            
-            
+            }
+
             var query = Query.EQ("_id", user.Id);
             var now = DateTime.Now;
             var update = Update
                 .Set("LastLoginDate", now)
                 .Set("LastActivityDate", now);
-                        
+
             try {
                 var users = GetCollection<MongoMembershipUser>("users");
                 users.Update(query, update);
@@ -542,14 +542,14 @@ namespace DigitalLiberationFront.Mongo.Web {
             }
 
             return true;
-        }        
+        }
 
-        public override MembershipUser GetUser(object providerUserKey, bool userIsOnline) {            
+        public override MembershipUser GetUser(object providerUserKey, bool userIsOnline) {
             var id = ConvertProviderUserKeyToObjectId(providerUserKey);
             if (!id.HasValue) {
                 return null;
             }
-            
+
             var query = Query.EQ("_id", id.Value);
 
             var users = GetCollection<MongoMembershipUser>("users");
@@ -563,7 +563,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             }
 
             return user != null ? user.ToMembershipUser(Name) : null;
-        }        
+        }
 
         public override MembershipUser GetUser(string userName, bool userIsOnline) {
             if (userName == null) {
@@ -572,7 +572,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             if (string.IsNullOrWhiteSpace(userName)) {
                 return null;
             }
-            
+
             var query = Query.EQ("UserName", userName);
 
             var users = GetCollection<MongoMembershipUser>("users");
@@ -586,7 +586,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             }
 
             return user != null ? user.ToMembershipUser(Name) : null;
-        }        
+        }
 
         public override string GetUserNameByEmail(string email) {
             var users = GetCollection<MongoMembershipUser>("users");
@@ -594,7 +594,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             var user = result.FirstOrDefault();
 
             return user != null ? user.UserName : null;
-        }        
+        }
 
         public override bool DeleteUser(string username, bool deleteAllRelatedData) {
             throw new NotImplementedException();
@@ -602,7 +602,7 @@ namespace DigitalLiberationFront.Mongo.Web {
 
         public override MembershipUserCollection GetAllUsers(int pageIndex, int pageSize, out int totalRecords) {
             throw new NotImplementedException();
-        }        
+        }
 
         public override int GetNumberOfUsersOnline() {
             throw new NotImplementedException();
@@ -632,7 +632,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             if (take < 0) {
                 throw new ArgumentException(ProviderResources.Membership_TakeMustBeGreaterThanOrEqualToZero, "take");
             }
-           
+
             var users = GetCollection<MongoMembershipUser>("users");
             var matches = users.Find(query).SetSkip(skip).SetLimit(take);
             if (sortBy != null) {
@@ -653,7 +653,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             var users = FindUsers(Query.Matches("UserName", userNameToMatch), SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
             var collection = new MembershipUserCollection();
             foreach (var u in users) {
-                collection.Add(u);    
+                collection.Add(u);
             }
             return collection;
         }
@@ -815,8 +815,8 @@ namespace DigitalLiberationFront.Mongo.Web {
                 case MembershipPasswordFormat.Encrypted:
                     // Grab the salt + password and lop off the salt (16 bytes).
                     var combinedBytes = DecryptPassword(Convert.FromBase64String(encodedPassword));
-                    password = Encoding.Unicode.GetString(combinedBytes, 
-                        PasswordSaltLength, 
+                    password = Encoding.Unicode.GetString(combinedBytes,
+                        PasswordSaltLength,
                         combinedBytes.Length - PasswordSaltLength);
                     break;
                 default:
@@ -874,31 +874,30 @@ namespace DigitalLiberationFront.Mongo.Web {
                     attemptWindowStartDate = "FailedPasswordAnswerAttemptWindowStartDate";
                     break;
                 default:
-                    throw new ProviderException(string.Format("Unknown failed attempt type: {0}.", failedAttemptType));                    
+                    throw new ProviderException(string.Format("Unknown failed attempt type: {0}.", failedAttemptType));
             }
-            
+
             try {
                 var users = GetCollection<MongoMembershipUser>("users");
                 var query = Query.EQ("_id", id);
-                if (attemptCount == 0 || DateTime.Now > attemptWindowEndDate) {
-                    var update = Update
-                        .Set(attemptCountField, 1)
-                        .Set(attemptWindowStartDate, DateTime.Now);
-                    users.Update(query, update);
-                }
-                else {
-                    attemptCount++;
-                    if (attemptCount >= MaxInvalidPasswordAttempts) {
-                        var update = Update
-                            .Set("IsLockedOut", true)
-                            .Set("LastLockedOutDate", DateTime.Now);
-                        users.Update(query, update);
-                    }
-                    else {
-                        var update = Update.Inc(attemptCountField, 1);
-                        users.Update(query, update);
+                UpdateBuilder update;
+
+                attemptCount++;
+                if (attemptCount >= MaxInvalidPasswordAttempts) {
+                    update = Update
+                        .Set("IsLockedOut", true)
+                        .Set("LastLockedOutDate", DateTime.Now);
+                } else {
+                    if (attemptCount == 1 || DateTime.Now > attemptWindowEndDate) {
+                        update = Update
+                            .Set(attemptCountField, 1)
+                            .Set(attemptWindowStartDate, DateTime.Now);
+                    } else {
+                        update = Update.Inc(attemptCountField, 1);
                     }
                 }
+
+                users.Update(query, update);
             } catch (MongoSafeModeException e) {
                 throw new ProviderException("Could not record failed attempt.", e);
             }
