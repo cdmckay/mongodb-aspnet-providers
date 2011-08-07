@@ -467,10 +467,7 @@ namespace DigitalLiberationFront.MongoProviders {
                 if (result.DocumentsAffected == 0) {
                     throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
                 }
-            } catch (MongoSafeModeException e) {
-                if (e.Message.Contains("_id_")) {
-                    throw new ProviderException("User has a duplicate provider key.");
-                } 
+            } catch (MongoSafeModeException e) {                
                 if (e.Message.Contains("UserName_1")) {
                     throw new ProviderException("User has a duplicate name.");
                 }

@@ -735,6 +735,63 @@ namespace DigitalLiberationFront.MongoProviders.Test {
 
         #endregion
 
+        #region UpdateUser
+
+        [Test]
+        public void TestUpdateUser() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            MembershipCreateStatus status;
+            var createdUser = provider.CreateUser("test", "123456", "test@test.com", null, null, true, null, out status);
+            createdUser.Email = "email@test.com";
+            createdUser.Comment = "comment";
+            createdUser.IsApproved = false;
+            createdUser.LastLoginDate = new DateTime(1982, 04, 28);
+            createdUser.LastActivityDate = new DateTime(1982, 04, 30);
+            
+            provider.UpdateUser(createdUser);
+            var updatedUser = provider.GetUser(createdUser.ProviderUserKey, false);
+            Assert.NotNull(updatedUser);
+            Assert.AreEqual("email@test.com", updatedUser.Email);
+            Assert.AreEqual("comment", updatedUser.Comment);
+            Assert.AreEqual(false, updatedUser.IsApproved);
+            Assert.AreEqual(new DateTime(1982, 04, 28), updatedUser.LastLoginDate);
+            Assert.AreEqual(new DateTime(1982, 04, 30), updatedUser.LastActivityDate);
+        }
+
+        [Test]
+        public void TestUpdateUserWithNullUser() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            Assert.Throws<ArgumentNullException>(() => provider.UpdateUser(null));
+        }
+
+        [Test]
+        public void TestUpdateUserWithInvalidProviderUserKey() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            var user = new MembershipUser(
+                providerName: provider.Name,
+                name: "test",
+                providerUserKey: new object(),
+                email: "test@test.com",
+                passwordQuestion: null,
+                comment: null,
+                isApproved: true,
+                isLockedOut: false,
+                creationDate: DateTime.Now,
+                lastLoginDate: new DateTime(),
+                lastActivityDate: new DateTime(),
+                lastPasswordChangedDate: new DateTime(),
+                lastLockoutDate: new DateTime());
+            Assert.Throws<ProviderException>(() => provider.UpdateUser(user));
+        }
+
+        #endregion
+
         #region ValidateUser
 
         /// <summary>
