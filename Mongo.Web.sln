@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalLiberationFront.MongoProviders", "MongoProviders\DigitalLiberationFront.MongoProviders.csproj", "{19BBCDE3-BC95-4CDF-8BDE-C04383A971C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mongo.Web", "Mongo.Web\Mongo.Web.csproj", "{19BBCDE3-BC95-4CDF-8BDE-C04383A971C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalLiberationFront.MongoProviders.Test", "MongoProviders.Test\DigitalLiberationFront.MongoProviders.Test.csproj", "{F96F85DD-E9BD-4DEC-A86A-7D2460835C70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mongo.Web.Test", "Mongo.Web.Test\Mongo.Web.Test.csproj", "{F96F85DD-E9BD-4DEC-A86A-7D2460835C70}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{50A7E12B-5FB3-474B-9E33-2D5C04D44669}"
 EndProject
