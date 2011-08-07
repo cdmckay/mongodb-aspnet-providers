@@ -776,6 +776,8 @@ namespace DigitalLiberationFront.MongoProviders.Test {
             var user = new MembershipUser(
                 providerName: provider.Name,
                 name: "test",
+                // This will cause the exception as it's not an ObjectId
+                // or a parseable string version of an ObjectId.
                 providerUserKey: new object(),
                 email: "test@test.com",
                 passwordQuestion: null,
@@ -787,7 +789,106 @@ namespace DigitalLiberationFront.MongoProviders.Test {
                 lastActivityDate: new DateTime(),
                 lastPasswordChangedDate: new DateTime(),
                 lastLockoutDate: new DateTime());
+
             Assert.Throws<ProviderException>(() => provider.UpdateUser(user));
+        }
+
+        [Test]
+        public void TestUpdateUserWithNonExistantProviderUserKey() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            var user = new MembershipUser(
+                providerName: provider.Name,
+                name: "test",
+                // This will cause the exception as it's not an ObjectId
+                // or a parseable string version of an ObjectId.
+                providerUserKey: ObjectId.GenerateNewId(),
+                email: "test@test.com",
+                passwordQuestion: null,
+                comment: null,
+                isApproved: true,
+                isLockedOut: false,
+                creationDate: DateTime.Now,
+                lastLoginDate: new DateTime(),
+                lastActivityDate: new DateTime(),
+                lastPasswordChangedDate: new DateTime(),
+                lastLockoutDate: new DateTime());
+
+            Assert.Throws<ProviderException>(() => provider.UpdateUser(user));
+        }
+
+        [Test]
+        public void TestUpdateUserWithoutRequiresUniqueEmailWithDuplicateEmail() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            MembershipCreateStatus status1;
+            provider.CreateUser("test1", "123456", "test1@test.com", null, null, true, null, out status1);
+
+            MembershipCreateStatus status2;
+            var user = provider.CreateUser("test2", "123456", "test2@test.com", null, null, true, null, out status2);
+
+            // Change the email to match the first user's email.
+            user.Email = "test1@test.com";
+            
+            // No exception as duplicate emails are allowed.
+            provider.UpdateUser(user);
+        }
+
+        [Test]
+        public void TestUpdateUserWithRequiresUniqueEmailWithDuplicateEmail() {
+            var config = new NameValueCollection(_config);
+            config["requiresUniqueEmail"] = "true";
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status1;
+            provider.CreateUser("test1", "123456", "test1@test.com", null, null, true, null, out status1);
+
+            MembershipCreateStatus status2;
+            var user = provider.CreateUser("test2", "123456", "test2@test.com", null, null, true, null, out status2);
+
+            // Change the email to match the first user's email.
+            user.Email = "test1@test.com";
+
+            // Exception as duplicate emails are NOT allowed.
+            Assert.Throws<ProviderException>(() => provider.UpdateUser(user));
+        }
+
+        [Test]
+        public void TestUpdateUserWithDuplicateUserName() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            MembershipCreateStatus status1;
+            provider.CreateUser("test1", "123456", "test2@test.com", null, null, true, null, out status1);
+
+            MembershipCreateStatus status2;
+            var createdUser = provider.CreateUser("test2", "123456", "test2@test.com", null, null, true, null, out status2);
+
+            // Since we can't change the UserName property directly, we create a MembershipUser with the same values
+            Assert.IsNotNull(createdUser);
+            Assert.IsNotNull(createdUser.ProviderUserKey);
+            var duplicateUser = new MembershipUser(
+                providerName: createdUser.ProviderName,
+                // Change the name to match the first user.
+                name: "test1",
+                providerUserKey: createdUser.ProviderUserKey,
+                email: createdUser.Email,
+                passwordQuestion: createdUser.PasswordQuestion,
+                comment: createdUser.Comment,
+                isApproved: createdUser.IsApproved,
+                isLockedOut: createdUser.IsLockedOut,
+                creationDate: createdUser.CreationDate,
+                lastLoginDate: createdUser.LastLoginDate,
+                lastActivityDate: createdUser.LastActivityDate,
+                lastPasswordChangedDate: createdUser.LastPasswordChangedDate,
+                lastLockoutDate: createdUser.LastLockoutDate);
+
+            // Exception as duplicate usernames are NOT allowed.
+            Assert.Throws<ProviderException>(() => provider.UpdateUser(duplicateUser));
         }
 
         #endregion

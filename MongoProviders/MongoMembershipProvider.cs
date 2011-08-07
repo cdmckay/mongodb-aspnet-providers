@@ -180,6 +180,7 @@ namespace DigitalLiberationFront.MongoProviders {
             // Setup collections.
             var users = GetCollection<MongoMembershipUser>("users");
             if (!users.Exists()) {
+                users.ResetIndexCache();
                 users.EnsureIndex(IndexKeys.Ascending("UserName"), IndexOptions.SetUnique(true));
                 users.EnsureIndex(IndexKeys.Ascending("Email"));
             }
