@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Web.Security;
+using MongoDB.Driver;
 
 namespace DigitalLiberationFront.MongoDB.Web.Security {
     public class MongoRoleProvider : RoleProvider {
@@ -10,6 +12,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         public override string ApplicationName {
             get { throw new NotImplementedException(); }
             set { throw new NotImplementedException(); }
+        }
+
+        public override void Initialize(string name, NameValueCollection config) {
+            throw new NotImplementedException();
         }
 
         public override bool IsUserInRole(string userName, string roleName) {
@@ -50,6 +56,17 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override string[] FindUsersInRole(string roleName, string userNameToMatch) {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private MongoCollection<MongoMembershipUser> GetUserCollection() {
+            //var server = MongoServer.Create(_connectionString);
+            //var database = server.GetDatabase(_databaseName, SafeMode.True);
+            //return database.GetCollection<MongoMembershipUser>(ApplicationName + ".users");
+            return null;
         }
         
     }
