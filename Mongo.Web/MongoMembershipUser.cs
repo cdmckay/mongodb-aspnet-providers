@@ -30,18 +30,33 @@ namespace DigitalLiberationFront.Mongo.Web.Security {
         public MembershipPasswordFormat PasswordFormat { get; set; }
         public string PasswordQuestion { get; set; }
         public string PasswordAnswer { get; set; }
-        public int FailedPasswordAttemptCount { get; set; }
+        
+        [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime FailedPasswordAttemptWindowStartDate { get; set; }
-        public int FailedPasswordAnswerAttemptCount { get; set; }
+        public int FailedPasswordAttemptCount { get; set; }        
+
+        [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime FailedPasswordAnswerAttemptWindowStartDate { get; set; }
+        public int FailedPasswordAnswerAttemptCount { get; set; }
+
         public string Email { get; set; }
         public string Comment { get; set; }
         public bool IsApproved { get; set; }
         public bool IsLockedOut { get; set; }
+
+        [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime CreationDate { get; set; }
+
+        [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime LastLoginDate { get; set; }
+
+        [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime LastActivityDate { get; set; }
+
+        [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime LastPasswordChangedDate { get; set; }
+
+        [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime LastLockedOutDate { get; set; }
 
         public MembershipUser ToMembershipUser(string providerName) {

@@ -1033,6 +1033,42 @@ namespace DigitalLiberationFront.Mongo.Web.Security.Test {
 
         #endregion
 
+        #region GetNumberOfUsersOnline
+
+        [Test]
+        public void TestGetNumberOfUsersOnline() {
+            var config = new NameValueCollection(_config);
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test1", "123456", "test@test.com", "Question", "Answer", true, null, out status);            
+            provider.CreateUser("test2", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            // This will set the user online.
+            provider.GetUser("test1", true);
+
+            var numberOfUsersOnline = provider.GetNumberOfUsersOnline();
+            Assert.AreEqual(1, numberOfUsersOnline);
+        }
+
+        [Test]
+        public void TestGetNumberOfUsersOnlineWhenNoneAreOnline() {
+            var config = new NameValueCollection(_config);
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            var numberOfUsersOnline = provider.GetNumberOfUsersOnline();
+            Assert.AreEqual(0, numberOfUsersOnline);
+        }
+
+        #endregion
+
         #region ValidateUser
 
         /// <summary>

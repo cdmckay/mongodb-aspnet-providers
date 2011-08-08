@@ -755,7 +755,7 @@ namespace DigitalLiberationFront.Mongo.Web.Security {
         private MongoCollection<MongoMembershipUser> GetUserCollection() {
             var server = MongoServer.Create(_connectionString);
             var database = server.GetDatabase(_databaseName, SafeMode.True);
-            return database.GetCollection<MongoMembershipUser>(ApplicationName + ".user");
+            return database.GetCollection<MongoMembershipUser>(ApplicationName + ".users");
         }
 
         /// <summary>
