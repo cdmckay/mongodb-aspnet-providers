@@ -168,4 +168,25 @@
   <data name="Membership_UserHasADuplicateEmailAddress" xml:space="preserve">
     <value>User has a duplicate e-mail address.</value>
   </data>
+  <data name="Membership_UserNameCannotBeNullOrWhiteSpace">
+    <value xml:space="preserve">User name cannot be null or white space.</value>
+  </data>
+  <data name="Membership_PasswordAnswerCannotBeNullOrWhiteSpace">
+    <value xml:space="preserve">Password answer cannot be null or white space.</value>
+  </data>
+  <data name="Membership_PasswordCannotBeNullOrWhiteSpace">
+    <value xml:space="preserve">Password cannot be null or white space.</value>
+  </data>
+  <data name="Membership_OldPasswordCannotBeNullOrWhiteSpace">
+    <value xml:space="preserve">Old password cannot be null or white space.</value>
+  </data>
+  <data name="Membership_NewPasswordCannotBeNullOrWhiteSpace">
+    <value xml:space="preserve">New password cannot be null or white space.</value>
+  </data>
+  <data name="Membership_NewPasswordQuestionCannotBeNullOrWhiteSpace">
+    <value xml:space="preserve">New password question cannot be null or white space.</value>
+  </data>
+  <data name="Membership_NewPasswordAnswerCannotBeNullOrWhiteSpace">
+    <value xml:space="preserve">New password answer cannot be null or white space.</value>
+  </data>
 </root>

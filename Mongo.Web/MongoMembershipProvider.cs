@@ -148,6 +148,11 @@ namespace DigitalLiberationFront.Mongo.Web {
             _minRequiredNonAlphanumericCharacters = Convert.ToInt32(config["minRequiredNonAlphanumericCharacters"] ?? "1");
             _passwordStrengthRegularExpression = config["passwordStrengthRegularExpression"] ?? string.Empty;
 
+            // Make sure that passwords are at least 1 character long.
+            if (_minRequiredPasswordLength <= 0) {
+                throw new ProviderException("Minimum required password length must be > 0.");
+            }
+
             // Handle password format.
             var passwordFormat = config["passwordFormat"] ?? "hashed";
             switch (passwordFormat.ToLowerInvariant()) {
@@ -178,7 +183,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             _databaseName = mongoUrl.DatabaseName;
 
             // Setup collections.
-            var users = GetCollection<MongoMembershipUser>("users");
+            var users = GetUserCollection();
             if (!users.Exists()) {
                 users.ResetIndexCache();
                 users.EnsureIndex(IndexKeys.Ascending("UserName"), IndexOptions.SetUnique(true));
@@ -188,13 +193,13 @@ namespace DigitalLiberationFront.Mongo.Web {
 
         public override MembershipUser CreateUser(string userName, string password, string email, string passwordQuestion, string passwordAnswer,
             bool isApproved, object providerUserKey, out MembershipCreateStatus status) {
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
+            }
+            if (string.IsNullOrWhiteSpace(password)) {
+                throw new ArgumentException(ProviderResources.Membership_PasswordCannotBeNullOrWhiteSpace, "password");
+            }
 
-            if (userName != null) {
-                userName = userName.Trim();
-            }
-            if (password != null) {
-                password = password.Trim();
-            }
             if (email != null) {
                 email = email.Trim();
             }
@@ -236,7 +241,8 @@ namespace DigitalLiberationFront.Mongo.Web {
                 hasFailedValidation = true;
             }
 
-            if (providerUserKey != null && !(providerUserKey is ObjectId)) {
+            var id = ConvertProviderUserKeyToObjectId(providerUserKey);
+            if (providerUserKey != null && !id.HasValue) {
                 status = MembershipCreateStatus.InvalidProviderUserKey;
                 hasFailedValidation = true;
             }
@@ -281,7 +287,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             };
 
             try {
-                var users = GetCollection<MongoMembershipUser>("users");
+                var users = GetUserCollection();
                 users.Insert(newUser);
             } catch (MongoSafeModeException e) {
                 if (e.Message.Contains("_id_")) {
@@ -297,22 +303,22 @@ namespace DigitalLiberationFront.Mongo.Web {
             return GetUser(userName, false);
         }
 
-        public override bool ChangePassword(string username, string oldPassword, string newPassword) {
-            if (username != null) {
-                username = username.Trim();
+        public override bool ChangePassword(string userName, string oldPassword, string newPassword) {
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
             }
-            if (oldPassword != null) {
-                oldPassword = oldPassword.Trim();
+            if (string.IsNullOrWhiteSpace(oldPassword)) {
+                throw new ArgumentException(ProviderResources.Membership_OldPasswordCannotBeNullOrWhiteSpace, "oldPassword");
             }
-            if (newPassword != null) {
-                newPassword = newPassword.Trim();
+            if (string.IsNullOrWhiteSpace(newPassword)) {
+                throw new ArgumentException(ProviderResources.Membership_NewPasswordCannotBeNullOrWhiteSpace, "newPassword");
             }
 
-            if (!ValidateUser(username, oldPassword)) {
+            if (!ValidateUser(userName, oldPassword)) {
                 return false;
             }
 
-            var passwordEventArgs = new ValidatePasswordEventArgs(username, newPassword, true);
+            var passwordEventArgs = new ValidatePasswordEventArgs(userName, newPassword, true);
             OnValidatingPassword(passwordEventArgs);
             if (passwordEventArgs.Cancel) {
                 throw new ProviderException("Change password cancelled.");
@@ -321,7 +327,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 return false;
             }
 
-            var user = GetMongoUser(username);
+            var user = GetMongoUser(userName);
             if (user == null) {
                 return false;
             }
@@ -332,7 +338,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 .Set("LastPasswordChangedDate", DateTime.Now);
 
             try {
-                var users = GetCollection<MongoMembershipUser>("users");
+                var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
                 throw new ProviderException(ProviderResources.Membership_CouldNotChangePassword, e);
@@ -341,22 +347,29 @@ namespace DigitalLiberationFront.Mongo.Web {
             return true;
         }
 
-        public override bool ChangePasswordQuestionAndAnswer(string username, string password, string newPasswordQuestion, string newPasswordAnswer) {
-            if (username != null) {
-                username = username.Trim();
+        public override bool ChangePasswordQuestionAndAnswer(string userName, string password, string newPasswordQuestion, string newPasswordAnswer) {
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
             }
-            if (newPasswordQuestion != null) {
-                newPasswordQuestion = newPasswordQuestion.Trim();
+            if (string.IsNullOrWhiteSpace(password)) {
+                throw new ArgumentException(ProviderResources.Membership_PasswordCannotBeNullOrWhiteSpace, "password");
             }
-            if (newPasswordAnswer != null) {
-                newPasswordAnswer = newPasswordAnswer.Trim();
+            if (RequiresQuestionAndAnswer && string.IsNullOrWhiteSpace(newPasswordQuestion)) {
+                throw new ArgumentException(ProviderResources.Membership_NewPasswordQuestionCannotBeNullOrWhiteSpace, "newPasswordQuestion");
             }
 
-            if (!ValidateUser(username, password)) {
+            if (RequiresQuestionAndAnswer && string.IsNullOrWhiteSpace(newPasswordAnswer)) {
+                throw new ArgumentException(ProviderResources.Membership_NewPasswordAnswerCannotBeNullOrWhiteSpace, "newPasswordAnswer");
+            }
+
+            newPasswordQuestion = newPasswordQuestion.Trim();
+            newPasswordAnswer = newPasswordAnswer.Trim();
+            
+            if (!ValidateUser(userName, password)) {
                 return false;
             }
 
-            var user = GetMongoUser(username);
+            var user = GetMongoUser(userName);
             if (user == null) {
                 return false;
             }
@@ -367,7 +380,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 .Set("PasswordAnswer", EncodePassword(newPasswordAnswer, user.PasswordFormat, user.PasswordSalt));
 
             try {
-                var users = GetCollection<MongoMembershipUser>("users");
+                var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
                 throw new ProviderException(ProviderResources.Membership_CouldNotChangePasswordQuestionAndAnswer, e);
@@ -376,12 +389,18 @@ namespace DigitalLiberationFront.Mongo.Web {
             return true;
         }
 
-        public override string GetPassword(string username, string answer) {
+        public override string GetPassword(string userName, string answer) {
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
+            }
+            if (RequiresQuestionAndAnswer && string.IsNullOrWhiteSpace(answer)) {
+                throw new ArgumentException(ProviderResources.Membership_PasswordAnswerCannotBeNullOrWhiteSpace, "answer");
+            }
             if (!EnablePasswordRetrieval) {
                 throw new ProviderException("Password retrieval not enabled.");
             }
-
-            var user = GetMongoUser(username);
+            
+            var user = GetMongoUser(userName);
             if (user == null) {
                 throw new ProviderException("User not found.");
             }
@@ -398,12 +417,18 @@ namespace DigitalLiberationFront.Mongo.Web {
             return DecodePassword(user.Password, user.PasswordFormat);
         }
 
-        public override string ResetPassword(string username, string answer) {
+        public override string ResetPassword(string userName, string answer) {
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
+            }
+            if (RequiresQuestionAndAnswer && string.IsNullOrWhiteSpace(answer)) {
+                throw new ArgumentException(ProviderResources.Membership_PasswordAnswerCannotBeNullOrWhiteSpace, "answer");
+            }
             if (!EnablePasswordReset) {
                 throw new ProviderException("Password reset not enabled.");
             }
 
-            var user = GetMongoUser(username);
+            var user = GetMongoUser(userName);
             if (user == null) {
                 throw new ProviderException("User not found.");
             }
@@ -418,7 +443,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             }
 
             var newPassword = Membership.GeneratePassword(NewPasswordLength, MinRequiredNonAlphanumericCharacters);
-            var passwordEventArgs = new ValidatePasswordEventArgs(username, newPassword, true);
+            var passwordEventArgs = new ValidatePasswordEventArgs(userName, newPassword, true);
             OnValidatingPassword(passwordEventArgs);
             if (passwordEventArgs.Cancel) {
                 throw new ProviderException("Change password cancelled.");
@@ -430,7 +455,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 .Set("LastPasswordChangedDate", DateTime.Now);
 
             try {
-                var users = GetCollection<MongoMembershipUser>("users");
+                var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
                 throw new ProviderException(ProviderResources.Membership_CouldNotResetPassword, e);
@@ -463,7 +488,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 .Set("LastActivityDate", user.LastActivityDate);
 
             try {
-                var users = GetCollection<MongoMembershipUser>("users");
+                var users = GetUserCollection();
                 var result = users.Update(query, update);
                 if (result.DocumentsAffected == 0) {
                     throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
@@ -477,12 +502,15 @@ namespace DigitalLiberationFront.Mongo.Web {
             }
         }
 
-        public override bool ValidateUser(string username, string password) {
-            if (string.IsNullOrEmpty(username)) {
-                return false;
+        public override bool ValidateUser(string userName, string password) {
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
+            }
+            if (string.IsNullOrWhiteSpace(password)) {
+                throw new ArgumentException(ProviderResources.Membership_PasswordCannotBeNullOrWhiteSpace, "password");
             }
 
-            var user = GetMongoUser(username);
+            var user = GetMongoUser(userName);
             if (user == null || user.IsLockedOut) {
                 return false;
             }
@@ -504,7 +532,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 .Set("LastActivityDate", now);
 
             try {
-                var users = GetCollection<MongoMembershipUser>("users");
+                var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
                 throw new ProviderException("Could not update user record.", e);
@@ -513,12 +541,12 @@ namespace DigitalLiberationFront.Mongo.Web {
             return true;
         }
 
-        public override bool UnlockUser(string username) {
-            if (string.IsNullOrEmpty(username)) {
-                return false;
+        public override bool UnlockUser(string userName) {
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
             }
 
-            var user = GetMongoUser(username);
+            var user = GetMongoUser(userName);
             if (user == null) {
                 return false;
             }
@@ -535,7 +563,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 .Set("FailedPasswordAnswerAttemptCount", 0);
 
             try {
-                var users = GetCollection<MongoMembershipUser>("users");
+                var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
                 throw new ProviderException("Could not update user record.", e);
@@ -545,6 +573,10 @@ namespace DigitalLiberationFront.Mongo.Web {
         }
 
         public override MembershipUser GetUser(object providerUserKey, bool userIsOnline) {
+            if (providerUserKey == null) {
+                throw new ArgumentNullException("providerUserKey");
+            }
+
             var id = ConvertProviderUserKeyToObjectId(providerUserKey);
             if (!id.HasValue) {
                 return null;
@@ -552,7 +584,7 @@ namespace DigitalLiberationFront.Mongo.Web {
 
             var query = Query.EQ("_id", id.Value);
 
-            var users = GetCollection<MongoMembershipUser>("users");
+            var users = GetUserCollection();
             MongoMembershipUser user;
             if (userIsOnline) {
                 var update = Update.Set("LastActivityDate", DateTime.Now);
@@ -566,16 +598,13 @@ namespace DigitalLiberationFront.Mongo.Web {
         }
 
         public override MembershipUser GetUser(string userName, bool userIsOnline) {
-            if (userName == null) {
-                throw new ArgumentNullException("userName");
-            }
             if (string.IsNullOrWhiteSpace(userName)) {
-                return null;
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
             }
 
             var query = Query.EQ("UserName", userName);
 
-            var users = GetCollection<MongoMembershipUser>("users");
+            var users = GetUserCollection();
             MongoMembershipUser user;
             if (userIsOnline) {
                 var update = Update.Set("LastActivityDate", DateTime.Now);
@@ -589,15 +618,41 @@ namespace DigitalLiberationFront.Mongo.Web {
         }
 
         public override string GetUserNameByEmail(string email) {
-            var users = GetCollection<MongoMembershipUser>("users");
+            if (email != null) {
+                email = email.Trim();
+            }
+
+            var users = GetUserCollection();
             var result = users.Find(Query.EQ("Email", email)).SetSortOrder(SortBy.Ascending("UserName"));
             var user = result.FirstOrDefault();
 
             return user != null ? user.UserName : null;
         }
 
-        public override bool DeleteUser(string username, bool deleteAllRelatedData) {
-            throw new NotImplementedException();
+        public override bool DeleteUser(string userName, bool deleteAllRelatedData) {
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
+            }
+
+            var user = GetMongoUser(userName);
+            if (user == null) {
+                return false;
+            }
+
+            if (deleteAllRelatedData) {
+                // TODO Delete all related data.
+            }
+
+            var query = Query.EQ("_id", user.Id);
+
+            try {
+                var users = GetUserCollection();
+                users.Remove(query);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not remove user record.", e);
+            }
+
+            return true;
         }
 
         public override MembershipUserCollection GetAllUsers(int pageIndex, int pageSize, out int totalRecords) {
@@ -633,7 +688,7 @@ namespace DigitalLiberationFront.Mongo.Web {
                 throw new ArgumentException(ProviderResources.Membership_TakeMustBeGreaterThanOrEqualToZero, "take");
             }
 
-            var users = GetCollection<MongoMembershipUser>("users");
+            var users = GetUserCollection();
             var matches = users.Find(query).SetSkip(skip).SetLimit(take);
             if (sortBy != null) {
                 matches.SetSortOrder(sortBy);
@@ -677,13 +732,11 @@ namespace DigitalLiberationFront.Mongo.Web {
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="TDefaultDocument"></typeparam>
-        /// <param name="collectionName"></param>
         /// <returns></returns>
-        private MongoCollection<TDefaultDocument> GetCollection<TDefaultDocument>(string collectionName) {
+        private MongoCollection<MongoMembershipUser> GetUserCollection() {
             var server = MongoServer.Create(_connectionString);
             var database = server.GetDatabase(_databaseName, SafeMode.True);
-            return database.GetCollection<TDefaultDocument>(ApplicationName + "." + collectionName);
+            return database.GetCollection<MongoMembershipUser>(ApplicationName + ".user");
         }
 
         /// <summary>
@@ -691,7 +744,10 @@ namespace DigitalLiberationFront.Mongo.Web {
         /// </summary>
         /// <param name="providerUserKey">An <see cref="ObjectId"/> or a <see cref="string"/> equivalent of one.</param>
         /// <returns>The <see cref="ObjectId"/>, or null.</returns>
-        private ObjectId? ConvertProviderUserKeyToObjectId(object providerUserKey) {
+        private static ObjectId? ConvertProviderUserKeyToObjectId(object providerUserKey) {
+            if (providerUserKey == null) {
+                return null;
+            }
             if (providerUserKey is ObjectId) {
                 return (ObjectId) providerUserKey;
             }
@@ -710,18 +766,22 @@ namespace DigitalLiberationFront.Mongo.Web {
         /// <param name="id"></param>
         /// <returns></returns>
         private MongoMembershipUser GetMongoUser(ObjectId id) {
-            var users = GetCollection<MongoMembershipUser>("users");
+            var users = GetUserCollection();
             return users.FindOneAs<MongoMembershipUser>(Query.EQ("_id", id));
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="username"></param>
+        /// <param name="userName"></param>
         /// <returns></returns>
-        private MongoMembershipUser GetMongoUser(string username) {
-            var users = GetCollection<MongoMembershipUser>("users");
-            return users.FindOneAs<MongoMembershipUser>(Query.EQ("UserName", username));
+        private MongoMembershipUser GetMongoUser(string userName) {
+            if (userName == null) {
+                return null;
+            }
+
+            var users = GetUserCollection();
+            return users.FindOneAs<MongoMembershipUser>(Query.EQ("UserName", userName));
         }
 
         /// <summary>
@@ -731,7 +791,7 @@ namespace DigitalLiberationFront.Mongo.Web {
         /// <returns></returns>
         private bool EmailIsDuplicate(string email) {
             var query = Query.EQ("Email", email);
-            var users = GetCollection<MongoMembershipUser>("users");
+            var users = GetUserCollection();
             var duplicates = users.Count(query);
             return duplicates > 0;
         }
@@ -878,7 +938,7 @@ namespace DigitalLiberationFront.Mongo.Web {
             }
 
             try {
-                var users = GetCollection<MongoMembershipUser>("users");
+                var users = GetUserCollection();
                 var query = Query.EQ("_id", id);
                 UpdateBuilder update;
 

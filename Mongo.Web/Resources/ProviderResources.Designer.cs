@@ -133,6 +133,42 @@ namespace DigitalLiberationFront.Mongo.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New password answer cannot be null or white space..
+        /// </summary>
+        internal static string Membership_NewPasswordAnswerCannotBeNullOrWhiteSpace {
+            get {
+                return ResourceManager.GetString("Membership_NewPasswordAnswerCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New password cannot be null or white space..
+        /// </summary>
+        internal static string Membership_NewPasswordCannotBeNullOrWhiteSpace {
+            get {
+                return ResourceManager.GetString("Membership_NewPasswordCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New password question cannot be null or white space..
+        /// </summary>
+        internal static string Membership_NewPasswordQuestionCannotBeNullOrWhiteSpace {
+            get {
+                return ResourceManager.GetString("Membership_NewPasswordQuestionCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Old password cannot be null or white space..
+        /// </summary>
+        internal static string Membership_OldPasswordCannotBeNullOrWhiteSpace {
+            get {
+                return ResourceManager.GetString("Membership_OldPasswordCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Page index must be &gt;= 0..
         /// </summary>
         internal static string Membership_PageIndexMustBeGreaterThanOrEqualToZero {
@@ -147,6 +183,24 @@ namespace DigitalLiberationFront.Mongo.Web.Resources {
         internal static string Membership_PageSizeMustBeGreaterThanOrEqualToZero {
             get {
                 return ResourceManager.GetString("Membership_PageSizeMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password answer cannot be null or white space..
+        /// </summary>
+        internal static string Membership_PasswordAnswerCannotBeNullOrWhiteSpace {
+            get {
+                return ResourceManager.GetString("Membership_PasswordAnswerCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password cannot be null or white space..
+        /// </summary>
+        internal static string Membership_PasswordCannotBeNullOrWhiteSpace {
+            get {
+                return ResourceManager.GetString("Membership_PasswordCannotBeNullOrWhiteSpace", resourceCulture);
             }
         }
         
@@ -210,6 +264,15 @@ namespace DigitalLiberationFront.Mongo.Web.Resources {
         internal static string Membership_UserHasADuplicateEmailAddress {
             get {
                 return ResourceManager.GetString("Membership_UserHasADuplicateEmailAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User name cannot be null or white space..
+        /// </summary>
+        internal static string Membership_UserNameCannotBeNullOrWhiteSpace {
+            get {
+                return ResourceManager.GetString("Membership_UserNameCannotBeNullOrWhiteSpace", resourceCulture);
             }
         }
     }
