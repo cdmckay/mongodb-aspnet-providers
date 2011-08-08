@@ -28,7 +28,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using NUnit.Framework;
 
-namespace DigitalLiberationFront.Mongo.Web.Security.Test {
+namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
     [TestFixture]
     public class TestMembershipProvider {
@@ -233,7 +233,7 @@ namespace DigitalLiberationFront.Mongo.Web.Security.Test {
             var retrievedUser = provider.GetUser(createdUser.ProviderUserKey, false);
 
             Assert.NotNull(retrievedUser);
-            Assert.AreEqual(createdUser.ProviderUserKey, retrievedUser.ProviderUserKey);
+            Assert.AreEqual(createdUser.ProviderUserKey.ToString(), retrievedUser.ProviderUserKey.ToString());
             Assert.AreEqual(createdUser.LastActivityDate, retrievedUser.LastActivityDate);
         }
 
@@ -251,7 +251,7 @@ namespace DigitalLiberationFront.Mongo.Web.Security.Test {
             var retrievedUser = provider.GetUser(createdUser.ProviderUserKey, true);
 
             Assert.NotNull(retrievedUser);
-            Assert.AreEqual(createdUser.ProviderUserKey, retrievedUser.ProviderUserKey);
+            Assert.AreEqual(createdUser.ProviderUserKey.ToString(), retrievedUser.ProviderUserKey.ToString());
             Assert.LessOrEqual(createdUser.LastActivityDate, retrievedUser.LastActivityDate);
         }
 

@@ -19,7 +19,7 @@ using System.Web.Security;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace DigitalLiberationFront.Mongo.Web.Security {
+namespace DigitalLiberationFront.MongoDB.Web.Security {
     internal sealed class MongoMembershipUser {
         [BsonId]
         public ObjectId Id { get; set; }

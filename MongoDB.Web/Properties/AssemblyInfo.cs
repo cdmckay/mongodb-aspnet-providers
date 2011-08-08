@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Mongo.Web")]
-[assembly: AssemblyDescription("MongoDB ASP.NET Providers")]
+[assembly: AssemblyDescription("MongoDB ASP.NET Providers. This version only supports the Membership provider.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Cameron McKay")]
 [assembly: AssemblyProduct("Mongo.Web")]
