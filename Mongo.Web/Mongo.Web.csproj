@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DigitalLiberationFront.Mongo.Web.Security</RootNamespace>
-    <AssemblyName>DigitalLiberationFront.Mongo.Web</AssemblyName>
+    <AssemblyName>Mongo.Web</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MongoProviders.Test")]
+[assembly: AssemblyTitle("Mongo.Web.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Digital Liberation Front")]
+[assembly: AssemblyCompany("Cameron McKay")]
 [assembly: AssemblyProduct("Mongo.Web.Test")]
-[assembly: AssemblyCopyright("Copyright © Digital Liberation Front 2011")]
+[assembly: AssemblyCopyright("Copyright © Cameron McKay 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
