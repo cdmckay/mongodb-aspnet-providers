@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Mongo.Web")]
-[assembly: AssemblyDescription("MongoDB ASP.NET Providers. This version only supports the Membership provider.")]
+[assembly: AssemblyTitle("DigitalLiberationFront.MongoDB.Web")]
+[assembly: AssemblyDescription("MongoDB ASP.NET Providers. This version supports the Membership provider.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Cameron McKay")]
-[assembly: AssemblyProduct("Mongo.Web")]
+[assembly: AssemblyProduct("DigitalLiberationFront.MongoDB.Web")]
 [assembly: AssemblyCopyright("Copyright © Cameron McKay 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
