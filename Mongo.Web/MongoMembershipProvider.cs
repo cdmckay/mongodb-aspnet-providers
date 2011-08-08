@@ -655,8 +655,18 @@ namespace DigitalLiberationFront.Mongo.Web.Security {
             return true;
         }        
 
-        public override int GetNumberOfUsersOnline() {
-            throw new NotImplementedException();
+        public override int GetNumberOfUsersOnline() {            
+            var windowStartDate = DateTime.Now.AddMinutes(-Membership.UserIsOnlineTimeWindow);
+            var query = Query.GT("LastActivityDate", windowStartDate);
+
+            int numberOfUsersOnline;
+            try {
+                var users = GetUserCollection();
+                numberOfUsersOnline = users.Count(query);                
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not count user records.", e);
+            }
+            return numberOfUsersOnline;
         }
 
         /// <summary>
