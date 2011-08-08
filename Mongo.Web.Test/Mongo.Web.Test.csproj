@@ -9,7 +9,7 @@
     <ProjectGuid>{F96F85DD-E9BD-4DEC-A86A-7D2460835C70}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DigitalLiberationFront.Mongo.Web.Test</RootNamespace>
+    <RootNamespace>DigitalLiberationFront.Mongo.Web.Security.Test</RootNamespace>
     <AssemblyName>DigitalLiberationFront.Mongo.Web.Test</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

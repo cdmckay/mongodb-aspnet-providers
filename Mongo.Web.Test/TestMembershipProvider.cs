@@ -28,7 +28,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using NUnit.Framework;
 
-namespace DigitalLiberationFront.Mongo.Web.Test {
+namespace DigitalLiberationFront.Mongo.Web.Security.Test {
 
     [TestFixture]
     public class TestMembershipProvider {
@@ -997,6 +997,38 @@ namespace DigitalLiberationFront.Mongo.Web.Test {
 
             var unlocked = provider.UnlockUser("Wrong!");
             Assert.IsFalse(unlocked);
+        }
+
+        #endregion
+
+        #region DeleteUser
+
+        [Test]
+        public void TestDeleteUser() {
+            var config = new NameValueCollection(_config);
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            MembershipCreateStatus status;
+            provider.CreateUser("test", "123456", "test@test.com", "Question", "Answer", true, null, out status);
+
+            var deleted = provider.DeleteUser("test", true);
+            Assert.IsTrue(deleted);
+
+            var deletedUser = provider.GetUser("test", false);
+            Assert.IsNull(deletedUser);
+        }
+
+        [Test]
+        public void TestDeleteUserWithNonExistentUser() {
+            var config = new NameValueCollection(_config);
+
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, config);
+
+            var deleted = provider.DeleteUser("test", true);
+            Assert.IsFalse(deleted);
         }
 
         #endregion

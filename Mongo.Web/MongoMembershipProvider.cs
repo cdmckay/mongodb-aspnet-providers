@@ -25,12 +25,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Hosting;
 using System.Web.Security;
-using DigitalLiberationFront.Mongo.Web.Resources;
+using DigitalLiberationFront.Mongo.Web.Security.Resources;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
-namespace DigitalLiberationFront.Mongo.Web {
+namespace DigitalLiberationFront.Mongo.Web.Security {
     public class MongoMembershipProvider : MembershipProvider {
 
         /// <summary>
