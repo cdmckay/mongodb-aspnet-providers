@@ -1272,6 +1272,54 @@ namespace DigitalLiberationFront.Mongo.Web.Security.Test {
 
         #endregion
 
+        #region GetAllUsers
+
+        [Test]
+        public void TestGetAllUsers() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            for (int i = 0; i < 100; i++) {
+                MembershipCreateStatus status;
+                provider.CreateUser("test" + i, "123456", "test" + i + "@test.com", "Test Question?", null, true, null,
+                                    out status);
+            }            
+
+            int totalRecords;
+            var users = provider.GetAllUsers(0, int.MaxValue, out totalRecords).Cast<MembershipUser>().ToArray();
+
+            Assert.AreEqual(100, totalRecords);
+            Assert.AreEqual(100, users.Length);
+
+            for (int i = 0; i < 100; i++) {
+                Assert.IsTrue(users[i].UserName.StartsWith("test"));
+            }
+        }
+
+        [Test]
+        public void TestGetAllUsersUsingPaging() {
+            var provider = new MongoMembershipProvider();
+            provider.Initialize(DefaultName, _config);
+
+            for (int i = 0; i < 100; i++) {
+                MembershipCreateStatus status;
+                provider.CreateUser("test" + i, "123456", "test" + i + "@test.com", "Test Question?", null, true, null,
+                                    out status);
+            }
+
+            int totalRecords;
+            var users = provider.GetAllUsers(0, 20, out totalRecords).Cast<MembershipUser>().ToArray();
+
+            Assert.AreEqual(100, totalRecords);
+            Assert.AreEqual(20, users.Length);
+
+            for (int i = 0; i < 20; i++) {
+                Assert.IsTrue(users[i].UserName.StartsWith("test"));
+            }
+        }
+
+        #endregion
+
     }
 
 }

@@ -653,11 +653,7 @@ namespace DigitalLiberationFront.Mongo.Web.Security {
             }
 
             return true;
-        }
-
-        public override MembershipUserCollection GetAllUsers(int pageIndex, int pageSize, out int totalRecords) {
-            throw new NotImplementedException();
-        }
+        }        
 
         public override int GetNumberOfUsersOnline() {
             throw new NotImplementedException();
@@ -678,17 +674,14 @@ namespace DigitalLiberationFront.Mongo.Web.Security {
         /// <param name="totalRecords"></param>
         /// <returns></returns>
         public IEnumerable<MembershipUser> FindUsers(IMongoQuery query, IMongoSortBy sortBy, int skip, int take, out int totalRecords) {
-            if (query == null) {
-                throw new ArgumentNullException("query");
-            }
             if (skip < 0) {
                 throw new ArgumentException(ProviderResources.Membership_SkipMustBeGreaterThanOrEqualToZero, "skip");
             }
             if (take < 0) {
                 throw new ArgumentException(ProviderResources.Membership_TakeMustBeGreaterThanOrEqualToZero, "take");
-            }
+            }            
 
-            var users = GetUserCollection();
+            var users = GetUserCollection();            
             var matches = users.Find(query).SetSkip(skip).SetLimit(take);
             if (sortBy != null) {
                 matches.SetSortOrder(sortBy);
@@ -722,6 +715,22 @@ namespace DigitalLiberationFront.Mongo.Web.Security {
             }
 
             var users = FindUsers(Query.Matches("Email", emailToMatch), SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
+            var collection = new MembershipUserCollection();
+            foreach (var u in users) {
+                collection.Add(u);
+            }
+            return collection;
+        }
+
+        public override MembershipUserCollection GetAllUsers(int pageIndex, int pageSize, out int totalRecords) {
+            if (pageIndex < 0) {
+                throw new ArgumentException(ProviderResources.Membership_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+            }
+            if (pageSize < 0) {
+                throw new ArgumentException(ProviderResources.Membership_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+            }
+
+            var users = FindUsers(Query.Null, SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
             var collection = new MembershipUserCollection();
             foreach (var u in users) {
                 collection.Add(u);
