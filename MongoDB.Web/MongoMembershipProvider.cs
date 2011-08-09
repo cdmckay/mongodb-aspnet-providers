@@ -113,16 +113,8 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             // Initialize the base class.
             base.Initialize(name, config);
 
-            // Deal with the application name.
-            var applicationName = config["applicationName"];
-            if (string.IsNullOrEmpty(applicationName)) {
-                applicationName = "/";
-            } else if (applicationName.Contains('\0')) {
-                throw new ProviderException(string.Format("Application name cannot contain the '{0}' character.", @"\0"));
-            } else if (applicationName.Contains('$')) {
-                throw new ProviderException(string.Format("Application name cannot contain the '{0}' character.", @"$"));
-            }
-            ApplicationName = applicationName;
+            // Deal with the application name.           
+            ApplicationName = ProviderHelper.ResolveApplicationName(config);
 
             // Get the rest of the parameters.
             _enablePasswordRetrieval = Convert.ToBoolean(config["enablePasswordRetrieval"] ?? "false");
@@ -162,20 +154,14 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             }
 
             // Get the connection string.
-            var connectionStringSettings = ConfigurationManager.ConnectionStrings[config["connectionStringName"]];
-            _connectionString = connectionStringSettings != null
-                                    ? connectionStringSettings.ConnectionString.Trim()
-                                    : string.Empty;
+            _connectionString = ProviderHelper.ResolveConnectionString(config);
+
+            // Get the database name.
             var mongoUrl = new MongoUrl(_connectionString);
             _databaseName = mongoUrl.DatabaseName;
 
-            // Setup collections.
-            var users = GetUserCollection();
-            if (!users.Exists()) {
-                users.ResetIndexCache();
-                users.EnsureIndex(IndexKeys.Ascending("UserName"), IndexOptions.SetUnique(true));
-                users.EnsureIndex(IndexKeys.Ascending("Email"));
-            }
+            // Initialize collections.
+            ProviderHelper.InitializeCollections(ApplicationName, _connectionString, _databaseName);
         }
 
         public override MembershipUser CreateUser(string userName, string password, string email, string passwordQuestion, string passwordAnswer,
@@ -740,9 +726,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// </summary>
         /// <returns></returns>
         private MongoCollection<MongoMembershipUser> GetUserCollection() {
-            var server = MongoServer.Create(_connectionString);
-            var database = server.GetDatabase(_databaseName, SafeMode.True);
-            return database.GetCollection<MongoMembershipUser>(ApplicationName + ".users");
+            return ProviderHelper.GetCollectionAs<MongoMembershipUser>(ApplicationName, _connectionString, _databaseName, "users");
         }
 
         /// <summary>

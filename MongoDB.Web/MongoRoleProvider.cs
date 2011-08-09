@@ -1,8 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region License
+// Copyright 2011 Cameron McKay
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+#endregion
+
+using System;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
 using System.Web.Security;
 using DigitalLiberationFront.MongoDB.Web.Security.Resources;
 using MongoDB.Driver;
@@ -10,10 +23,10 @@ using MongoDB.Driver;
 namespace DigitalLiberationFront.MongoDB.Web.Security {
     public class MongoRoleProvider : RoleProvider {
 
-        public override string ApplicationName {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
-        }
+        public override string ApplicationName { get; set; }
+
+        private string _connectionString;
+        private string _databaseName;
 
         public override void Initialize(string name, NameValueCollection config) {            
             if (name == null) {
@@ -25,6 +38,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
             // Initialize the base class.
             base.Initialize(name, config);
+
+            // Deal with the application name.           
+            ApplicationName = ProviderHelper.ResolveApplicationName(config);
+
+            // Get the connection string.
+            _connectionString = ProviderHelper.ResolveConnectionString(config);
+
+            // Get the database name.
+            var mongoUrl = new MongoUrl(_connectionString);
+            _databaseName = mongoUrl.DatabaseName;
+
+            // Initialize collections.
+            ProviderHelper.InitializeCollections(ApplicationName, _connectionString, _databaseName);
         }
 
         public override bool IsUserInRole(string userName, string roleName) {

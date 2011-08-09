@@ -186,4 +186,7 @@
   <data name="Membership_NewPasswordAnswerCannotBeNullOrWhiteSpace" xml:space="preserve">
     <value>New password answer cannot be null or white space.</value>
   </data>
+  <data name="Common_ApplicationNameCannotContainCharacter" xml:space="preserve">
+    <value>Application name cannot contain the '{0}' character.</value>
+  </data>
 </root>

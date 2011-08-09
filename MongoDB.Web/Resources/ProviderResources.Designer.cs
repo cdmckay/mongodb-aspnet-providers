@@ -61,6 +61,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Application name cannot contain the &apos;{0}&apos; character..
+        /// </summary>
+        internal static string Common_ApplicationNameCannotContainCharacter {
+            get {
+                return ResourceManager.GetString("Common_ApplicationNameCannotContainCharacter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The name of the provider has a length of zero..
         /// </summary>
         internal static string Common_ProviderNameHasZeroLength {

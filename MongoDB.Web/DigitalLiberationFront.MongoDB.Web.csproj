@@ -53,6 +53,7 @@
     <Compile Include="MongoRoleProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MongoMembershipUser.cs" />
+    <Compile Include="ProviderHelper.cs" />
     <Compile Include="Resources\ProviderResources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
