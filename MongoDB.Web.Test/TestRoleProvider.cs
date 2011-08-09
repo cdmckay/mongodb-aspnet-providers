@@ -114,6 +114,43 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
         #endregion    
 
+        #region CreateRole
+
+        [Test]
+        public void TestCreateRole() {
+            var config = new NameValueCollection(_config);
+
+            var provider = new MongoRoleProvider();
+            provider.Initialize(DefaultName, config);
+            
+            Assert.IsFalse(provider.RoleExists("test"));
+            provider.CreateRole("test");
+            Assert.IsTrue(provider.RoleExists("test"));
+        }
+
+        [Test]
+        public void TestCreateRoleWithDuplicateRoleName() {
+            var config = new NameValueCollection(_config);
+
+            var provider = new MongoRoleProvider();
+            provider.Initialize(DefaultName, config);
+
+            provider.CreateRole("test");
+            Assert.Throws<ProviderException>(() => provider.CreateRole("test"));
+        }
+
+        [Test]
+        public void TestCreateRoleWithCommaRoleName() {
+            var config = new NameValueCollection(_config);
+
+            var provider = new MongoRoleProvider();
+            provider.Initialize(DefaultName, config);
+
+            Assert.Throws<ArgumentException>(() => provider.CreateRole("test,"));
+        }
+
+        #endregion
+
     }
 
 }

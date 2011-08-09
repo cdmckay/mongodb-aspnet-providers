@@ -69,7 +69,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 throw new ArgumentException(ProviderResources.RoleProvider_RoleNameCannotBeNullOrWhiteSpace, "roleName");
             }
             if (roleName.Contains(",")) {
-                throw new ProviderException(string.Format("Role name cannot contain the '{0}' character.", ','));
+                throw new ArgumentException(string.Format("Role name cannot contain the '{0}' character.", ','));
             }
 
             var newRole = new MongoRole {
