@@ -21,6 +21,7 @@ using System.Web.Security;
 using DigitalLiberationFront.MongoDB.Web.Security.Resources;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 
 namespace DigitalLiberationFront.MongoDB.Web.Security {
     public class MongoRoleProvider : RoleProvider {
@@ -93,7 +94,11 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override bool RoleExists(string roleName) {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(roleName)) {
+                throw new ArgumentException(ProviderResources.RoleProvider_RoleNameCannotBeNullOrWhiteSpace, "roleName");
+            }
+
+            return GetMongoRole(roleName) != null;
         }
 
         public override void AddUsersToRoles(string[] userNames, string[] roleNames) {
@@ -130,6 +135,22 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// <returns></returns>
         private MongoCollection<MongoRole> GetRoleCollection() {
             return ProviderHelper.GetCollectionAs<MongoRole>(ApplicationName, _connectionString, _databaseName, "roles");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="roleName"></param>
+        /// <returns></returns>
+        private MongoRole GetMongoRole(string roleName) {
+            MongoRole role;
+            try {
+                var roles = GetRoleCollection();
+                role = roles.FindOneAs<MongoRole>(Query.EQ("Name", roleName));    
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not retrieve role.", e);
+            }
+            return role;
         }
         
     }

@@ -756,8 +756,14 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// <param name="id"></param>
         /// <returns></returns>
         private MongoMembershipUser GetMongoUser(ObjectId id) {
-            var users = GetUserCollection();
-            return users.FindOneAs<MongoMembershipUser>(Query.EQ("_id", id));
+            MongoMembershipUser user;
+            try {
+                var users = GetUserCollection();
+                user = users.FindOneAs<MongoMembershipUser>(Query.EQ("_id", id));
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not retrieve user.", e);
+            }
+            return user;
         }
 
         /// <summary>
@@ -766,12 +772,14 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// <param name="userName"></param>
         /// <returns></returns>
         private MongoMembershipUser GetMongoUser(string userName) {
-            if (userName == null) {
-                return null;
+            MongoMembershipUser user;
+            try {
+                var users = GetUserCollection();
+                user = users.FindOneAs<MongoMembershipUser>(Query.EQ("UserName", userName));
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not retrieve user.", e);
             }
-
-            var users = GetUserCollection();
-            return users.FindOneAs<MongoMembershipUser>(Query.EQ("UserName", userName));
+            return user;
         }
 
         /// <summary>
