@@ -61,6 +61,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The name of the provider has a length of zero..
+        /// </summary>
+        internal static string Common_ProviderNameHasZeroLength {
+            get {
+                return ResourceManager.GetString("Common_ProviderNameHasZeroLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot decode passwords with &apos;{0}&apos; password format..
         /// </summary>
         internal static string Membership_CannotDecodePassword {
@@ -210,24 +219,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Resources {
         internal static string Membership_PasswordFormatNotSupported {
             get {
                 return ResourceManager.GetString("Membership_PasswordFormatNotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An attempt is made to call Initialize on a provider after the provider has already been initialized..
-        /// </summary>
-        internal static string Membership_ProviderAlreadyInitialized {
-            get {
-                return ResourceManager.GetString("Membership_ProviderAlreadyInitialized", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The name of the provider has a length of zero..
-        /// </summary>
-        internal static string Membership_ProviderNameHasZeroLength {
-            get {
-                return ResourceManager.GetString("Membership_ProviderNameHasZeroLength", resourceCulture);
             }
         }
         

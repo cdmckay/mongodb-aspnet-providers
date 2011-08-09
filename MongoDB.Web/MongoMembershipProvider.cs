@@ -94,12 +94,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         public override string PasswordStrengthRegularExpression {
             get { return _passwordStrengthRegularExpression; }
         }
-
-        private string _name;
-        public override string Name {
-            get { return _name; }
-        }
-
+     
         public override string Description {
             get { return "MongoDB-backed Membership Provider"; }
         }
@@ -107,24 +102,16 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         private string _connectionString;
         private string _databaseName;
 
-        private readonly object _initailizedLock = new object();
-        private bool _initialized = false;
-
         public override void Initialize(string name, NameValueCollection config) {
-            lock (_initailizedLock) {
-                if (_initialized) {
-                    throw new InvalidOperationException(ProviderResources.Membership_ProviderAlreadyInitialized);
-                }
-                _initialized = true;
-            }
-
             if (name == null) {
                 throw new ArgumentNullException("name");
             }
             if (name.Length == 0) {
-                throw new ArgumentException(ProviderResources.Membership_ProviderNameHasZeroLength, "name");
+                throw new ArgumentException(ProviderResources.Common_ProviderNameHasZeroLength, "name");
             }
-            _name = name;
+
+            // Initialize the base class.
+            base.Initialize(name, config);
 
             // Deal with the application name.
             var applicationName = config["applicationName"];
@@ -135,7 +122,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             } else if (applicationName.Contains('$')) {
                 throw new ProviderException(string.Format("Application name cannot contain the '{0}' character.", @"$"));
             }
-            ApplicationName = applicationName ?? HostingEnvironment.ApplicationVirtualPath;
+            ApplicationName = applicationName;
 
             // Get the rest of the parameters.
             _enablePasswordRetrieval = Convert.ToBoolean(config["enablePasswordRetrieval"] ?? "false");

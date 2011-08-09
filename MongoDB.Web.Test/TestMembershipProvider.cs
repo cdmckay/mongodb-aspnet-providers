@@ -104,6 +104,17 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
         #region Initialize
 
         [Test]
+        public void TestInitializeWhenCalledTwice() {
+            var config = new NameValueCollection(_config);
+
+            var provider = new MongoMembershipProvider();
+            Assert.Throws<InvalidOperationException>(() => {
+                provider.Initialize(DefaultName, config);
+                provider.Initialize(DefaultName, config);
+            });
+        }
+
+        [Test]
         public void TestInitializeWithEnablePasswordRetrievalWithIrretrievablePassword() {
             var config = new NameValueCollection(_config);
             config["enablePasswordRetrieval"] = "true";

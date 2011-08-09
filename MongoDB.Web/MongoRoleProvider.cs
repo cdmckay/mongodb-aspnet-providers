@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Web.Security;
+using DigitalLiberationFront.MongoDB.Web.Security.Resources;
 using MongoDB.Driver;
 
 namespace DigitalLiberationFront.MongoDB.Web.Security {
@@ -14,8 +15,16 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             set { throw new NotImplementedException(); }
         }
 
-        public override void Initialize(string name, NameValueCollection config) {
-            throw new NotImplementedException();
+        public override void Initialize(string name, NameValueCollection config) {            
+            if (name == null) {
+                throw new ArgumentNullException("name");
+            }
+            if (name.Length == 0) {
+                throw new ArgumentException(ProviderResources.Common_ProviderNameHasZeroLength, "name");
+            }
+
+            // Initialize the base class.
+            base.Initialize(name, config);
         }
 
         public override bool IsUserInRole(string userName, string roleName) {
