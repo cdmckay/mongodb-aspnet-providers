@@ -16,12 +16,9 @@
 
 using System;
 using System.Collections.Specialized;
-using System.Configuration;
 using System.Configuration.Provider;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using System.Web.Configuration;
 using System.Web.Security;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -33,58 +30,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
     [TestFixture]
     public class TestMembershipProvider {
 
-        private const string DefaultConnectionStringName = "MongoAspNetConString";
-        private const string DefaultName = "MongoMembershipProvider";
-
+        private const string DefaultName = TestHelper.DefaultMembershipName;
         private NameValueCollection _config;
 
         #region Test SetUp and TearDown
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp() {
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            // Add connection string.
-            var connectionStringSettings = new ConnectionStringSettings(DefaultConnectionStringName,
-                                                                        "mongodb://localhost/aspnet");
-            config.ConnectionStrings.ConnectionStrings.Clear();
-            config.ConnectionStrings.ConnectionStrings.Add(connectionStringSettings);
-
-            // Add machine keys (for encrypted passwords).                                    
-            var rng = new RNGCryptoServiceProvider();
-
-            var validationKeyBuffer = new byte[64];
-            rng.GetBytes(validationKeyBuffer);
-            var validationKey = BitConverter.ToString(validationKeyBuffer).Replace("-", string.Empty);
-
-            var decryptionKeyBuffer = new byte[32];
-            rng.GetBytes(decryptionKeyBuffer);
-            var decryptionKey = BitConverter.ToString(decryptionKeyBuffer).Replace("-", string.Empty);
-
-            var machineKey = (MachineKeySection) config.GetSection("system.web/machineKey");
-            machineKey.ValidationKey = validationKey;
-            machineKey.Validation = MachineKeyValidation.SHA1;
-            machineKey.DecryptionKey = decryptionKey;
-            machineKey.Decryption = "AES";
-
-            // Add the provider.            
-            var membership = (MembershipSection) config.GetSection("system.web/membership");
-            membership.DefaultProvider = DefaultName;
-            var provider = new ProviderSettings(DefaultName, typeof(MongoMembershipProvider).AssemblyQualifiedName);
-            provider.Parameters["connectionStringName"] = DefaultConnectionStringName;
-            membership.Providers.Clear();
-            membership.Providers.Add(provider);
-
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("connectionStrings");
-            ConfigurationManager.RefreshSection("system.web/machineKey");
-            ConfigurationManager.RefreshSection("system.web/membership");
-
-            _config = new NameValueCollection {
-                {"connectionStringName", DefaultConnectionStringName},
-                {"minRequiredNonAlphanumericCharacters", "0"},
-                {"requiresUniqueEmail", "false"}
-            };
+            TestHelper.ConfigureConnectionStrings();
+            _config = TestHelper.ConfigureMembershipProvider(DefaultName);
         }
 
         [TestFixtureTearDown]

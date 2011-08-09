@@ -730,6 +730,24 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private MongoMembershipUser GetMongoUser(ObjectId id) {
+            return ProviderHelper.GetMongoUser(GetUserCollection(), id);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        private MongoMembershipUser GetMongoUser(string userName) {
+            return ProviderHelper.GetMongoUser(GetUserCollection(), userName);
+        }
+
+        /// <summary>
         /// Attempts to convert an <see cref="object"/> to an <see cref="ObjectId"/>.
         /// </summary>
         /// <param name="providerUserKey">An <see cref="ObjectId"/> or a <see cref="string"/> equivalent of one.</param>
@@ -748,38 +766,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        private MongoMembershipUser GetMongoUser(ObjectId id) {
-            MongoMembershipUser user;
-            try {
-                var users = GetUserCollection();
-                user = users.FindOneAs<MongoMembershipUser>(Query.EQ("_id", id));
-            } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve user.", e);
-            }
-            return user;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="userName"></param>
-        /// <returns></returns>
-        private MongoMembershipUser GetMongoUser(string userName) {
-            MongoMembershipUser user;
-            try {
-                var users = GetUserCollection();
-                user = users.FindOneAs<MongoMembershipUser>(Query.EQ("UserName", userName));
-            } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve user.", e);
-            }
-            return user;
         }
 
         /// <summary>

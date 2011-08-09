@@ -16,16 +16,9 @@
 
 using System;
 using System.Collections.Specialized;
-using System.Configuration;
 using System.Configuration.Provider;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
-using System.Web.Configuration;
 using System.Web.Security;
-using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Builders;
 using NUnit.Framework;
 
 namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
@@ -33,56 +26,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
     [TestFixture]
     public class TestRoleProvider {
 
-        private const string DefaultConnectionStringName = "MongoAspNetConString";
-        private const string DefaultName = "MongoRoleProvider";
+        private const string DefaultMembershipName = TestHelper.DefaultMembershipName;
+        private const string DefaultRoleName = TestHelper.DefaultRoleName;
 
-        private NameValueCollection _config;
+        private NameValueCollection _membershipConfig;
+        private NameValueCollection _roleConfig;
 
         #region Test SetUp and TearDown
 
         [TestFixtureSetUp]
         public void TestFixtureSetUp() {
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            // Add connection string.
-            var connectionStringSettings = new ConnectionStringSettings(DefaultConnectionStringName,
-                                                                        "mongodb://localhost/aspnet");
-            config.ConnectionStrings.ConnectionStrings.Clear();
-            config.ConnectionStrings.ConnectionStrings.Add(connectionStringSettings);
-
-            // Add machine keys (for encrypted passwords).                                    
-            var rng = new RNGCryptoServiceProvider();
-
-            var validationKeyBuffer = new byte[64];
-            rng.GetBytes(validationKeyBuffer);
-            var validationKey = BitConverter.ToString(validationKeyBuffer).Replace("-", string.Empty);
-
-            var decryptionKeyBuffer = new byte[32];
-            rng.GetBytes(decryptionKeyBuffer);
-            var decryptionKey = BitConverter.ToString(decryptionKeyBuffer).Replace("-", string.Empty);
-
-            var machineKey = (MachineKeySection) config.GetSection("system.web/machineKey");
-            machineKey.ValidationKey = validationKey;
-            machineKey.Validation = MachineKeyValidation.SHA1;
-            machineKey.DecryptionKey = decryptionKey;
-            machineKey.Decryption = "AES";
-
-            // Add the provider.            
-            var roleManager = (RoleManagerSection) config.GetSection("system.web/roleManager");
-            roleManager.DefaultProvider = DefaultName;
-            var provider = new ProviderSettings(DefaultName, typeof(MongoRoleProvider).AssemblyQualifiedName);
-            provider.Parameters["connectionStringName"] = DefaultConnectionStringName;
-            roleManager.Providers.Clear();
-            roleManager.Providers.Add(provider);
-
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("connectionStrings");
-            ConfigurationManager.RefreshSection("system.web/machineKey");
-            ConfigurationManager.RefreshSection("system.web/roleManager");
-
-            _config = new NameValueCollection {
-                {"connectionStringName", DefaultConnectionStringName}
-            };
+            TestHelper.ConfigureConnectionStrings();
+            _membershipConfig = TestHelper.ConfigureMembershipProvider(DefaultMembershipName);
+            _roleConfig = TestHelper.ConfigureRoleProvider(DefaultRoleName);
         }
 
         [TestFixtureTearDown]
@@ -103,12 +59,12 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
         [Test]
         public void TestInitializeWhenCalledTwice() {
-            var config = new NameValueCollection(_config);
+            var config = new NameValueCollection(_roleConfig);
 
             var provider = new MongoRoleProvider();
             Assert.Throws<InvalidOperationException>(() => {
-                provider.Initialize(DefaultName, config);
-                provider.Initialize(DefaultName, config);
+                provider.Initialize(DefaultRoleName, config);
+                provider.Initialize(DefaultRoleName, config);
             });
         }      
 
@@ -118,20 +74,20 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
         [Test]
         public void TestCreateRole() {
-            var config = new NameValueCollection(_config);
+            var config = new NameValueCollection(_roleConfig);
 
             var provider = new MongoRoleProvider();
-            provider.Initialize(DefaultName, config);
+            provider.Initialize(DefaultRoleName, config);
             
             provider.CreateRole("test");
         }
 
         [Test]
         public void TestCreateRoleWithDuplicateRoleName() {
-            var config = new NameValueCollection(_config);
+            var config = new NameValueCollection(_roleConfig);
 
             var provider = new MongoRoleProvider();
-            provider.Initialize(DefaultName, config);
+            provider.Initialize(DefaultRoleName, config);
 
             provider.CreateRole("test");
             Assert.Throws<ProviderException>(() => provider.CreateRole("test"));
@@ -139,10 +95,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
         [Test]
         public void TestCreateRoleWithCommaRoleName() {
-            var config = new NameValueCollection(_config);
+            var config = new NameValueCollection(_roleConfig);
 
             var provider = new MongoRoleProvider();
-            provider.Initialize(DefaultName, config);
+            provider.Initialize(DefaultRoleName, config);
 
             Assert.Throws<ArgumentException>(() => provider.CreateRole("test,"));
         }
@@ -153,14 +109,41 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
         [Test]
         public void TestRoleExists() {
-            var config = new NameValueCollection(_config);
+            var config = new NameValueCollection(_roleConfig);
 
             var provider = new MongoRoleProvider();
-            provider.Initialize(DefaultName, config);
+            provider.Initialize(DefaultRoleName, config);
 
             Assert.IsFalse(provider.RoleExists("test"));
             provider.CreateRole("test");
             Assert.IsTrue(provider.RoleExists("test"));
+        }
+
+        #endregion
+
+        #region AddUsersToRoles
+
+        [Test]
+        [Ignore]
+        public void TestAddUsersToRoles() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser("user1", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("user2", "123456", "test@test.com", null, null, true, null, out status);
+
+            roleProvider.CreateRole("role1");
+            roleProvider.CreateRole("role2");
+
+            roleProvider.AddUsersToRoles(new[] { "user1", "user2" }, new[] { "role1", "role2" });
+            // TODO Check when UserIsInRole is implemented.
         }
 
         #endregion

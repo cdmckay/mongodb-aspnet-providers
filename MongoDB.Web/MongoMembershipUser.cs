@@ -15,6 +15,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Web.Security;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -59,6 +60,12 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime LastLockedOutDate { get; set; }
+
+        public IList<MongoRole> Roles { get; set; }
+
+        public MongoMembershipUser() {
+            Roles = new List<MongoRole>();
+        }
 
         public MembershipUser ToMembershipUser(string providerName) {
             return new MembershipUser(providerName, 

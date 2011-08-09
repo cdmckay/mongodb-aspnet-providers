@@ -277,11 +277,29 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Role does not exist..
+        /// </summary>
+        internal static string Role_RoleDoesNotExist {
+            get {
+                return ResourceManager.GetString("Role_RoleDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Role name cannot be null or white space..
         /// </summary>
-        internal static string RoleProvider_RoleNameCannotBeNullOrWhiteSpace {
+        internal static string Role_RoleNameCannotBeNullOrWhiteSpace {
             get {
-                return ResourceManager.GetString("RoleProvider_RoleNameCannotBeNullOrWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("Role_RoleNameCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User is already in role..
+        /// </summary>
+        internal static string Role_UserIsAlreadyInRole {
+            get {
+                return ResourceManager.GetString("Role_UserIsAlreadyInRole", resourceCulture);
             }
         }
     }

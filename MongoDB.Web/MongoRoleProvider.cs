@@ -15,8 +15,10 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration.Provider;
+using System.Linq;
 using System.Web.Security;
 using DigitalLiberationFront.MongoDB.Web.Security.Resources;
 using MongoDB.Bson;
@@ -66,7 +68,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override void CreateRole(string roleName) {
             if (string.IsNullOrWhiteSpace(roleName)) {
-                throw new ArgumentException(ProviderResources.RoleProvider_RoleNameCannotBeNullOrWhiteSpace, "roleName");
+                throw new ArgumentException(ProviderResources.Role_RoleNameCannotBeNullOrWhiteSpace, "roleName");
             }
             if (roleName.Contains(",")) {
                 throw new ArgumentException(string.Format("Role name cannot contain the '{0}' character.", ','));
@@ -74,14 +76,14 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
             var newRole = new MongoRole {
                 Id = ObjectId.GenerateNewId(),
-                Name = roleName
+                RoleName = roleName
             };
 
             try {
                 var roles = GetRoleCollection();
                 roles.Insert(newRole);
             } catch (MongoSafeModeException e) {
-                if (e.Message.Contains("Name_1")) {
+                if (e.Message.Contains("RoleName_1")) {
                     throw new ProviderException("Role name already exists.");
                 }
                 
@@ -95,14 +97,70 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override bool RoleExists(string roleName) {
             if (string.IsNullOrWhiteSpace(roleName)) {
-                throw new ArgumentException(ProviderResources.RoleProvider_RoleNameCannotBeNullOrWhiteSpace, "roleName");
+                throw new ArgumentException(ProviderResources.Role_RoleNameCannotBeNullOrWhiteSpace, "roleName");
             }
 
             return GetMongoRole(roleName) != null;
         }
 
         public override void AddUsersToRoles(string[] userNames, string[] roleNames) {
-            throw new NotImplementedException();
+            if (userNames == null) {
+                throw new ArgumentNullException("userNames");
+            }
+            if (roleNames == null) {
+                throw new ArgumentNullException("roleNames");
+            }
+            if (userNames.Any(string.IsNullOrWhiteSpace)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace);
+            }
+            if (roleNames.Any(string.IsNullOrWhiteSpace)) {
+                throw new ArgumentException(ProviderResources.Role_RoleNameCannotBeNullOrWhiteSpace);
+            }
+
+            var users = GetUserCollection();
+            var roles = GetRoleCollection();
+            var userNamesBsonArray = BsonArray.Create(userNames.AsEnumerable());
+            var roleNamesBsonArray = BsonArray.Create(roleNames.AsEnumerable());
+
+            try {
+                var query = Query.In("UserName", userNamesBsonArray);
+                var userCount = users.Count(query);
+                if (userCount != userNames.Length) {
+                    throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
+                }    
+            } catch (MongoSafeModeException e) {
+                
+            }
+
+            try {
+                var query = Query.In("RoleName", roleNamesBsonArray);
+                var roleCount = roles.Count(query);
+                if (roleCount != roleNames.Length) {
+                    throw new ProviderException(ProviderResources.Role_RoleDoesNotExist);
+                }
+            } catch (MongoSafeModeException e) {
+
+            }
+
+            try {                
+                var query = Query.And(
+                    Query.In("UserName", userNamesBsonArray),
+                    Query.In("Roles.RoleName", roleNamesBsonArray));
+                var userCount = users.Count(query);
+                if (userCount != userNames.Length) {
+                    throw new ProviderException(ProviderResources.Role_UserIsAlreadyInRole);
+                }
+            } catch (MongoSafeModeException e) {
+
+            }
+
+            try {
+                var query = Query.In("UserName", userNamesBsonArray);
+                var update = Update.PushAll("Roles", roleNames.Select(BsonValue.Create));
+                users.Update(query, update);
+            } catch (MongoSafeModeException e) {
+
+            }
         }
 
         public override void RemoveUsersFromRoles(string[] userNames, string[] roleNames) {
@@ -132,6 +190,24 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private MongoMembershipUser GetMongoUser(ObjectId id) {
+            return ProviderHelper.GetMongoUser(GetUserCollection(), id);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        private MongoMembershipUser GetMongoUser(string userName) {
+            return ProviderHelper.GetMongoUser(GetUserCollection(), userName);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <returns></returns>
         private MongoCollection<MongoRole> GetRoleCollection() {
             return ProviderHelper.GetCollectionAs<MongoRole>(ApplicationName, _connectionString, _databaseName, "roles");
@@ -143,14 +219,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// <param name="roleName"></param>
         /// <returns></returns>
         private MongoRole GetMongoRole(string roleName) {
-            MongoRole role;
-            try {
-                var roles = GetRoleCollection();
-                role = roles.FindOneAs<MongoRole>(Query.EQ("Name", roleName));    
-            } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve role.", e);
-            }
-            return role;
+            return ProviderHelper.GetMongoRole(GetRoleCollection(), roleName);
         }
         
     }
