@@ -16,8 +16,10 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Configuration.Provider;
 using System.Web.Security;
 using DigitalLiberationFront.MongoDB.Web.Security.Resources;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace DigitalLiberationFront.MongoDB.Web.Security {
@@ -62,7 +64,28 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override void CreateRole(string roleName) {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(roleName)) {
+                throw new ArgumentException(ProviderResources.RoleProvider_RoleNameCannotBeNullOrWhiteSpace, "roleName");
+            }
+            if (roleName.Contains(",")) {
+                throw new ProviderException(string.Format("Role name cannot contain the '{0}' character.", ','));
+            }
+
+            var newRole = new MongoRole {
+                Id = ObjectId.GenerateNewId(),
+                Name = roleName
+            };
+
+            try {
+                var roles = GetRoleCollection();
+                roles.Insert(newRole);
+            } catch (MongoSafeModeException e) {
+                if (e.Message.Contains("Name_1")) {
+                    throw new ProviderException("Role name already exists.");
+                }
+                
+                throw new ProviderException("Could not create role.", e);                
+            }
         }
 
         public override bool DeleteRole(string roleName, bool throwOnPopulatedRole) {
@@ -98,10 +121,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// </summary>
         /// <returns></returns>
         private MongoCollection<MongoMembershipUser> GetUserCollection() {
-            //var server = MongoServer.Create(_connectionString);
-            //var database = server.GetDatabase(_databaseName, SafeMode.True);
-            //return database.GetCollection<MongoMembershipUser>(ApplicationName + ".users");
-            return null;
+            return ProviderHelper.GetCollectionAs<MongoMembershipUser>(ApplicationName, _connectionString, _databaseName, "users");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private MongoCollection<MongoRole> GetRoleCollection() {
+            return ProviderHelper.GetCollectionAs<MongoRole>(ApplicationName, _connectionString, _databaseName, "roles");
         }
         
     }

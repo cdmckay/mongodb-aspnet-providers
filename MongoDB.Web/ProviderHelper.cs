@@ -54,12 +54,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
        
         public static void InitializeCollections(string applicationName, string connectionString, string databaseName) {
-            // Setup collections.
+            // Add users collection.
             var users = GetCollectionAs<MongoMembershipUser>(applicationName, connectionString, databaseName, "users");
             if (!users.Exists()) {
                 users.ResetIndexCache();
                 users.EnsureIndex(IndexKeys.Ascending("UserName"), IndexOptions.SetUnique(true));
                 users.EnsureIndex(IndexKeys.Ascending("Email"));
+            }
+
+            // Add roles collection.
+            var roles = GetCollectionAs<MongoRole>(applicationName, connectionString, databaseName, "roles");
+            if (!roles.Exists()) {
+                roles.ResetIndexCache();
+                roles.EnsureIndex(IndexKeys.Ascending("Name"), IndexOptions.SetUnique(true));
             }
         }
 

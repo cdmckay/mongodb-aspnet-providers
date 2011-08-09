@@ -275,5 +275,14 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Resources {
                 return ResourceManager.GetString("Membership_UserNameCannotBeNullOrWhiteSpace", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Role name cannot be null or white space..
+        /// </summary>
+        internal static string RoleProvider_RoleNameCannotBeNullOrWhiteSpace {
+            get {
+                return ResourceManager.GetString("RoleProvider_RoleNameCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
     }
 }

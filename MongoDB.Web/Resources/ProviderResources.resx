@@ -189,4 +189,7 @@
   <data name="Common_ApplicationNameCannotContainCharacter" xml:space="preserve">
     <value>Application name cannot contain the '{0}' character.</value>
   </data>
+  <data name="RoleProvider_RoleNameCannotBeNullOrWhiteSpace">
+    <value xml:space="preserve">Role name cannot be null or white space.</value>
+  </data>
 </root>

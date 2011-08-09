@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MongoMembershipProvider.cs" />
+    <Compile Include="MongoRole.cs" />
     <Compile Include="MongoRoleProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MongoMembershipUser.cs" />

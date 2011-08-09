@@ -21,6 +21,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace DigitalLiberationFront.MongoDB.Web.Security {
     internal sealed class MongoMembershipUser {
+
         [BsonId]
         public ObjectId Id { get; set; }
 
@@ -74,5 +75,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 LastPasswordChangedDate,
                 LastLockedOutDate);
         }
+
     }
 }
