@@ -123,9 +123,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
             var provider = new MongoRoleProvider();
             provider.Initialize(DefaultName, config);
             
-            Assert.IsFalse(provider.RoleExists("test"));
             provider.CreateRole("test");
-            Assert.IsTrue(provider.RoleExists("test"));
         }
 
         [Test]
@@ -147,6 +145,22 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
             provider.Initialize(DefaultName, config);
 
             Assert.Throws<ArgumentException>(() => provider.CreateRole("test,"));
+        }
+
+        #endregion
+
+        #region RoleExists
+
+        [Test]
+        public void TestRoleExists() {
+            var config = new NameValueCollection(_config);
+
+            var provider = new MongoRoleProvider();
+            provider.Initialize(DefaultName, config);
+
+            Assert.IsFalse(provider.RoleExists("test"));
+            provider.CreateRole("test");
+            Assert.IsTrue(provider.RoleExists("test"));
         }
 
         #endregion

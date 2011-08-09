@@ -65,7 +65,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override void CreateRole(string roleName) {
-            if (string.IsNullOrEmpty(roleName)) {
+            if (string.IsNullOrWhiteSpace(roleName)) {
                 throw new ArgumentException(ProviderResources.RoleProvider_RoleNameCannotBeNullOrWhiteSpace, "roleName");
             }
             if (roleName.Contains(",")) {
@@ -94,7 +94,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override bool RoleExists(string roleName) {
-            if (string.IsNullOrEmpty(roleName)) {
+            if (string.IsNullOrWhiteSpace(roleName)) {
                 throw new ArgumentException(ProviderResources.RoleProvider_RoleNameCannotBeNullOrWhiteSpace, "roleName");
             }
 
