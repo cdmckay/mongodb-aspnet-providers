@@ -147,17 +147,17 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                     Query.In("UserName", userNamesBsonArray),
                     Query.In("Roles.RoleName", roleNamesBsonArray));
                 var userCount = users.Count(query);
-                if (userCount != userNames.Length) {
+                if (userCount != 0) {
                     throw new ProviderException(ProviderResources.Role_UserIsAlreadyInRole);
                 }
             } catch (MongoSafeModeException e) {
 
             }
 
-            try {
+            try {                
                 var query = Query.In("UserName", userNamesBsonArray);
                 var update = Update.PushAll("Roles", roleNames.Select(BsonValue.Create));
-                users.Update(query, update);
+                users.Update(query, update, UpdateFlags.Multi);
             } catch (MongoSafeModeException e) {
 
             }
