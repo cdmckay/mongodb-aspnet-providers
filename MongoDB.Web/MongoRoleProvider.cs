@@ -145,7 +145,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             try {                
                 var query = Query.And(
                     Query.In("UserName", userNamesBsonArray),
-                    Query.In("Roles.RoleName", roleNamesBsonArray));
+                    Query.In("Roles", roleNamesBsonArray));
                 var userCount = users.Count(query);
                 if (userCount != 0) {
                     throw new ProviderException(ProviderResources.Role_UserIsAlreadyInRole);
