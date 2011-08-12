@@ -123,35 +123,27 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var roleNamesBsonArray = BsonArray.Create(roleNames.AsEnumerable());
 
             try {
-                var query = Query.In("UserName", userNamesBsonArray);
-                var userCount = users.Count(query);
+                // Check if any users do not exist.
+                var userCount = users.Count(Query.In("UserName", userNamesBsonArray));
                 if (userCount != userNames.Length) {
                     throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
                 }    
-            } catch (MongoSafeModeException e) {
-                
-            }
-
-            try {
-                var query = Query.In("RoleName", roleNamesBsonArray);
-                var roleCount = roles.Count(query);
+          
+                // Check if any roles do not exist.
+                var roleCount = roles.Count(Query.In("RoleName", roleNamesBsonArray));
                 if (roleCount != roleNames.Length) {
                     throw new ProviderException(ProviderResources.Role_RoleDoesNotExist);
                 }
-            } catch (MongoSafeModeException e) {
-
-            }
-
-            try {                
-                var query = Query.And(
+                    
+                // Make sure none of the users already have some of the roles.
+                var userInRoleCount = users.Count(Query.And(
                     Query.In("UserName", userNamesBsonArray),
-                    Query.In("Roles", roleNamesBsonArray));
-                var userCount = users.Count(query);
-                if (userCount != 0) {
+                    Query.In("Roles", roleNamesBsonArray)));
+                if (userInRoleCount != 0) {
                     throw new ProviderException(ProviderResources.Role_UserIsAlreadyInRole);
                 }
             } catch (MongoSafeModeException e) {
-
+                throw new ProviderException("Could not check for user or role existence.", e);
             }
 
             try {                
@@ -159,7 +151,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var update = Update.PushAll("Roles", roleNames.Select(BsonValue.Create));
                 users.Update(query, update, UpdateFlags.Multi);
             } catch (MongoSafeModeException e) {
-
+                throw new ProviderException("Could not add users to roles.", e);
             }
         }
 
