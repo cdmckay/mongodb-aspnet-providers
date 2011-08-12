@@ -60,11 +60,11 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime LastLockedOutDate { get; set; }
-
-        public IList<MongoRole> Roles { get; set; }
+        
+        public IList<string> Roles { get; set; }
 
         public MongoMembershipUser() {
-            Roles = new List<MongoRole>();
+            Roles = new List<string>();
         }
 
         public MembershipUser ToMembershipUser(string providerName) {

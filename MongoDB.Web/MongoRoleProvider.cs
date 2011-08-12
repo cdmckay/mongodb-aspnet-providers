@@ -59,7 +59,23 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override bool IsUserInRole(string userName, string roleName) {
-            throw new NotImplementedException();
+            if (!UserExists(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserDoesNotExist, "userName");
+            }
+            if (!RoleExists(roleName)) {
+                throw new ArgumentException(ProviderResources.Role_RoleDoesNotExist, "roleName");
+            }
+
+            var query = Query.And(
+                Query.EQ("UserName", userName),
+                Query.EQ("Roles", roleName));
+            try {
+                var users = GetUserCollection();
+                var userCount = users.Count(query);
+                return userCount != 0;
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not check for user or role existence.", e);
+            }
         }
 
         public override string[] GetRolesForUser(string userName) {
@@ -178,16 +194,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         private MongoCollection<MongoMembershipUser> GetUserCollection() {
             return ProviderHelper.GetCollectionAs<MongoMembershipUser>(ApplicationName, _connectionString, _databaseName, "users");
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        private MongoMembershipUser GetMongoUser(ObjectId id) {
-            return ProviderHelper.GetMongoUser(GetUserCollection(), id);
-        }
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -195,6 +202,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// <returns></returns>
         private MongoMembershipUser GetMongoUser(string userName) {
             return ProviderHelper.GetMongoUser(GetUserCollection(), userName);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        public bool UserExists(string userName) {
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
+            }
+
+            return GetMongoUser(userName) != null;
         }
 
         /// <summary>
