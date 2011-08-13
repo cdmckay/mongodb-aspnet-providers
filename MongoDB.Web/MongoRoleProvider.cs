@@ -193,7 +193,55 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override void RemoveUsersFromRoles(string[] userNames, string[] roleNames) {
-            throw new NotImplementedException();
+            if (userNames == null) {
+                throw new ArgumentNullException("userNames");
+            }
+            if (roleNames == null) {
+                throw new ArgumentNullException("roleNames");
+            }
+            if (userNames.Any(string.IsNullOrWhiteSpace)) {
+                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace);
+            }
+            if (roleNames.Any(string.IsNullOrWhiteSpace)) {
+                throw new ArgumentException(ProviderResources.Role_RoleNameCannotBeNullOrWhiteSpace);
+            }
+
+            var users = GetUserCollection();
+            var roles = GetRoleCollection();
+            var userNamesBsonArray = BsonArray.Create(userNames.AsEnumerable());
+            var roleNamesBsonArray = BsonArray.Create(roleNames.AsEnumerable());
+
+            try {
+                // Check if any users do not exist.
+                var userCount = users.Count(Query.In("UserName", userNamesBsonArray));
+                if (userCount != userNames.Length) {
+                    throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
+                }
+
+                // Check if any roles do not exist.
+                var roleCount = roles.Count(Query.In("RoleName", roleNamesBsonArray));
+                if (roleCount != roleNames.Length) {
+                    throw new ProviderException(ProviderResources.Role_RoleDoesNotExist);
+                }
+
+                // Make sure each user is in at least one role.
+                var userNotInRoleCount = users.Count(Query.And(
+                    Query.In("UserName", userNamesBsonArray),
+                    Query.NotIn("Roles", roleNamesBsonArray)));
+                if (userNotInRoleCount != 0) {
+                    throw new ProviderException(ProviderResources.Role_UserIsNotInRole);
+                }
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not check for user or role existence.", e);
+            }
+
+            try {
+                var query = Query.In("UserName", userNamesBsonArray);
+                var update = Update.PullAll("Roles", roleNames.Select(BsonValue.Create));
+                users.Update(query, update, UpdateFlags.Multi);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not remove users from roles.", e);
+            }
         }
 
         public override string[] GetUsersInRole(string roleName) {

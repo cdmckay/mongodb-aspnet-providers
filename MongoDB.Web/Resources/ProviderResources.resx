@@ -198,4 +198,7 @@
   <data name="Role_UserIsAlreadyInRole" xml:space="preserve">
     <value>User is already in role.</value>
   </data>
+  <data name="Role_UserIsNotInRole" xml:space="preserve">
+    <value>User is not in role.</value>
+  </data>
 </root>
