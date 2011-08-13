@@ -176,6 +176,48 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
         #endregion
 
+        #region DeleteRole
+
+        [Test]
+        public void TestDeleteRole() {
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            roleProvider.CreateRole("role1");
+            Assert.IsTrue(roleProvider.RoleExists("role1"));
+            roleProvider.DeleteRole("role1", true);
+            Assert.IsFalse(roleProvider.RoleExists("role1"));
+        }
+
+        [Test]
+        public void TestDeleteRoleWhenPopulated() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser("user1", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("user2", "123456", "test@test.com", null, null, true, null, out status);
+
+            roleProvider.CreateRole("role1");
+            roleProvider.CreateRole("role2");
+
+            roleProvider.AddUsersToRoles(new[] { "user1", "user2" }, new[] { "role1", "role2" });
+
+            roleProvider.DeleteRole("role1", false);
+            Assert.IsFalse(roleProvider.RoleExists("role1"));
+            Assert.Throws<ArgumentException>(() => roleProvider.IsUserInRole("user1", "role1"));
+        }
+
+        #endregion
+
         #region RoleExists
 
         [Test]
@@ -276,6 +318,36 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
             Assert.Throws<ProviderException>(
                 () => roleProvider.AddUsersToRoles(new[] { "user1", "user2" }, new[] { "role1", "role2" }));
+        }
+
+        #endregion
+
+        #region GetUsersInRole
+
+        [Test]
+        public void TestGetUsersInRole() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser("user1", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("user2", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("user3", "123456", "test@test.com", null, null, true, null, out status);
+
+            roleProvider.CreateRole("role1");
+
+            roleProvider.AddUsersToRoles(new[] { "user1", "user2" }, new[] { "role1" });
+
+            var userNames = roleProvider.GetUsersInRole("role1");
+            Assert.AreEqual(2, userNames.Length);
+            Assert.Contains("user1", userNames);
+            Assert.Contains("user2", userNames);
         }
 
         #endregion

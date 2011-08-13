@@ -108,7 +108,28 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override bool DeleteRole(string roleName, bool throwOnPopulatedRole) {
-            throw new NotImplementedException();
+            if (!RoleExists(roleName)) {
+                throw new ArgumentException(ProviderResources.Role_RoleDoesNotExist, "roleName");
+            }
+
+            if (throwOnPopulatedRole && GetUsersInRole(roleName).Length > 0) {
+                throw new ProviderException("Cannot delete populated role.");
+            }
+            
+            try {
+                var roleQuery = Query.EQ("RoleName", roleName);
+                var roles = GetRoleCollection();
+                roles.Remove(roleQuery);
+
+                var userQuery = Query.EQ("Roles", roleName);
+                var userUpdate = Update.Pull("Roles", roleName);
+                var users = GetUserCollection();
+                users.Update(userQuery, userUpdate, UpdateFlags.Multi);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not delete role.", e); 
+            }
+
+            return true;
         }
 
         public override bool RoleExists(string roleName) {
@@ -176,7 +197,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override string[] GetUsersInRole(string roleName) {
-            throw new NotImplementedException();
+            if (!RoleExists(roleName)) {
+                throw new ArgumentException(ProviderResources.Role_RoleDoesNotExist, "roleName");
+            }
+
+            try {
+                var query = Query.EQ("Roles", roleName);
+                var users = GetUserCollection();
+                return users.Find(query)
+                    .Select(u => u.UserName)
+                    .ToArray();
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not retrieve users in role.", e);
+            }
         }
 
         public override string[] GetAllRoles() {
