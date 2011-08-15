@@ -261,7 +261,14 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override string[] GetAllRoles() {
-            throw new NotImplementedException();
+            try {
+                var roles = GetRoleCollection();
+                return roles.FindAll()
+                    .Select(r => r.RoleName)
+                    .ToArray();
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not retrieve roles.", e);
+            }
         }
 
         public override string[] FindUsersInRole(string roleName, string userNameToMatch) {

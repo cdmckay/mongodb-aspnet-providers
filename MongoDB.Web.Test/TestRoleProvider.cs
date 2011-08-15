@@ -492,6 +492,39 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
         #endregion
 
+        #region GetAllRoles
+
+        [Test]
+        public void TestGetAllRoles() {
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+            
+            roleProvider.CreateRole("role1");
+            roleProvider.CreateRole("role2");
+            roleProvider.CreateRole("role3");
+
+            var roles = roleProvider.GetAllRoles();
+            Assert.AreEqual(3, roles.Length);
+            Assert.Contains("role1", roles);
+            Assert.Contains("role2", roles);
+            Assert.Contains("role3", roles);
+        }
+
+        [Test]
+        public void TestGetAllRolesWhenNoRoles() {
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            var roles = roleProvider.GetAllRoles();
+            Assert.AreEqual(0, roles.Length);
+        }
+
+        #endregion
+
     }
 
 }
