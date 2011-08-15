@@ -225,10 +225,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 }
 
                 // Make sure each user is in at least one role.
-                var userNotInRoleCount = users.Count(Query.And(
+                var userInRoleCount = users.Count(Query.And(
                     Query.In("UserName", userNamesBsonArray),
-                    Query.NotIn("Roles", roleNamesBsonArray)));
-                if (userNotInRoleCount != 0) {
+                    Query.All("Roles", roleNamesBsonArray)));
+                if (userInRoleCount != userNames.Length) {
                     throw new ProviderException(ProviderResources.Role_UserIsNotInRole);
                 }
             } catch (MongoSafeModeException e) {

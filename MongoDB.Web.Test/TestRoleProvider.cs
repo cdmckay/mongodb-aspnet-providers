@@ -377,6 +377,67 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
             Assert.IsFalse(roleProvider.IsUserInRole("user2", "role3"));
         }
 
+        [Test]
+        public void TestRemoveUsersFromRolesWhenNotInRole() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser("user1", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("user2", "123456", "test@test.com", null, null, true, null, out status);
+
+            roleProvider.CreateRole("role1");
+            roleProvider.CreateRole("role2");
+            roleProvider.CreateRole("role3");
+
+            roleProvider.AddUsersToRoles(new[] { "user1", "user2" }, new[] { "role1", "role2" });
+            Assert.Throws<ProviderException>(
+                () => roleProvider.RemoveUsersFromRoles(new[] {"user1", "user2"}, new[] {"role1", "role3"}));
+        }
+
+        [Test]
+        public void TestRemoveUsersFromRolesWithNonExistantUserNames() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            roleProvider.CreateRole("role1");
+            roleProvider.CreateRole("role2");
+
+            Assert.Throws<ProviderException>(
+                () => roleProvider.RemoveUsersFromRoles(new[] { "user1", "user2" }, new[] { "role1", "role2" }));
+        }
+
+        [Test]
+        public void TestRemoveUsersFromRolesWithNonExistantRoles() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser("user1", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("user2", "123456", "test@test.com", null, null, true, null, out status);
+
+            Assert.Throws<ProviderException>(
+                () => roleProvider.RemoveUsersFromRoles(new[] { "user1", "user2" }, new[] { "role1", "role2" }));
+        }
+
         #endregion
 
         #region GetUsersInRole
