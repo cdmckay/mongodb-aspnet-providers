@@ -18,10 +18,11 @@ using System;
 using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Web.Security;
+using DigitalLiberationFront.MongoDB.Web.Security;
 using MongoDB.Driver;
 using NUnit.Framework;
 
-namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
+namespace DigitalLiberationFront.MongoDB.Web.Test.Security {
 
     [TestFixture]
     public class TestRoleProvider {

@@ -25,7 +25,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Hosting;
 using System.Web.Security;
-using DigitalLiberationFront.MongoDB.Web.Security.Resources;
+using DigitalLiberationFront.MongoDB.Web.Resources;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;

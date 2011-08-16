@@ -20,12 +20,13 @@ using System.Configuration.Provider;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Security;
+using DigitalLiberationFront.MongoDB.Web.Security;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using NUnit.Framework;
 
-namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
+namespace DigitalLiberationFront.MongoDB.Web.Test.Security {
 
     [TestFixture]
     public class TestMembershipProvider {

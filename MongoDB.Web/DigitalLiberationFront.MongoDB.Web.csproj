@@ -8,7 +8,7 @@
     <ProjectGuid>{19BBCDE3-BC95-4CDF-8BDE-C04383A971C7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DigitalLiberationFront.MongoDB.Web.Security</RootNamespace>
+    <RootNamespace>DigitalLiberationFront.MongoDB.Web</RootNamespace>
     <AssemblyName>DigitalLiberationFront.MongoDB.Web</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -49,11 +49,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MongoMembershipProvider.cs" />
-    <Compile Include="MongoRole.cs" />
-    <Compile Include="MongoRoleProvider.cs" />
+    <Compile Include="Security\MongoMembershipProvider.cs" />
+    <Compile Include="Security\MongoRole.cs" />
+    <Compile Include="Security\MongoRoleProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MongoMembershipUser.cs" />
+    <Compile Include="Security\MongoMembershipUser.cs" />
     <Compile Include="ProviderHelper.cs" />
     <Compile Include="Resources\ProviderResources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -69,6 +69,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ProviderResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Profile\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

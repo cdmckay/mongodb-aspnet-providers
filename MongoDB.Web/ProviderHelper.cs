@@ -3,12 +3,13 @@ using System.Configuration;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Web.Hosting;
-using DigitalLiberationFront.MongoDB.Web.Security.Resources;
+using DigitalLiberationFront.MongoDB.Web.Resources;
+using DigitalLiberationFront.MongoDB.Web.Security;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
-namespace DigitalLiberationFront.MongoDB.Web.Security {
+namespace DigitalLiberationFront.MongoDB.Web {
     internal static class ProviderHelper {
 
         /// <summary>

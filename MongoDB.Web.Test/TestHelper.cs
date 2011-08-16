@@ -3,8 +3,9 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Security.Cryptography;
 using System.Web.Configuration;
+using DigitalLiberationFront.MongoDB.Web.Security;
 
-namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
+namespace DigitalLiberationFront.MongoDB.Web.Test {
     public static class TestHelper {
 
         private const string ConnectionStringName = "MongoAspNetConString";

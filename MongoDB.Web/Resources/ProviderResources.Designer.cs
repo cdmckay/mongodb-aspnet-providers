@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DigitalLiberationFront.MongoDB.Web.Security.Resources {
+namespace DigitalLiberationFront.MongoDB.Web.Resources {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("DigitalLiberationFront.MongoDB.Web.Security.Resources.ProviderResources", typeof(ProviderResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("DigitalLiberationFront.MongoDB.Web.Resources.ProviderResources", typeof(ProviderResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

@@ -20,7 +20,7 @@ using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Web.Security;
-using DigitalLiberationFront.MongoDB.Web.Security.Resources;
+using DigitalLiberationFront.MongoDB.Web.Resources;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
