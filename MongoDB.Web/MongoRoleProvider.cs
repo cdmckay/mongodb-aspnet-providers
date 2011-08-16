@@ -272,7 +272,24 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override string[] FindUsersInRole(string roleName, string userNameToMatch) {
-            throw new NotImplementedException();
+            if (!RoleExists(roleName)) {
+                throw new ArgumentException(ProviderResources.Role_RoleDoesNotExist, "roleName");
+            }
+            if (userNameToMatch == null) {
+                throw new ArgumentNullException("userNameToMatch");
+            }
+
+            try {
+                var query = Query.And(
+                    Query.Matches("UserName", userNameToMatch),
+                    Query.EQ("Roles", roleName));
+                var users = GetUserCollection();
+                return users.Find(query)
+                    .Select(u => u.UserName)
+                    .ToArray();
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not retrieve users in role.", e);
+            }
         }
 
         /// <summary>

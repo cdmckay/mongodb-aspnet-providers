@@ -525,6 +525,95 @@ namespace DigitalLiberationFront.MongoDB.Web.Security.Test {
 
         #endregion
 
+        #region FindUsersInRole
+
+        [Test]
+        public void TestFindUsersInRole() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser("aaaa", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("aabb", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("bbbb", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("aacc", "123456", "test@test.com", null, null, true, null, out status);
+
+            roleProvider.CreateRole("role1");
+            roleProvider.CreateRole("role2");
+
+            roleProvider.AddUsersToRoles(new[] {"aaaa", "aabb", "bbbb"}, new[] {"role1"});
+            roleProvider.AddUsersToRoles(new[] {"aacc"}, new[] {"role2"});
+
+            var userNames = roleProvider.FindUsersInRole("role1", "/^aa/");
+            Assert.AreEqual(2, userNames.Length);
+            Assert.Contains("aaaa", userNames);
+            Assert.Contains("aabb", userNames);
+        }
+
+        [Test]
+        public void TestFindUsersInRoleWithNonRegex() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser("aaaa", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("aabb", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("bbaa", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("aacc", "123456", "test@test.com", null, null, true, null, out status);
+
+            roleProvider.CreateRole("role1");
+            roleProvider.CreateRole("role2");
+
+            roleProvider.AddUsersToRoles(new[] { "aaaa", "aabb", "bbaa" }, new[] { "role1" });
+            roleProvider.AddUsersToRoles(new[] { "aacc" }, new[] { "role2" });
+
+            var userNames = roleProvider.FindUsersInRole("role1", "aa");
+            Assert.AreEqual(3, userNames.Length);
+            Assert.Contains("aaaa", userNames);
+            Assert.Contains("aabb", userNames);
+            Assert.Contains("bbaa", userNames);
+        }
+
+        [Test]
+        public void TestFindUsersInRoleWhenNoUsersInRole() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var roleConfig = new NameValueCollection(_roleConfig);
+
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var roleProvider = new MongoRoleProvider();
+            roleProvider.Initialize(DefaultRoleName, roleConfig);
+
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser("aaaa", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("aabb", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("bbaa", "123456", "test@test.com", null, null, true, null, out status);
+            membershipProvider.CreateUser("aacc", "123456", "test@test.com", null, null, true, null, out status);
+
+            roleProvider.CreateRole("role1");
+            roleProvider.CreateRole("role2");
+
+            roleProvider.AddUsersToRoles(new[] { "aacc" }, new[] { "role2" });
+
+            var userNames = roleProvider.FindUsersInRole("role1", "aa");
+            Assert.AreEqual(0, userNames.Length);
+        }
+
+        #endregion
+
     }
 
 }
