@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.Security;
+using DigitalLiberationFront.MongoDB.Web.Profile;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -45,6 +46,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         public string Comment { get; set; }
         public bool IsApproved { get; set; }
         public bool IsLockedOut { get; set; }
+        public bool IsAnonymous { get; set; }
 
         [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime CreationDate { get; set; }
@@ -60,11 +62,13 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime LastLockedOutDate { get; set; }
-        
-        public IList<string> Roles { get; set; }
 
+        public MongoProfile Profile { get; set; }
+
+        public IList<string> Roles { get; set; }
+        
         public MongoMembershipUser() {
-            Roles = new List<string>();
+            Roles = new List<string>();            
         }
 
         public MembershipUser ToMembershipUser(string providerName) {

@@ -49,6 +49,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Profile\MongoProfile.cs" />
+    <Compile Include="Profile\MongoProfileProvider.cs" />
     <Compile Include="Security\MongoMembershipProvider.cs" />
     <Compile Include="Security\MongoRole.cs" />
     <Compile Include="Security\MongoRoleProvider.cs" />
@@ -70,9 +72,7 @@
       <LastGenOutput>ProviderResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Profile\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
