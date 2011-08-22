@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Security.Cryptography;
 using System.Web.Configuration;
+using DigitalLiberationFront.MongoDB.Web.Profile;
 using DigitalLiberationFront.MongoDB.Web.Security;
 
 namespace DigitalLiberationFront.MongoDB.Web.Test {
@@ -11,6 +13,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Test {
         private const string ConnectionStringName = "MongoAspNetConString";
         public const string DefaultMembershipName = "MongoMembershipProvider";
         public const string DefaultRoleName = "MongoRoleProvider";
+        public const string DefaultProfileName = "MongoProfileProvider";
 
         public static void ConfigureConnectionStrings() {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -46,7 +49,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Test {
             machineKey.Decryption = "AES";
 
             // Add the provider.           
- 
             var membership = (MembershipSection) config.GetSection("system.web/membership");
             membership.DefaultProvider = name;
             var provider = new ProviderSettings(name, typeof(MongoMembershipProvider).AssemblyQualifiedName);
@@ -71,6 +73,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Test {
             // Add the provider.            
             var roleManager = (RoleManagerSection) config.GetSection("system.web/roleManager");
             roleManager.DefaultProvider = DefaultRoleName;
+
             var provider = new ProviderSettings(DefaultRoleName, typeof(MongoRoleProvider).AssemblyQualifiedName);
             provider.Parameters["connectionStringName"] = ConnectionStringName;
             roleManager.Providers.Clear();
@@ -83,6 +86,60 @@ namespace DigitalLiberationFront.MongoDB.Web.Test {
                 {"connectionStringName", ConnectionStringName}
             };
         }
+
+        public static NameValueCollection ConfigureProfileProvider(string name) {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+            // Add the provider.            
+            var profile = (ProfileSection) config.GetSection("system.web/profile");
+            profile.DefaultProvider = DefaultProfileName;
+
+            var provider = new ProviderSettings(DefaultProfileName, typeof(MongoProfileProvider).AssemblyQualifiedName);
+            provider.Parameters["connectionStringName"] = ConnectionStringName;
+            profile.Providers.Clear();
+            profile.Providers.Add(provider);
+            
+            profile.PropertySettings.Clear();
+
+            // For testing regular string properties.
+            profile.PropertySettings.Add(new ProfilePropertySettings("firstName"));
+            profile.PropertySettings.Add(new ProfilePropertySettings("lastName"));
+
+            // For testing regualr DateTime properties.
+            profile.PropertySettings.Add(new ProfilePropertySettings("birthDate"));
+
+            // For testing anonymous settings.
+            profile.PropertySettings.Add(new ProfilePropertySettings("clickCount") { AllowAnonymous = true });
+
+            // For testing read-only.
+            // For testing default value.
+            // For testing forcing string serialization.
+            // For testing forcing XML serialization.
+            // For testing forcing byte[] serialization.           
+
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("system.web/profile");
+
+            return new NameValueCollection {
+                {"connectionStringName", ConnectionStringName}
+            };
+        }
+
+        public static SettingsContext GenerateSettingsContext(string userName, bool isAuthenticated) {
+            return new SettingsContext {
+                { "UserName", userName },
+                { "IsAuthenticated", isAuthenticated },
+            };
+        }
+
+        //public static SettingsPropertyValueCollection GenerateSettingsPropertyValueCollection(IDictionary<string, object> map) {
+        //    var collection = new SettingsPropertyValueCollection();
+        //    foreach (var pair in map) {
+        //        var property = new SettingsProperty()
+        //        collection.Add(new SettingsPropertyValue());
+        //    }
+        //    return collection;
+        //}
 
     }
 }

@@ -87,21 +87,24 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
 
             // If the user doesn't exist, and it's anonymous, create it.
             var user = GetMongoUser(userName);
-            if (user == null && !isAuthenticated) {                
-                user = new MongoMembershipUser {
-                    UserName = userName,
-                    IsAnonymous = true,
-                    CreationDate = DateTime.Now,
-                };
+            if (user == null) {
+                if (!isAuthenticated) {
+                    user = new MongoMembershipUser {
+                        UserName = userName,
+                        IsAnonymous = true,
+                        CreationDate = DateTime.Now,
+                    };
 
-                try {
-                    var users = GetUserCollection();
-                    users.Insert(user);                               
-                } catch (MongoSafeModeException e) {
-                    throw new ProviderException("Could not create anonymous user.", e);
+                    try {
+                        var users = GetUserCollection();
+                        users.Insert(user);
+                    }
+                    catch (MongoSafeModeException e) {
+                        throw new ProviderException("Could not create anonymous user.", e);
+                    }
+                } else {
+                    throw new ProviderException("User was authenticated but could not be found.");    
                 }
-            } else {
-                throw new ProviderException("User was authenticated but could not be found.");
             }
 
             // Create the profile BSON document.
@@ -117,7 +120,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
 
             try {
                 var query = Query.EQ("UserName", userName);
-                var update = Update
+                var update = Update                    
                     .Set("Profile.Properties", profile)
                     .Set("Profile.LastActivityDate", DateTime.Now)
                     .Set("Profile.LastUpdateDate", DateTime.Now);                  

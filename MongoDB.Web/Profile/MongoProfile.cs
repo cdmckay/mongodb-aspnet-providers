@@ -12,8 +12,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime LastUpdateDate { get; set; }
 
-        public int Size { get; set; }
-
         public IDictionary<string, object> Properties { get; set; }
 
         public MongoProfile() {

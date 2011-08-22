@@ -76,11 +76,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Security {
         [Test]
         public void TestIsUserInRole() {
             var membershipConfig = new NameValueCollection(_membershipConfig);
-            var roleConfig = new NameValueCollection(_roleConfig);
-
             var membershipProvider = new MongoMembershipProvider();
             membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
 
+            var roleConfig = new NameValueCollection(_roleConfig);
             var roleProvider = new MongoRoleProvider();
             roleProvider.Initialize(DefaultRoleName, roleConfig);
 

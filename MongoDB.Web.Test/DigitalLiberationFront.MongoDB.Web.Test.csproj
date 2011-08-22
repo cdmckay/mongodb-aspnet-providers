@@ -59,6 +59,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Profile\TestProfileProvider.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="Security\TestRoleProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -73,9 +74,7 @@
       <Name>DigitalLiberationFront.MongoDB.Web</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Profile\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
