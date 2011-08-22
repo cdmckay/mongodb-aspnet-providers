@@ -63,19 +63,59 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
             ProviderHelper.InitializeCollections(ApplicationName, _connectionString, _databaseName);
         }
 
-        public override SettingsPropertyValueCollection GetPropertyValues(SettingsContext context, SettingsPropertyCollection collection) {
-            throw new NotImplementedException();
+        public override SettingsPropertyValueCollection GetPropertyValues(SettingsContext context, SettingsPropertyCollection properties) {
+            if (context == null) {
+                throw new ArgumentNullException("context");
+            }
+            if (properties == null) {
+                throw new ArgumentNullException("properties");
+            }
+
+            if (properties.Count == 0) {
+                return new SettingsPropertyValueCollection();
+            }
+
+            var userName = (string) context["UserName"];
+            if (string.IsNullOrWhiteSpace(userName)) {
+                throw new ProviderException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace);
+            }
+
+            var profile = GetMongoProfile(userName);
+            try {
+                var query = Query.EQ("UserName", userName);
+                var update = Update.Set("Profile.LastActivityDate", DateTime.Now);
+                var users = GetUserCollection();
+                users.Update(query, update);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not update last activity date for profile.", e);
+            }
+
+            var values = new SettingsPropertyValueCollection();
+            foreach (SettingsProperty p in properties) {
+                var value = new SettingsPropertyValue(p) {
+                    PropertyValue = profile.Properties[p.Name]
+                };
+                values.Add(value);
+            }           
+            return values;
         }
 
-        public override void SetPropertyValues(SettingsContext context, SettingsPropertyValueCollection collection) {
-            var isAuthenticated = (bool) context["IsAuthenticated"];
-            var userName = (string) context["UserName"];
+        public override void SetPropertyValues(SettingsContext context, SettingsPropertyValueCollection values) {
+            if (context == null) {
+                throw new ArgumentNullException("context");
+            }
+            if (values == null) {
+                throw new ArgumentNullException("values");
+            }
 
-            if (string.IsNullOrWhiteSpace(userName) || collection.Count == 0) {
+            var userName = (string) context["UserName"];
+            var isAuthenticated = (bool) context["IsAuthenticated"];
+
+            if (string.IsNullOrWhiteSpace(userName) || values.Count == 0) {
                 return;
             }
 
-            var updateValues = (from SettingsPropertyValue value in collection
+            var updateValues = (from SettingsPropertyValue value in values
                                let allowAnonymous = value.Property.Attributes["AllowAnonymous"].Equals(true)                               
                                where (value.IsDirty || !value.UsingDefaultValue) && (isAuthenticated || allowAnonymous)
                                select value).ToList();
@@ -179,6 +219,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         /// <returns></returns>
         private MongoMembershipUser GetMongoUser(string userName) {
             return ProviderHelper.GetMongoUser(GetUserCollection(), userName);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        private MongoProfile GetMongoProfile(string userName) {
+            return ProviderHelper.GetMongoProfile(GetUserCollection(), userName);
         }
 
     }

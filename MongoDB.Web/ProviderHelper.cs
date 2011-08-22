@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Web.Hosting;
+using DigitalLiberationFront.MongoDB.Web.Profile;
 using DigitalLiberationFront.MongoDB.Web.Resources;
 using DigitalLiberationFront.MongoDB.Web.Security;
 using MongoDB.Bson;
@@ -108,6 +109,24 @@ namespace DigitalLiberationFront.MongoDB.Web {
                 throw new ProviderException("Could not retrieve user.", e);
             }
             return user;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="users"></param>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        public static MongoProfile GetMongoProfile(MongoCollection<MongoMembershipUser> users, string userName) {
+            MongoProfile profile;
+            try {
+                profile = users.Find(Query.EQ("UserName", userName))
+                    .Select(u => u.Profile)
+                    .FirstOrDefault();
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not retrieve profile.", e);
+            }
+            return profile;
         }
 
         /// <summary>
