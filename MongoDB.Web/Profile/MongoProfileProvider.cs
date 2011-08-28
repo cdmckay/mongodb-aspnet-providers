@@ -92,9 +92,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
 
             var values = new SettingsPropertyValueCollection();
             foreach (SettingsProperty p in properties) {
-                var value = new SettingsPropertyValue(p) {
-                    PropertyValue = profile.Properties[p.Name]
-                };
+                var value = new SettingsPropertyValue(p);
+                switch (value.Property.SerializeAs) {
+                    case SettingsSerializeAs.String:                        
+                    case SettingsSerializeAs.Xml:
+                    case SettingsSerializeAs.Binary:
+                        value.SerializedValue = profile.Properties[p.Name];
+                        break;
+                    case SettingsSerializeAs.ProviderSpecific:
+                        value.PropertyValue = profile.Properties[p.Name];
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
                 values.Add(value);
             }           
             return values;
@@ -154,7 +164,20 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
             writer.WriteStartDocument();
             foreach (var value in updateValues) {                                
                 writer.WriteName(value.Name);
-                BsonSerializer.Serialize(writer, value.Property.PropertyType, value.PropertyValue);                
+                switch (value.Property.SerializeAs) {
+                    case SettingsSerializeAs.String:
+                    case SettingsSerializeAs.Xml:                    
+                        BsonSerializer.Serialize(writer, typeof (string), value.SerializedValue);
+                        break;
+                    case SettingsSerializeAs.Binary:
+                        BsonSerializer.Serialize(writer, typeof (byte[]), value.SerializedValue);
+                        break;
+                    case SettingsSerializeAs.ProviderSpecific:
+                        BsonSerializer.Serialize(writer, value.Property.PropertyType, value.PropertyValue);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }                
             }
             writer.WriteEndDocument();
 
