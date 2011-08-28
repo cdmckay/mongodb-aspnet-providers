@@ -96,11 +96,13 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 switch (value.Property.SerializeAs) {
                     case SettingsSerializeAs.String:                        
                     case SettingsSerializeAs.Xml:
+                        value.SerializedValue = profile.Properties[p.Name].AsString;
+                        break;
                     case SettingsSerializeAs.Binary:
-                        value.SerializedValue = profile.Properties[p.Name];
+                        value.SerializedValue = profile.Properties[p.Name].AsByteArray;
                         break;
                     case SettingsSerializeAs.ProviderSpecific:
-                        value.PropertyValue = profile.Properties[p.Name];
+                        value.PropertyValue = profile.Properties[p.Name].RawValue;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

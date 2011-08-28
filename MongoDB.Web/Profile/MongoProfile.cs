@@ -12,10 +12,9 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         [BsonDateTimeOptions(Representation = BsonType.String)]
         public DateTime LastUpdateDate { get; set; }
 
-        public IDictionary<string, object> Properties { get; set; }
+        public BsonDocument Properties { get; set; }
 
         public MongoProfile() {
-            Properties = new Dictionary<string, object>();
         }
 
     }

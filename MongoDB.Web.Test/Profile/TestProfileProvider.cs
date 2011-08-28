@@ -15,6 +15,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
@@ -224,7 +225,37 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
                 .ToList();
             Assert.AreEqual(1, retrievedValues.Count);
             Assert.Contains("Value of stringValue", rawRetrievedValues);            
-        }        
+        }
+
+        [Test]
+        public void TestGetPropertyValuesUsingBinaryProperties() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            MembershipCreateStatus status;
+            membershipProvider.CreateUser("user", "123456", "test@test.com", null, null, true, null, out status);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            var values = new SettingsPropertyValueCollection();
+            AddBinaryPropertyValuesTo(values, allowAnonymous: false);
+            profileProvider.SetPropertyValues(TestHelper.GenerateSettingsContext("user", true), values);
+
+            var properties = new SettingsPropertyCollection();
+            AddBinaryPropertiesTo(properties, allowAnonymous: false);
+
+            var retrievedValues = profileProvider
+                .GetPropertyValues(TestHelper.GenerateSettingsContext("user", true), properties);
+            var rawRetrievedValues = retrievedValues
+                .Cast<SettingsPropertyValue>()
+                .Select(value => value.PropertyValue)
+                .ToList();
+            Assert.AreEqual(1, retrievedValues.Count);
+            Assert.Contains(new List<string> { "foo", "bar" }, rawRetrievedValues);
+        }     
 
         #endregion
 
@@ -267,7 +298,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
             // DateTime chosen because there is a built-in DateTime TypeConverter.
             var dateTimeProperty = new SettingsProperty("dateTimeValue", typeof(DateTime), null,
                 isReadOnly: false,
-                defaultValue: null,
+                defaultValue: new DateTime(),
                 serializeAs: SettingsSerializeAs.String,
                 attributes: new SettingsAttributeDictionary { { "AllowAnonymous", allowAnonymous } },
                 throwOnErrorDeserializing: false,
@@ -301,6 +332,27 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
             var xmlStringProperty = properties["stringValue"];
             values.Add(new SettingsPropertyValue(xmlStringProperty) { PropertyValue = "Value of " + xmlStringProperty.Name });
+        }
+
+        // Binary
+
+        private static void AddBinaryPropertiesTo(SettingsPropertyCollection properties, bool allowAnonymous) {
+            var listOfStringsProperty = new SettingsProperty("listOfStrings", typeof(List<string>), null,
+                isReadOnly: false,
+                defaultValue: new List<string>(),
+                serializeAs: SettingsSerializeAs.Binary,
+                attributes: new SettingsAttributeDictionary { { "AllowAnonymous", allowAnonymous } },
+                throwOnErrorDeserializing: false,
+                throwOnErrorSerializing: false);
+            properties.Add(listOfStringsProperty);
+        }
+
+        private static void AddBinaryPropertyValuesTo(SettingsPropertyValueCollection values, bool allowAnonymous) {
+            var properties = new SettingsPropertyCollection();
+            AddBinaryPropertiesTo(properties, allowAnonymous);
+
+            var listOfStringsProperty = properties["listOfStrings"];
+            values.Add(new SettingsPropertyValue(listOfStringsProperty) { PropertyValue = new List<string> { "foo", "bar" } });
         }
 
         #endregion

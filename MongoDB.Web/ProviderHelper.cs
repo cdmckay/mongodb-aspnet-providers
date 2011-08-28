@@ -120,8 +120,8 @@ namespace DigitalLiberationFront.MongoDB.Web {
         public static MongoProfile GetMongoProfile(MongoCollection<MongoMembershipUser> users, string userName) {
             MongoProfile profile;
             try {
-                profile = users.Find(Query.EQ("UserName", userName))
-                    .Select(u => u.Profile)
+                profile = users.Find(Query.EQ("UserName", userName))                    
+                    .Select(u => u.Profile)                    
                     .FirstOrDefault();
             } catch (MongoSafeModeException e) {
                 throw new ProviderException("Could not retrieve profile.", e);
