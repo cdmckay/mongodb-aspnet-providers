@@ -129,16 +129,16 @@
   <data name="Membership_FieldToMatchMustNotBeWhiteSpace" xml:space="preserve">
     <value>Field to match must not be white-space.</value>
   </data>
-  <data name="Membership_SkipMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+  <data name="Common_SkipMustBeGreaterThanOrEqualToZero" xml:space="preserve">
     <value>Skip must be &gt;= 0.</value>
   </data>
-  <data name="Membership_TakeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+  <data name="Common_TakeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
     <value>Take must be &gt;= 0.</value>
   </data>
-  <data name="Membership_PageIndexMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+  <data name="Common_PageIndexMustBeGreaterThanOrEqualToZero" xml:space="preserve">
     <value>Page index must be &gt;= 0.</value>
   </data>
-  <data name="Membership_PageSizeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+  <data name="Common_PageSizeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
     <value>Page size must be &gt;= 0.</value>
   </data>
   <data name="Membership_CannotDecodePassword" xml:space="preserve">

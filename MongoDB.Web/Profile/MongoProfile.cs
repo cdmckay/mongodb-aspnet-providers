@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Web.Profile;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -12,7 +13,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         [BsonDateTimeOptions(Representation = BsonType.Document)]
         public DateTime LastUpdateDate { get; set; }
 
-        public BsonDocument Properties { get; set; }
+        public BsonDocument Properties { get; set; }        
 
     }
 }

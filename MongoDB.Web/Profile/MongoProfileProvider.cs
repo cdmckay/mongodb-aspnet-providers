@@ -204,7 +204,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
             throw new NotImplementedException();
         }
 
-        public override int DeleteProfiles(string[] usernames) {
+        public override int DeleteProfiles(string[] userNames) {
             throw new NotImplementedException();
         }
 
@@ -217,19 +217,77 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         }
 
         public override ProfileInfoCollection GetAllProfiles(ProfileAuthenticationOption authenticationOption, int pageIndex, int pageSize, out int totalRecords) {
-            throw new NotImplementedException();
+            if (pageIndex < 0) {
+                throw new ArgumentException(ProviderResources.Common_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+            }
+            if (pageSize < 0) {
+                throw new ArgumentException(ProviderResources.Common_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+            }
+
+            var profiles = FindProfiles(authenticationOption, Query.Null, SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
+            return ConvertProfileInfoEnumerableToCollection(profiles);
         }
 
         public override ProfileInfoCollection GetAllInactiveProfiles(ProfileAuthenticationOption authenticationOption, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords) {
             throw new NotImplementedException();
         }
 
-        public override ProfileInfoCollection FindProfilesByUserName(ProfileAuthenticationOption authenticationOption, string usernameToMatch, int pageIndex, int pageSize, out int totalRecords) {
+        public override ProfileInfoCollection FindProfilesByUserName(ProfileAuthenticationOption authenticationOption, string userNameToMatch, int pageIndex, int pageSize, out int totalRecords) {
             throw new NotImplementedException();
         }
 
-        public override ProfileInfoCollection FindInactiveProfilesByUserName(ProfileAuthenticationOption authenticationOption, string usernameToMatch, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords) {
+        public override ProfileInfoCollection FindInactiveProfilesByUserName(ProfileAuthenticationOption authenticationOption, string userNameToMatch, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords) {
             throw new NotImplementedException();
+        }
+
+        public virtual IEnumerable<ProfileInfo> FindProfiles(ProfileAuthenticationOption authenticationOption, IMongoQuery query, IMongoSortBy sortBy, int skip, int take, out int totalRecords) {
+            if (skip < 0) {
+                throw new ArgumentException(ProviderResources.Common_SkipMustBeGreaterThanOrEqualToZero, "skip");
+            }
+            if (take < 0) {
+                throw new ArgumentException(ProviderResources.Common_TakeMustBeGreaterThanOrEqualToZero, "take");
+            }
+            
+            IMongoQuery modifiedQuery;
+            switch (authenticationOption) {
+                case ProfileAuthenticationOption.Anonymous:
+                    modifiedQuery = Query.And(query, Query.EQ("IsAnonymous", true));
+                    break;
+                case ProfileAuthenticationOption.Authenticated:
+                    modifiedQuery = Query.And(query, Query.EQ("IsAnonymous", false));
+                    break;
+                case ProfileAuthenticationOption.All:
+                    modifiedQuery = query;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("authenticationOption");
+            }
+
+            var users = GetUserCollection();
+            var matches = users.Find(modifiedQuery).SetSkip(skip).SetLimit(take);
+            if (sortBy != null) {
+                matches.SetSortOrder(sortBy);
+            }
+            totalRecords = matches.Count();
+            return matches.Select(u => new ProfileInfo(
+                u.UserName, 
+                u.IsAnonymous, 
+                u.Profile.LastActivityDate, 
+                u.Profile.LastUpdateDate, 
+                u.Profile.ToBson().Length));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="profiles"></param>
+        /// <returns></returns>
+        private static ProfileInfoCollection ConvertProfileInfoEnumerableToCollection(IEnumerable<ProfileInfo> profiles) {
+            var collection = new ProfileInfoCollection();
+            foreach (var p in profiles) {
+                collection.Add(p);
+            }
+            return collection;
         }
 
         /// <summary>

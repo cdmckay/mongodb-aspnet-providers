@@ -656,10 +656,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// <returns></returns>
         public IEnumerable<MembershipUser> FindUsers(IMongoQuery query, IMongoSortBy sortBy, int skip, int take, out int totalRecords) {
             if (skip < 0) {
-                throw new ArgumentException(ProviderResources.Membership_SkipMustBeGreaterThanOrEqualToZero, "skip");
+                throw new ArgumentException(ProviderResources.Common_SkipMustBeGreaterThanOrEqualToZero, "skip");
             }
             if (take < 0) {
-                throw new ArgumentException(ProviderResources.Membership_TakeMustBeGreaterThanOrEqualToZero, "take");
+                throw new ArgumentException(ProviderResources.Common_TakeMustBeGreaterThanOrEqualToZero, "take");
             }            
 
             var users = GetUserCollection();            
@@ -673,50 +673,38 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override MembershipUserCollection FindUsersByName(string userNameToMatch, int pageIndex, int pageSize, out int totalRecords) {
             if (pageIndex < 0) {
-                throw new ArgumentException(ProviderResources.Membership_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+                throw new ArgumentException(ProviderResources.Common_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
             }
             if (pageSize < 0) {
-                throw new ArgumentException(ProviderResources.Membership_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+                throw new ArgumentException(ProviderResources.Common_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
             }
 
             var users = FindUsers(Query.Matches("UserName", userNameToMatch), SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
-            var collection = new MembershipUserCollection();
-            foreach (var u in users) {
-                collection.Add(u);
-            }
-            return collection;
+            return ConvertMembershipUserEnumerableToCollection(users);
         }
 
         public override MembershipUserCollection FindUsersByEmail(string emailToMatch, int pageIndex, int pageSize, out int totalRecords) {
             if (pageIndex < 0) {
-                throw new ArgumentException(ProviderResources.Membership_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+                throw new ArgumentException(ProviderResources.Common_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
             }
             if (pageSize < 0) {
-                throw new ArgumentException(ProviderResources.Membership_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+                throw new ArgumentException(ProviderResources.Common_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
             }
 
             var users = FindUsers(Query.Matches("Email", emailToMatch), SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
-            var collection = new MembershipUserCollection();
-            foreach (var u in users) {
-                collection.Add(u);
-            }
-            return collection;
+            return ConvertMembershipUserEnumerableToCollection(users);
         }
 
         public override MembershipUserCollection GetAllUsers(int pageIndex, int pageSize, out int totalRecords) {
             if (pageIndex < 0) {
-                throw new ArgumentException(ProviderResources.Membership_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+                throw new ArgumentException(ProviderResources.Common_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
             }
             if (pageSize < 0) {
-                throw new ArgumentException(ProviderResources.Membership_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+                throw new ArgumentException(ProviderResources.Common_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
             }
 
             var users = FindUsers(Query.Null, SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
-            var collection = new MembershipUserCollection();
-            foreach (var u in users) {
-                collection.Add(u);
-            }
-            return collection;
+            return ConvertMembershipUserEnumerableToCollection(users);
         }
 
         /// <summary>
@@ -743,6 +731,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// <returns></returns>
         private MongoMembershipUser GetMongoUser(string userName) {
             return ProviderHelper.GetMongoUser(GetUserCollection(), userName);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="users"></param>
+        /// <returns></returns>
+        private static MembershipUserCollection ConvertMembershipUserEnumerableToCollection(IEnumerable<MembershipUser> users) {
+            var collection = new MembershipUserCollection();
+            foreach (var u in users) {
+                collection.Add(u);
+            }
+            return collection;
         }
 
         /// <summary>

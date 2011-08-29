@@ -5,7 +5,7 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Options;
 
 namespace DigitalLiberationFront.MongoDB.Web {
-    public static class SerializationHelper {
+    internal static class SerializationHelper {
 
         /// <summary>
         /// 

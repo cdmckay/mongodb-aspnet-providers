@@ -70,11 +70,47 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Page index must be &gt;= 0..
+        /// </summary>
+        internal static string Common_PageIndexMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("Common_PageIndexMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page size must be &gt;= 0..
+        /// </summary>
+        internal static string Common_PageSizeMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("Common_PageSizeMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The name of the provider has a length of zero..
         /// </summary>
         internal static string Common_ProviderNameHasZeroLength {
             get {
                 return ResourceManager.GetString("Common_ProviderNameHasZeroLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skip must be &gt;= 0..
+        /// </summary>
+        internal static string Common_SkipMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("Common_SkipMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Take must be &gt;= 0..
+        /// </summary>
+        internal static string Common_TakeMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("Common_TakeMustBeGreaterThanOrEqualToZero", resourceCulture);
             }
         }
         
@@ -187,24 +223,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Page index must be &gt;= 0..
-        /// </summary>
-        internal static string Membership_PageIndexMustBeGreaterThanOrEqualToZero {
-            get {
-                return ResourceManager.GetString("Membership_PageIndexMustBeGreaterThanOrEqualToZero", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Page size must be &gt;= 0..
-        /// </summary>
-        internal static string Membership_PageSizeMustBeGreaterThanOrEqualToZero {
-            get {
-                return ResourceManager.GetString("Membership_PageSizeMustBeGreaterThanOrEqualToZero", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Password answer cannot be null or white space..
         /// </summary>
         internal static string Membership_PasswordAnswerCannotBeNullOrWhiteSpace {
@@ -228,24 +246,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         internal static string Membership_PasswordFormatNotSupported {
             get {
                 return ResourceManager.GetString("Membership_PasswordFormatNotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Skip must be &gt;= 0..
-        /// </summary>
-        internal static string Membership_SkipMustBeGreaterThanOrEqualToZero {
-            get {
-                return ResourceManager.GetString("Membership_SkipMustBeGreaterThanOrEqualToZero", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Take must be &gt;= 0..
-        /// </summary>
-        internal static string Membership_TakeMustBeGreaterThanOrEqualToZero {
-            get {
-                return ResourceManager.GetString("Membership_TakeMustBeGreaterThanOrEqualToZero", resourceCulture);
             }
         }
         
