@@ -628,7 +628,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override int GetNumberOfUsersOnline() {            
             var windowStartDate = DateTime.Now.AddMinutes(-Membership.UserIsOnlineTimeWindow);
-            var query = Query.GT("LastActivityDate", SerializationHelper.SerializeDateTime(windowStartDate));
+            var query = Query.GT("LastActivityDate.Ticks", windowStartDate.Ticks);
 
             int numberOfUsersOnline;
             try {

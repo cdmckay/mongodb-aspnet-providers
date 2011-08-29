@@ -20,6 +20,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
 using System.Linq;
+using System.Web.Profile;
 using System.Web.Security;
 using DigitalLiberationFront.MongoDB.Web.Profile;
 using DigitalLiberationFront.MongoDB.Web.Security;
@@ -259,6 +260,111 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
         #endregion
 
+        #region GetAllProfiles
+
+        private void TestGetAllProfilesSetUp(MongoMembershipProvider membershipProvider, MongoProfileProvider profileProvider) {
+            for (int i = 0; i < 20; i++ ) {
+                MembershipCreateStatus status;
+                membershipProvider.CreateUser("user" + i, "123456", "user" + i + "@test.com", null, null, true, null,
+                                                out status);
+            }
+
+            for (int i = 20; i < 100; i++) {
+                bool isAuthenticated = i % 2 == 0;
+
+                if (isAuthenticated) {
+                    MembershipCreateStatus status;
+                    membershipProvider.CreateUser("user" + i, "123456", "user" + i + "@test.com", null, null, true, null,
+                                                    out status);
+                }
+
+                var values = new SettingsPropertyValueCollection();
+                AddProviderSpecificPropertyValuesTo(values, allowAnonymous: true, prefix: string.Format("({0})", i));
+                profileProvider.SetPropertyValues(TestHelper.GenerateSettingsContext("user" + i, isAuthenticated), values);
+            }
+        }
+
+        [Test]
+        public void TestGetAllProfiles() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            TestGetAllProfilesSetUp(membershipProvider, profileProvider);
+            
+            int totalRecords = 0;
+            var profiles = profileProvider.GetAllProfiles(ProfileAuthenticationOption.All, 0, 30, out totalRecords);
+
+            Assert.AreEqual(80, totalRecords);
+            Assert.AreEqual(30, profiles.Count);
+            foreach (ProfileInfo p in profiles) {
+                Assert.AreEqual("user", p.UserName.Substring(0, 4));
+                Assert.Greater(p.Size, 0);
+            }
+        }
+
+        [Test]
+        public void TestGetAllProfilesThatAreAuthenticated() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            TestGetAllProfilesSetUp(membershipProvider, profileProvider);
+
+            int totalRecords = 0;
+            var profiles = profileProvider.GetAllProfiles(ProfileAuthenticationOption.Authenticated, 0, 30, out totalRecords);
+
+            Assert.AreEqual(40, totalRecords);
+            Assert.AreEqual(30, profiles.Count);
+            foreach (ProfileInfo p in profiles) {
+                Assert.AreEqual("user", p.UserName.Substring(0, 4));
+
+                // All even records are authenticated in this test.
+                Assert.IsTrue(Convert.ToInt32(p.UserName.Substring(4)) % 2 == 0);
+
+                Assert.IsFalse(p.IsAnonymous);
+                Assert.Greater(p.Size, 0);
+            }
+        }
+
+        [Test]
+        public void TestGetAllProfilesThatAreAnonymous() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            TestGetAllProfilesSetUp(membershipProvider, profileProvider);
+
+            int totalRecords = 0;
+            var profiles = profileProvider.GetAllProfiles(ProfileAuthenticationOption.Anonymous, 0, 30, out totalRecords);
+
+            Assert.AreEqual(40, totalRecords);
+            Assert.AreEqual(30, profiles.Count);
+            foreach (ProfileInfo p in profiles) {
+                Assert.AreEqual("user", p.UserName.Substring(0, 4));
+
+                // All even records are authenticated in this test.
+                Assert.IsFalse(Convert.ToInt32(p.UserName.Substring(4)) % 2 == 0);
+
+                Assert.IsTrue(p.IsAnonymous);
+                Assert.Greater(p.Size, 0);
+            }
+        }
+
+        #endregion
+
         #region Helpers
 
         // Provider Specific
@@ -283,13 +389,17 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
             properties.Add(stringProperty2);
         }
 
-        private static void AddProviderSpecificPropertyValuesTo(SettingsPropertyValueCollection values, bool allowAnonymous) {
+        private static void AddProviderSpecificPropertyValuesTo(SettingsPropertyValueCollection values, bool allowAnonymous, string prefix) {
             var properties = new SettingsPropertyCollection();
             AddProviderSpecificPropertiesTo(properties, allowAnonymous);
 
             foreach (SettingsProperty p in properties) {
-                values.Add(new SettingsPropertyValue(p) { PropertyValue = "Value of " + p.Name });
+                values.Add(new SettingsPropertyValue(p) { PropertyValue = prefix + "Value of " + p.Name });
             }            
+        }
+
+        private static void AddProviderSpecificPropertyValuesTo(SettingsPropertyValueCollection values, bool allowAnonymous) {
+            AddProviderSpecificPropertyValuesTo(values, allowAnonymous, string.Empty);
         }
 
         // String

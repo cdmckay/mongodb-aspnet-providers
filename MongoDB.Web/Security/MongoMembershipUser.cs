@@ -64,6 +64,8 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         public DateTime LastLockedOutDate { get; set; }        
 
         public IList<string> Roles { get; set; }
+
+        [BsonIgnoreIfNull]
         public MongoProfile Profile { get; set; }
         
         public MongoMembershipUser() {

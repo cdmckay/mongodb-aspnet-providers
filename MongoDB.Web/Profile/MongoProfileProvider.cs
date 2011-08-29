@@ -248,21 +248,22 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 throw new ArgumentException(ProviderResources.Common_TakeMustBeGreaterThanOrEqualToZero, "take");
             }
             
-            IMongoQuery modifiedQuery;
+            IMongoQuery authenticationQuery;
             switch (authenticationOption) {
                 case ProfileAuthenticationOption.Anonymous:
-                    modifiedQuery = Query.And(query, Query.EQ("IsAnonymous", true));
+                    authenticationQuery = Query.EQ("IsAnonymous", true);
                     break;
                 case ProfileAuthenticationOption.Authenticated:
-                    modifiedQuery = Query.And(query, Query.EQ("IsAnonymous", false));
+                    authenticationQuery = Query.EQ("IsAnonymous", false);
                     break;
                 case ProfileAuthenticationOption.All:
-                    modifiedQuery = query;
+                    authenticationQuery = Query.Null;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("authenticationOption");
             }
 
+            var modifiedQuery = Query.And(Query.Exists("Profile", true), authenticationQuery, query);
             var users = GetUserCollection();
             var matches = users.Find(modifiedQuery).SetSkip(skip).SetLimit(take);
             if (sortBy != null) {
