@@ -229,7 +229,16 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         }
 
         public override ProfileInfoCollection GetAllInactiveProfiles(ProfileAuthenticationOption authenticationOption, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords) {
-            throw new NotImplementedException();
+            if (pageIndex < 0) {
+                throw new ArgumentException(ProviderResources.Common_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+            }
+            if (pageSize < 0) {
+                throw new ArgumentException(ProviderResources.Common_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+            }
+
+            var query = Query.LTE("Profile.LastActivityDate.Ticks", userInactiveSinceDate.Ticks);
+            var profiles = FindProfiles(authenticationOption, query, SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
+            return ConvertProfileInfoEnumerableToCollection(profiles);
         }
 
         public override ProfileInfoCollection FindProfilesByUserName(ProfileAuthenticationOption authenticationOption, string userNameToMatch, int pageIndex, int pageSize, out int totalRecords) {
