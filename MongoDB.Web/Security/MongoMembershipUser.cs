@@ -33,12 +33,12 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         public MembershipPasswordFormat PasswordFormat { get; set; }
         public string PasswordQuestion { get; set; }
         public string PasswordAnswer { get; set; }
-        
-        [BsonDateTimeOptions(Representation = BsonType.String)]
-        public DateTime FailedPasswordAttemptWindowStartDate { get; set; }
-        public int FailedPasswordAttemptCount { get; set; }        
 
-        [BsonDateTimeOptions(Representation = BsonType.String)]
+        [BsonDateTimeOptions(Representation = BsonType.Document)]
+        public DateTime FailedPasswordAttemptWindowStartDate { get; set; }
+        public int FailedPasswordAttemptCount { get; set; }
+
+        [BsonDateTimeOptions(Representation = BsonType.Document)]
         public DateTime FailedPasswordAnswerAttemptWindowStartDate { get; set; }
         public int FailedPasswordAnswerAttemptCount { get; set; }
 
@@ -48,19 +48,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         public bool IsLockedOut { get; set; }
         public bool IsAnonymous { get; set; }
 
-        [BsonDateTimeOptions(Representation = BsonType.String)]
+        [BsonDateTimeOptions(Representation = BsonType.Document)]
         public DateTime CreationDate { get; set; }
 
-        [BsonDateTimeOptions(Representation = BsonType.String)]
+        [BsonDateTimeOptions(Representation = BsonType.Document)]
         public DateTime LastLoginDate { get; set; }
 
-        [BsonDateTimeOptions(Representation = BsonType.String)]
+        [BsonDateTimeOptions(Representation = BsonType.Document)]
         public DateTime LastActivityDate { get; set; }
 
-        [BsonDateTimeOptions(Representation = BsonType.String)]
+        [BsonDateTimeOptions(Representation = BsonType.Document)]
         public DateTime LastPasswordChangedDate { get; set; }
 
-        [BsonDateTimeOptions(Representation = BsonType.String)]
+        [BsonDateTimeOptions(Representation = BsonType.Document)]
         public DateTime LastLockedOutDate { get; set; }        
 
         public IList<string> Roles { get; set; }
@@ -68,7 +68,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         
         public MongoMembershipUser() {
             Roles = new List<string>();          
-            Profile = new MongoProfile();
         }
 
         public MembershipUser ToMembershipUser(string providerName) {

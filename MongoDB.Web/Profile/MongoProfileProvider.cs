@@ -60,7 +60,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
             _databaseName = mongoUrl.DatabaseName;
 
             // Initialize collections.
-            ProviderHelper.InitializeCollections(ApplicationName, _connectionString, _databaseName);
+            ProviderHelper.InitializeCollections(ApplicationName, _connectionString, _databaseName);            
         }
 
         public override SettingsPropertyValueCollection GetPropertyValues(SettingsContext context, SettingsPropertyCollection properties) {
@@ -83,7 +83,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
             var profile = GetMongoProfile(userName);
             try {
                 var query = Query.EQ("UserName", userName);
-                var update = Update.Set("Profile.LastActivityDate", DateTime.Now);
+                var update = Update.Set("Profile.LastActivityDate", SerializationHelper.SerializeDateTime(DateTime.Now));
                 var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
@@ -159,37 +159,40 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 }
             }
 
-            // Create the profile BSON document.
-            var profile = new BsonDocument();
-            var profileWriterSettings = new BsonDocumentWriterSettings();
-            var writer = new BsonDocumentWriter(profile, profileWriterSettings);
-            writer.WriteStartDocument();
+            // Create the properties BSON document.
+            var properties = new BsonDocument();
+            var propertiesWriterSettings = new BsonDocumentWriterSettings();
+            var propertiesWriter = new BsonDocumentWriter(properties, propertiesWriterSettings);
+            propertiesWriter.WriteStartDocument();            
             foreach (var value in updateValues) {                                
-                writer.WriteName(value.Name);
+                propertiesWriter.WriteName(value.Name);
                 switch (value.Property.SerializeAs) {
                     case SettingsSerializeAs.String:
                     case SettingsSerializeAs.Xml:                    
-                        BsonSerializer.Serialize(writer, typeof (string), value.SerializedValue);
+                        BsonSerializer.Serialize(propertiesWriter, typeof (string), value.SerializedValue);
                         break;
                     case SettingsSerializeAs.Binary:
-                        BsonSerializer.Serialize(writer, typeof (byte[]), value.SerializedValue);
+                        BsonSerializer.Serialize(propertiesWriter, typeof (byte[]), value.SerializedValue);
                         break;
                     case SettingsSerializeAs.ProviderSpecific:
-                        BsonSerializer.Serialize(writer, value.Property.PropertyType, value.PropertyValue);
+                        BsonSerializer.Serialize(propertiesWriter, value.Property.PropertyType, value.PropertyValue);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }                
             }
-            writer.WriteEndDocument();
+            propertiesWriter.WriteEndDocument();
+
+            // Create the profile BSON document.
+            var profile = SerializationHelper.Serialize(typeof (MongoProfile), new MongoProfile {
+                Properties = properties,
+                LastActivityDate = DateTime.Now,
+                LastUpdateDate = DateTime.Now
+            });
 
             try {
                 var query = Query.EQ("UserName", userName);
-                var update = Update                    
-                    .Set("Profile.Properties", profile)
-                    .Set("Profile.LastActivityDate", DateTime.Now)
-                    .Set("Profile.LastUpdateDate", DateTime.Now);                  
-
+                var update = Update.Set("Profile", profile);
                 var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {

@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SerializationHelper.cs" />
     <Compile Include="Profile\MongoProfile.cs" />
     <Compile Include="Profile\MongoProfileProvider.cs" />
     <Compile Include="Security\MongoMembershipProvider.cs" />

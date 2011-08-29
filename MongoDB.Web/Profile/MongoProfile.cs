@@ -6,16 +6,13 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace DigitalLiberationFront.MongoDB.Web.Profile {
     internal sealed class MongoProfile {
 
-        [BsonDateTimeOptions(Representation = BsonType.String)]
+        [BsonDateTimeOptions(Representation = BsonType.Document)]
         public DateTime LastActivityDate { get; set; }
 
-        [BsonDateTimeOptions(Representation = BsonType.String)]
+        [BsonDateTimeOptions(Representation = BsonType.Document)]
         public DateTime LastUpdateDate { get; set; }
 
         public BsonDocument Properties { get; set; }
-
-        public MongoProfile() {
-        }
 
     }
 }

@@ -17,13 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Configuration;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web.Hosting;
 using System.Web.Security;
 using DigitalLiberationFront.MongoDB.Web.Resources;
 using MongoDB.Bson;
@@ -308,7 +306,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var query = Query.EQ("_id", user.Id);
             var update = Update
                 .Set("Password", EncodePassword(newPassword, user.PasswordFormat, user.PasswordSalt))
-                .Set("LastPasswordChangedDate", DateTime.Now);
+                .Set("LastPasswordChangedDate", SerializationHelper.SerializeDateTime(DateTime.Now));
 
             try {
                 var users = GetUserCollection();
@@ -425,7 +423,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var query = Query.EQ("_id", user.Id);
             var update = Update
                 .Set("Password", EncodePassword(newPassword, user.PasswordFormat, user.PasswordSalt))
-                .Set("LastPasswordChangedDate", DateTime.Now);
+                .Set("LastPasswordChangedDate", SerializationHelper.SerializeDateTime(DateTime.Now));
 
             try {
                 var users = GetUserCollection();
@@ -457,8 +455,8 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 .Set("Email", user.Email)
                 .Set("Comment", user.Comment)
                 .Set("IsApproved", user.IsApproved)
-                .Set("LastLoginDate", user.LastLoginDate)
-                .Set("LastActivityDate", user.LastActivityDate);
+                .Set("LastLoginDate", SerializationHelper.SerializeDateTime(user.LastLoginDate))
+                .Set("LastActivityDate", SerializationHelper.SerializeDateTime(user.LastActivityDate));
 
             try {
                 var users = GetUserCollection();
@@ -499,7 +497,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             }
 
             var query = Query.EQ("_id", user.Id);
-            var now = DateTime.Now;
+            var now = SerializationHelper.SerializeDateTime(DateTime.Now);
             var update = Update
                 .Set("LastLoginDate", now)
                 .Set("LastActivityDate", now);
@@ -531,7 +529,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var query = Query.EQ("_id", user.Id);
             var update = Update
                 .Set("IsLockedOut", false)
-                .Set("LastLockedOutDate", DateTime.Now)
+                .Set("LastLockedOutDate", SerializationHelper.SerializeDateTime(DateTime.Now))
                 .Set("FailedPasswordAttemptCount", 0)
                 .Set("FailedPasswordAnswerAttemptCount", 0);
 
@@ -560,7 +558,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var users = GetUserCollection();
             MongoMembershipUser user;
             if (userIsOnline) {
-                var update = Update.Set("LastActivityDate", DateTime.Now);
+                var update = Update.Set("LastActivityDate", SerializationHelper.SerializeDateTime(DateTime.Now));
                 var result = users.FindAndModify(query, SortBy.Null, update, returnNew: true);
                 user = result.GetModifiedDocumentAs<MongoMembershipUser>();
             } else {
@@ -580,7 +578,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var users = GetUserCollection();
             MongoMembershipUser user;
             if (userIsOnline) {
-                var update = Update.Set("LastActivityDate", DateTime.Now);
+                var update = Update.Set("LastActivityDate", SerializationHelper.SerializeDateTime(DateTime.Now));
                 var result = users.FindAndModify(query, SortBy.Null, update, returnNew: true);
                 user = result.GetModifiedDocumentAs<MongoMembershipUser>();
             } else {
@@ -630,7 +628,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override int GetNumberOfUsersOnline() {            
             var windowStartDate = DateTime.Now.AddMinutes(-Membership.UserIsOnlineTimeWindow);
-            var query = Query.GT("LastActivityDate", windowStartDate);
+            var query = Query.GT("LastActivityDate", SerializationHelper.SerializeDateTime(windowStartDate));
 
             int numberOfUsersOnline;
             try {
@@ -930,12 +928,12 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 if (attemptCount >= MaxInvalidPasswordAttempts) {
                     update = Update
                         .Set("IsLockedOut", true)
-                        .Set("LastLockedOutDate", DateTime.Now);
+                        .Set("LastLockedOutDate", SerializationHelper.SerializeDateTime(DateTime.Now));
                 } else {
                     if (attemptCount == 1 || DateTime.Now > attemptWindowEndDate) {
                         update = Update
                             .Set(attemptCountField, 1)
-                            .Set(attemptWindowStartDate, DateTime.Now);
+                            .Set(attemptWindowStartDate, SerializationHelper.SerializeDateTime(DateTime.Now));
                     } else {
                         update = Update.Inc(attemptCountField, 1);
                     }
