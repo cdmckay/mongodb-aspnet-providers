@@ -4,7 +4,7 @@ using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Options;
 
-namespace DigitalLiberationFront.MongoDB.Web {
+namespace DigitalLiberationFront.MongoDB.Web {    
     internal static class SerializationHelper {
 
         /// <summary>

@@ -34,3 +34,6 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("0.3.*")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+// Make some internal classes available to the Test project.
+[assembly: InternalsVisibleTo("DigitalLiberationFront.MongoDB.Web.Test")]

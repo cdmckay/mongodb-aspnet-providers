@@ -26,6 +26,7 @@ using DigitalLiberationFront.MongoDB.Web.Profile;
 using DigitalLiberationFront.MongoDB.Web.Security;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 using NUnit.Framework;
 
 namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
@@ -33,6 +34,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
     [TestFixture]
     public class TestProfileProvider {
 
+        private const string ConnectionString = "mongodb://localhost/aspnet";
         private const string DefaultMembershipName = TestHelper.DefaultMembershipName;
         private const string DefaultProfileName = TestHelper.DefaultProfileName;
 
@@ -55,8 +57,9 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
         [SetUp]
         public void SetUp() {
-            var server = MongoServer.Create("mongodb://localhost/aspnet");
-            var database = server.GetDatabase("aspnet");
+            var url = new MongoUrl(ConnectionString);
+            var server = MongoServer.Create(url);
+            var database = server.GetDatabase(url.DatabaseName);
             database.Drop();
         }
 
@@ -263,19 +266,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
         #region GetAllProfiles
 
         private void TestGetAllProfilesSetUp(MongoMembershipProvider membershipProvider, MongoProfileProvider profileProvider) {
+            // Make 20 users that have no profiles.            
             for (int i = 0; i < 20; i++ ) {
                 MembershipCreateStatus status;
-                membershipProvider.CreateUser("user" + i, "123456", "user" + i + "@test.com", null, null, true, null,
-                                                out status);
+                membershipProvider.CreateUser("user" + i, "123456", "user" + i + "@test.com", null, null, true, null, out status);
             }
 
+            // Make 80 users that have profiles, half of them anonymous.
             for (int i = 20; i < 100; i++) {
                 bool isAuthenticated = i % 2 == 0;
 
                 if (isAuthenticated) {
                     MembershipCreateStatus status;
-                    membershipProvider.CreateUser("user" + i, "123456", "user" + i + "@test.com", null, null, true, null,
-                                                    out status);
+                    membershipProvider.CreateUser("user" + i, "123456", "user" + i + "@test.com", null, null, true, null, out status);
                 }
 
                 var values = new SettingsPropertyValueCollection();
@@ -352,6 +355,83 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
             Assert.AreEqual(40, totalRecords);
             Assert.AreEqual(30, profiles.Count);
+            foreach (ProfileInfo p in profiles) {
+                Assert.AreEqual("user", p.UserName.Substring(0, 4));
+
+                // All even records are authenticated in this test.
+                Assert.IsFalse(Convert.ToInt32(p.UserName.Substring(4)) % 2 == 0);
+
+                Assert.IsTrue(p.IsAnonymous);
+                Assert.Greater(p.Size, 0);
+            }
+        }
+
+        #endregion
+
+        #region GetAllInactiveProfiles
+        
+        private void TestGetAllInactiveProfilesSetUp(MongoMembershipProvider membershipProvider, MongoProfileProvider profileProvider) {
+            TestGetAllProfilesSetUp(membershipProvider, profileProvider);
+
+            // Get a direction connection to the database so we can edit the LastActivityDate.
+            var url = new MongoUrl(ConnectionString);
+            var server = MongoServer.Create(url);
+            var database = server.GetDatabase(url.DatabaseName);
+            var collection = database.GetCollection(membershipProvider.ApplicationName + ".users");
+
+            var inactiveDate = DateTime.Now.AddDays(-10);
+
+            // Make half of all profiled users inactive.            
+            var query = Query.Where("this.UserName.substr(4) >= 60");
+            var update = Update.Set("Profile.LastActivityDate", SerializationHelper.SerializeDateTime(inactiveDate));
+            collection.Update(query, update, UpdateFlags.Multi);                     
+        }
+
+        [Test]
+        public void TestGetAllInActiveProfilesThatAreAuthenticated() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            TestGetAllInactiveProfilesSetUp(membershipProvider, profileProvider);
+
+            int totalRecords = 0;
+            var profiles = profileProvider.GetAllInactiveProfiles(ProfileAuthenticationOption.Authenticated, DateTime.Now.AddDays(-1), 0, 30, out totalRecords);
+
+            Assert.AreEqual(20, totalRecords);
+            Assert.AreEqual(20, profiles.Count);
+            foreach (ProfileInfo p in profiles) {
+                Assert.AreEqual("user", p.UserName.Substring(0, 4));
+
+                // All even records are authenticated in this test.
+                Assert.IsTrue(Convert.ToInt32(p.UserName.Substring(4)) % 2 == 0);
+
+                Assert.IsFalse(p.IsAnonymous);
+                Assert.Greater(p.Size, 0);
+            }
+        }
+
+        [Test]
+        public void TestGetAllInactiveProfilesThatAreAnonymous() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            TestGetAllInactiveProfilesSetUp(membershipProvider, profileProvider);
+
+            int totalRecords = 0;
+            var profiles = profileProvider.GetAllInactiveProfiles(ProfileAuthenticationOption.Anonymous, DateTime.Now.AddDays(-1), 0, 30, out totalRecords);
+
+            Assert.AreEqual(20, totalRecords);
+            Assert.AreEqual(20, profiles.Count);
             foreach (ProfileInfo p in profiles) {
                 Assert.AreEqual("user", p.UserName.Substring(0, 4));
 

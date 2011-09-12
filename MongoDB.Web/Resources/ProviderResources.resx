@@ -117,88 +117,88 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Membership_PasswordFormatNotSupported" xml:space="preserve">
+  <data name="PasswordFormatNotSupported" xml:space="preserve">
     <value>Password format '{0}' not supported.</value>
   </data>
-  <data name="Common_ProviderNameHasZeroLength" xml:space="preserve">
+  <data name="ProviderNameHasZeroLength" xml:space="preserve">
     <value>The name of the provider has a length of zero.</value>
   </data>
-  <data name="Membership_CannotRetrievePasswords" xml:space="preserve">
+  <data name="CannotRetrievePasswords" xml:space="preserve">
     <value>Cannot retrieve passwords when '{0}' is the password format.</value>
   </data>
-  <data name="Membership_FieldToMatchMustNotBeWhiteSpace" xml:space="preserve">
+  <data name="FieldToMatchMustNotBeWhiteSpace" xml:space="preserve">
     <value>Field to match must not be white-space.</value>
   </data>
-  <data name="Common_SkipMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+  <data name="SkipMustBeGreaterThanOrEqualToZero" xml:space="preserve">
     <value>Skip must be &gt;= 0.</value>
   </data>
-  <data name="Common_TakeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+  <data name="TakeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
     <value>Take must be &gt;= 0.</value>
   </data>
-  <data name="Common_PageIndexMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+  <data name="PageIndexMustBeGreaterThanOrEqualToZero" xml:space="preserve">
     <value>Page index must be &gt;= 0.</value>
   </data>
-  <data name="Common_PageSizeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
+  <data name="PageSizeMustBeGreaterThanOrEqualToZero" xml:space="preserve">
     <value>Page size must be &gt;= 0.</value>
   </data>
-  <data name="Membership_CannotDecodePassword" xml:space="preserve">
+  <data name="CannotDecodePassword" xml:space="preserve">
     <value>Cannot decode passwords with '{0}' password format.</value>
   </data>
-  <data name="Membership_CouldNotChangePassword" xml:space="preserve">
+  <data name="CouldNotChangePassword" xml:space="preserve">
     <value>Could not change password.</value>
   </data>
-  <data name="Membership_CouldNotChangePasswordQuestionAndAnswer" xml:space="preserve">
+  <data name="CouldNotChangePasswordQuestionAndAnswer" xml:space="preserve">
     <value>Could not change password question and answer.</value>
   </data>
-  <data name="Membership_CouldNotResetPassword" xml:space="preserve">
+  <data name="CouldNotResetPassword" xml:space="preserve">
     <value>Could not reset password.</value>
   </data>
-  <data name="Membership_CouldNotUpdateUser" xml:space="preserve">
+  <data name="CouldNotUpdateUser" xml:space="preserve">
     <value>Could not update user.</value>
   </data>
-  <data name="Membership_IncorrectPasswordAnswer" xml:space="preserve">
+  <data name="IncorrectPasswordAnswer" xml:space="preserve">
     <value>Incorrect password answer.</value>
   </data>
-  <data name="Membership_UserDoesNotExist" xml:space="preserve">
+  <data name="UserDoesNotExist" xml:space="preserve">
     <value>User does not exist.</value>
   </data>
-  <data name="Membership_UserHasADuplicateEmailAddress" xml:space="preserve">
+  <data name="UserHasADuplicateEmailAddress" xml:space="preserve">
     <value>User has a duplicate e-mail address.</value>
   </data>
-  <data name="Membership_UserNameCannotBeNullOrWhiteSpace" xml:space="preserve">
+  <data name="UserNameCannotBeNullOrWhiteSpace" xml:space="preserve">
     <value>User name cannot be null or white space.</value>
   </data>
-  <data name="Membership_PasswordAnswerCannotBeNullOrWhiteSpace" xml:space="preserve">
+  <data name="PasswordAnswerCannotBeNullOrWhiteSpace" xml:space="preserve">
     <value>Password answer cannot be null or white space.</value>
   </data>
-  <data name="Membership_PasswordCannotBeNullOrWhiteSpace" xml:space="preserve">
+  <data name="PasswordCannotBeNullOrWhiteSpace" xml:space="preserve">
     <value>Password cannot be null or white space.</value>
   </data>
-  <data name="Membership_OldPasswordCannotBeNullOrWhiteSpace" xml:space="preserve">
+  <data name="OldPasswordCannotBeNullOrWhiteSpace" xml:space="preserve">
     <value>Old password cannot be null or white space.</value>
   </data>
-  <data name="Membership_NewPasswordCannotBeNullOrWhiteSpace" xml:space="preserve">
+  <data name="NewPasswordCannotBeNullOrWhiteSpace" xml:space="preserve">
     <value>New password cannot be null or white space.</value>
   </data>
-  <data name="Membership_NewPasswordQuestionCannotBeNullOrWhiteSpace" xml:space="preserve">
+  <data name="NewPasswordQuestionCannotBeNullOrWhiteSpace" xml:space="preserve">
     <value>New password question cannot be null or white space.</value>
   </data>
-  <data name="Membership_NewPasswordAnswerCannotBeNullOrWhiteSpace" xml:space="preserve">
+  <data name="NewPasswordAnswerCannotBeNullOrWhiteSpace" xml:space="preserve">
     <value>New password answer cannot be null or white space.</value>
   </data>
-  <data name="Common_ApplicationNameCannotContainCharacter" xml:space="preserve">
+  <data name="ApplicationNameCannotContainCharacter" xml:space="preserve">
     <value>Application name cannot contain the '{0}' character.</value>
   </data>
-  <data name="Role_RoleNameCannotBeNullOrWhiteSpace" xml:space="preserve">
+  <data name="RoleNameCannotBeNullOrWhiteSpace" xml:space="preserve">
     <value>Role name cannot be null or white space.</value>
   </data>
-  <data name="Role_RoleDoesNotExist" xml:space="preserve">
+  <data name="RoleDoesNotExist" xml:space="preserve">
     <value>Role does not exist.</value>
   </data>
-  <data name="Role_UserIsAlreadyInRole" xml:space="preserve">
+  <data name="UserIsAlreadyInRole" xml:space="preserve">
     <value>User is already in role.</value>
   </data>
-  <data name="Role_UserIsNotInRole" xml:space="preserve">
+  <data name="UserIsNotInRole" xml:space="preserve">
     <value>User is not in role.</value>
   </data>
 </root>

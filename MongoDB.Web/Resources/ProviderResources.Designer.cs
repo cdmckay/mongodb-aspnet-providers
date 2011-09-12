@@ -63,252 +63,252 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Application name cannot contain the &apos;{0}&apos; character..
         /// </summary>
-        internal static string Common_ApplicationNameCannotContainCharacter {
+        internal static string ApplicationNameCannotContainCharacter {
             get {
-                return ResourceManager.GetString("Common_ApplicationNameCannotContainCharacter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Page index must be &gt;= 0..
-        /// </summary>
-        internal static string Common_PageIndexMustBeGreaterThanOrEqualToZero {
-            get {
-                return ResourceManager.GetString("Common_PageIndexMustBeGreaterThanOrEqualToZero", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Page size must be &gt;= 0..
-        /// </summary>
-        internal static string Common_PageSizeMustBeGreaterThanOrEqualToZero {
-            get {
-                return ResourceManager.GetString("Common_PageSizeMustBeGreaterThanOrEqualToZero", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The name of the provider has a length of zero..
-        /// </summary>
-        internal static string Common_ProviderNameHasZeroLength {
-            get {
-                return ResourceManager.GetString("Common_ProviderNameHasZeroLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Skip must be &gt;= 0..
-        /// </summary>
-        internal static string Common_SkipMustBeGreaterThanOrEqualToZero {
-            get {
-                return ResourceManager.GetString("Common_SkipMustBeGreaterThanOrEqualToZero", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Take must be &gt;= 0..
-        /// </summary>
-        internal static string Common_TakeMustBeGreaterThanOrEqualToZero {
-            get {
-                return ResourceManager.GetString("Common_TakeMustBeGreaterThanOrEqualToZero", resourceCulture);
+                return ResourceManager.GetString("ApplicationNameCannotContainCharacter", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Cannot decode passwords with &apos;{0}&apos; password format..
         /// </summary>
-        internal static string Membership_CannotDecodePassword {
+        internal static string CannotDecodePassword {
             get {
-                return ResourceManager.GetString("Membership_CannotDecodePassword", resourceCulture);
+                return ResourceManager.GetString("CannotDecodePassword", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Cannot retrieve passwords when &apos;{0}&apos; is the password format..
         /// </summary>
-        internal static string Membership_CannotRetrievePasswords {
+        internal static string CannotRetrievePasswords {
             get {
-                return ResourceManager.GetString("Membership_CannotRetrievePasswords", resourceCulture);
+                return ResourceManager.GetString("CannotRetrievePasswords", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Could not change password..
         /// </summary>
-        internal static string Membership_CouldNotChangePassword {
+        internal static string CouldNotChangePassword {
             get {
-                return ResourceManager.GetString("Membership_CouldNotChangePassword", resourceCulture);
+                return ResourceManager.GetString("CouldNotChangePassword", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Could not change password question and answer..
         /// </summary>
-        internal static string Membership_CouldNotChangePasswordQuestionAndAnswer {
+        internal static string CouldNotChangePasswordQuestionAndAnswer {
             get {
-                return ResourceManager.GetString("Membership_CouldNotChangePasswordQuestionAndAnswer", resourceCulture);
+                return ResourceManager.GetString("CouldNotChangePasswordQuestionAndAnswer", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Could not reset password..
         /// </summary>
-        internal static string Membership_CouldNotResetPassword {
+        internal static string CouldNotResetPassword {
             get {
-                return ResourceManager.GetString("Membership_CouldNotResetPassword", resourceCulture);
+                return ResourceManager.GetString("CouldNotResetPassword", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Could not update user..
         /// </summary>
-        internal static string Membership_CouldNotUpdateUser {
+        internal static string CouldNotUpdateUser {
             get {
-                return ResourceManager.GetString("Membership_CouldNotUpdateUser", resourceCulture);
+                return ResourceManager.GetString("CouldNotUpdateUser", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Field to match must not be white-space..
         /// </summary>
-        internal static string Membership_FieldToMatchMustNotBeWhiteSpace {
+        internal static string FieldToMatchMustNotBeWhiteSpace {
             get {
-                return ResourceManager.GetString("Membership_FieldToMatchMustNotBeWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("FieldToMatchMustNotBeWhiteSpace", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Incorrect password answer..
         /// </summary>
-        internal static string Membership_IncorrectPasswordAnswer {
+        internal static string IncorrectPasswordAnswer {
             get {
-                return ResourceManager.GetString("Membership_IncorrectPasswordAnswer", resourceCulture);
+                return ResourceManager.GetString("IncorrectPasswordAnswer", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to New password answer cannot be null or white space..
         /// </summary>
-        internal static string Membership_NewPasswordAnswerCannotBeNullOrWhiteSpace {
+        internal static string NewPasswordAnswerCannotBeNullOrWhiteSpace {
             get {
-                return ResourceManager.GetString("Membership_NewPasswordAnswerCannotBeNullOrWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("NewPasswordAnswerCannotBeNullOrWhiteSpace", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to New password cannot be null or white space..
         /// </summary>
-        internal static string Membership_NewPasswordCannotBeNullOrWhiteSpace {
+        internal static string NewPasswordCannotBeNullOrWhiteSpace {
             get {
-                return ResourceManager.GetString("Membership_NewPasswordCannotBeNullOrWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("NewPasswordCannotBeNullOrWhiteSpace", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to New password question cannot be null or white space..
         /// </summary>
-        internal static string Membership_NewPasswordQuestionCannotBeNullOrWhiteSpace {
+        internal static string NewPasswordQuestionCannotBeNullOrWhiteSpace {
             get {
-                return ResourceManager.GetString("Membership_NewPasswordQuestionCannotBeNullOrWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("NewPasswordQuestionCannotBeNullOrWhiteSpace", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Old password cannot be null or white space..
         /// </summary>
-        internal static string Membership_OldPasswordCannotBeNullOrWhiteSpace {
+        internal static string OldPasswordCannotBeNullOrWhiteSpace {
             get {
-                return ResourceManager.GetString("Membership_OldPasswordCannotBeNullOrWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("OldPasswordCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page index must be &gt;= 0..
+        /// </summary>
+        internal static string PageIndexMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("PageIndexMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Page size must be &gt;= 0..
+        /// </summary>
+        internal static string PageSizeMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("PageSizeMustBeGreaterThanOrEqualToZero", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Password answer cannot be null or white space..
         /// </summary>
-        internal static string Membership_PasswordAnswerCannotBeNullOrWhiteSpace {
+        internal static string PasswordAnswerCannotBeNullOrWhiteSpace {
             get {
-                return ResourceManager.GetString("Membership_PasswordAnswerCannotBeNullOrWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("PasswordAnswerCannotBeNullOrWhiteSpace", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Password cannot be null or white space..
         /// </summary>
-        internal static string Membership_PasswordCannotBeNullOrWhiteSpace {
+        internal static string PasswordCannotBeNullOrWhiteSpace {
             get {
-                return ResourceManager.GetString("Membership_PasswordCannotBeNullOrWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("PasswordCannotBeNullOrWhiteSpace", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Password format &apos;{0}&apos; not supported..
         /// </summary>
-        internal static string Membership_PasswordFormatNotSupported {
+        internal static string PasswordFormatNotSupported {
             get {
-                return ResourceManager.GetString("Membership_PasswordFormatNotSupported", resourceCulture);
+                return ResourceManager.GetString("PasswordFormatNotSupported", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User does not exist..
+        ///   Looks up a localized string similar to The name of the provider has a length of zero..
         /// </summary>
-        internal static string Membership_UserDoesNotExist {
+        internal static string ProviderNameHasZeroLength {
             get {
-                return ResourceManager.GetString("Membership_UserDoesNotExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User has a duplicate e-mail address..
-        /// </summary>
-        internal static string Membership_UserHasADuplicateEmailAddress {
-            get {
-                return ResourceManager.GetString("Membership_UserHasADuplicateEmailAddress", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to User name cannot be null or white space..
-        /// </summary>
-        internal static string Membership_UserNameCannotBeNullOrWhiteSpace {
-            get {
-                return ResourceManager.GetString("Membership_UserNameCannotBeNullOrWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("ProviderNameHasZeroLength", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Role does not exist..
         /// </summary>
-        internal static string Role_RoleDoesNotExist {
+        internal static string RoleDoesNotExist {
             get {
-                return ResourceManager.GetString("Role_RoleDoesNotExist", resourceCulture);
+                return ResourceManager.GetString("RoleDoesNotExist", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Role name cannot be null or white space..
         /// </summary>
-        internal static string Role_RoleNameCannotBeNullOrWhiteSpace {
+        internal static string RoleNameCannotBeNullOrWhiteSpace {
             get {
-                return ResourceManager.GetString("Role_RoleNameCannotBeNullOrWhiteSpace", resourceCulture);
+                return ResourceManager.GetString("RoleNameCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skip must be &gt;= 0..
+        /// </summary>
+        internal static string SkipMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("SkipMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Take must be &gt;= 0..
+        /// </summary>
+        internal static string TakeMustBeGreaterThanOrEqualToZero {
+            get {
+                return ResourceManager.GetString("TakeMustBeGreaterThanOrEqualToZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User does not exist..
+        /// </summary>
+        internal static string UserDoesNotExist {
+            get {
+                return ResourceManager.GetString("UserDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User has a duplicate e-mail address..
+        /// </summary>
+        internal static string UserHasADuplicateEmailAddress {
+            get {
+                return ResourceManager.GetString("UserHasADuplicateEmailAddress", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to User is already in role..
         /// </summary>
-        internal static string Role_UserIsAlreadyInRole {
+        internal static string UserIsAlreadyInRole {
             get {
-                return ResourceManager.GetString("Role_UserIsAlreadyInRole", resourceCulture);
+                return ResourceManager.GetString("UserIsAlreadyInRole", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to User is not in role..
         /// </summary>
-        internal static string Role_UserIsNotInRole {
+        internal static string UserIsNotInRole {
             get {
-                return ResourceManager.GetString("Role_UserIsNotInRole", resourceCulture);
+                return ResourceManager.GetString("UserIsNotInRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User name cannot be null or white space..
+        /// </summary>
+        internal static string UserNameCannotBeNullOrWhiteSpace {
+            get {
+                return ResourceManager.GetString("UserNameCannotBeNullOrWhiteSpace", resourceCulture);
             }
         }
     }

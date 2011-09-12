@@ -38,7 +38,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 throw new ArgumentNullException("name");
             }
             if (name.Length == 0) {
-                throw new ArgumentException(ProviderResources.Common_ProviderNameHasZeroLength, "name");
+                throw new ArgumentException(ProviderResources.ProviderNameHasZeroLength, "name");
             }
 
             // Initialize the base class.
@@ -60,10 +60,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override bool IsUserInRole(string userName, string roleName) {
             if (!UserExists(userName)) {
-                throw new ArgumentException(ProviderResources.Membership_UserDoesNotExist, "userName");
+                throw new ArgumentException(ProviderResources.UserDoesNotExist, "userName");
             }
             if (!RoleExists(roleName)) {
-                throw new ArgumentException(ProviderResources.Role_RoleDoesNotExist, "roleName");
+                throw new ArgumentException(ProviderResources.RoleDoesNotExist, "roleName");
             }
 
             var query = Query.And(
@@ -84,7 +84,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override void CreateRole(string roleName) {
             if (string.IsNullOrWhiteSpace(roleName)) {
-                throw new ArgumentException(ProviderResources.Role_RoleNameCannotBeNullOrWhiteSpace, "roleName");
+                throw new ArgumentException(ProviderResources.RoleNameCannotBeNullOrWhiteSpace, "roleName");
             }
             if (roleName.Contains(",")) {
                 throw new ArgumentException(string.Format("Role name cannot contain the '{0}' character.", ','));
@@ -109,7 +109,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override bool DeleteRole(string roleName, bool throwOnPopulatedRole) {
             if (!RoleExists(roleName)) {
-                throw new ArgumentException(ProviderResources.Role_RoleDoesNotExist, "roleName");
+                throw new ArgumentException(ProviderResources.RoleDoesNotExist, "roleName");
             }
 
             if (throwOnPopulatedRole && GetUsersInRole(roleName).Length > 0) {
@@ -134,7 +134,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override bool RoleExists(string roleName) {
             if (string.IsNullOrWhiteSpace(roleName)) {
-                throw new ArgumentException(ProviderResources.Role_RoleNameCannotBeNullOrWhiteSpace, "roleName");
+                throw new ArgumentException(ProviderResources.RoleNameCannotBeNullOrWhiteSpace, "roleName");
             }
 
             return GetMongoRole(roleName) != null;
@@ -148,10 +148,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 throw new ArgumentNullException("roleNames");
             }
             if (userNames.Any(string.IsNullOrWhiteSpace)) {
-                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace);
+                throw new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace);
             }
             if (roleNames.Any(string.IsNullOrWhiteSpace)) {
-                throw new ArgumentException(ProviderResources.Role_RoleNameCannotBeNullOrWhiteSpace);
+                throw new ArgumentException(ProviderResources.RoleNameCannotBeNullOrWhiteSpace);
             }
 
             var users = GetUserCollection();
@@ -163,13 +163,13 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 // Check if any users do not exist.
                 var userCount = users.Count(Query.In("UserName", userNamesBsonArray));
                 if (userCount != userNames.Length) {
-                    throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
+                    throw new ProviderException(ProviderResources.UserDoesNotExist);
                 }    
           
                 // Check if any roles do not exist.
                 var roleCount = roles.Count(Query.In("RoleName", roleNamesBsonArray));
                 if (roleCount != roleNames.Length) {
-                    throw new ProviderException(ProviderResources.Role_RoleDoesNotExist);
+                    throw new ProviderException(ProviderResources.RoleDoesNotExist);
                 }
                     
                 // Make sure none of the users already have some of the roles.
@@ -177,7 +177,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                     Query.In("UserName", userNamesBsonArray),
                     Query.In("Roles", roleNamesBsonArray)));
                 if (userInRoleCount != 0) {
-                    throw new ProviderException(ProviderResources.Role_UserIsAlreadyInRole);
+                    throw new ProviderException(ProviderResources.UserIsAlreadyInRole);
                 }
             } catch (MongoSafeModeException e) {
                 throw new ProviderException("Could not check for user or role existence.", e);
@@ -200,10 +200,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 throw new ArgumentNullException("roleNames");
             }
             if (userNames.Any(string.IsNullOrWhiteSpace)) {
-                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace);
+                throw new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace);
             }
             if (roleNames.Any(string.IsNullOrWhiteSpace)) {
-                throw new ArgumentException(ProviderResources.Role_RoleNameCannotBeNullOrWhiteSpace);
+                throw new ArgumentException(ProviderResources.RoleNameCannotBeNullOrWhiteSpace);
             }
 
             var users = GetUserCollection();
@@ -215,13 +215,13 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 // Check if any users do not exist.
                 var userCount = users.Count(Query.In("UserName", userNamesBsonArray));
                 if (userCount != userNames.Length) {
-                    throw new ProviderException(ProviderResources.Membership_UserDoesNotExist);
+                    throw new ProviderException(ProviderResources.UserDoesNotExist);
                 }
 
                 // Check if any roles do not exist.
                 var roleCount = roles.Count(Query.In("RoleName", roleNamesBsonArray));
                 if (roleCount != roleNames.Length) {
-                    throw new ProviderException(ProviderResources.Role_RoleDoesNotExist);
+                    throw new ProviderException(ProviderResources.RoleDoesNotExist);
                 }
 
                 // Make sure each user is in at least one role.
@@ -229,7 +229,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                     Query.In("UserName", userNamesBsonArray),
                     Query.All("Roles", roleNamesBsonArray)));
                 if (userInRoleCount != userNames.Length) {
-                    throw new ProviderException(ProviderResources.Role_UserIsNotInRole);
+                    throw new ProviderException(ProviderResources.UserIsNotInRole);
                 }
             } catch (MongoSafeModeException e) {
                 throw new ProviderException("Could not check for user or role existence.", e);
@@ -246,7 +246,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override string[] GetUsersInRole(string roleName) {
             if (!RoleExists(roleName)) {
-                throw new ArgumentException(ProviderResources.Role_RoleDoesNotExist, "roleName");
+                throw new ArgumentException(ProviderResources.RoleDoesNotExist, "roleName");
             }
 
             try {
@@ -273,7 +273,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override string[] FindUsersInRole(string roleName, string userNameToMatch) {
             if (!RoleExists(roleName)) {
-                throw new ArgumentException(ProviderResources.Role_RoleDoesNotExist, "roleName");
+                throw new ArgumentException(ProviderResources.RoleDoesNotExist, "roleName");
             }
             if (userNameToMatch == null) {
                 throw new ArgumentNullException("userNameToMatch");
@@ -316,7 +316,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// <returns></returns>
         public bool UserExists(string userName) {
             if (string.IsNullOrWhiteSpace(userName)) {
-                throw new ArgumentException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace, "userName");
+                throw new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace, "userName");
             }
 
             return GetMongoUser(userName) != null;

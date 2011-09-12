@@ -43,7 +43,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 throw new ArgumentNullException("name");
             }
             if (name.Length == 0) {
-                throw new ArgumentException(ProviderResources.Common_ProviderNameHasZeroLength, "name");
+                throw new ArgumentException(ProviderResources.ProviderNameHasZeroLength, "name");
             }
 
             // Initialize the base class.
@@ -77,7 +77,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
 
             var userName = (string) context["UserName"];
             if (string.IsNullOrWhiteSpace(userName)) {
-                throw new ProviderException(ProviderResources.Membership_UserNameCannotBeNullOrWhiteSpace);
+                throw new ProviderException(ProviderResources.UserNameCannotBeNullOrWhiteSpace);
             }
 
             var profile = GetMongoProfile(userName);
@@ -218,10 +218,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
 
         public override ProfileInfoCollection GetAllProfiles(ProfileAuthenticationOption authenticationOption, int pageIndex, int pageSize, out int totalRecords) {
             if (pageIndex < 0) {
-                throw new ArgumentException(ProviderResources.Common_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+                throw new ArgumentException(ProviderResources.PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
             }
             if (pageSize < 0) {
-                throw new ArgumentException(ProviderResources.Common_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+                throw new ArgumentException(ProviderResources.PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
             }
 
             var profiles = FindProfiles(authenticationOption, Query.Null, SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
@@ -230,10 +230,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
 
         public override ProfileInfoCollection GetAllInactiveProfiles(ProfileAuthenticationOption authenticationOption, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords) {
             if (pageIndex < 0) {
-                throw new ArgumentException(ProviderResources.Common_PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+                throw new ArgumentException(ProviderResources.PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
             }
             if (pageSize < 0) {
-                throw new ArgumentException(ProviderResources.Common_PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+                throw new ArgumentException(ProviderResources.PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
             }
 
             var query = Query.LTE("Profile.LastActivityDate.Ticks", userInactiveSinceDate.Ticks);
@@ -251,10 +251,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
 
         public virtual IEnumerable<ProfileInfo> FindProfiles(ProfileAuthenticationOption authenticationOption, IMongoQuery query, IMongoSortBy sortBy, int skip, int take, out int totalRecords) {
             if (skip < 0) {
-                throw new ArgumentException(ProviderResources.Common_SkipMustBeGreaterThanOrEqualToZero, "skip");
+                throw new ArgumentException(ProviderResources.SkipMustBeGreaterThanOrEqualToZero, "skip");
             }
             if (take < 0) {
-                throw new ArgumentException(ProviderResources.Common_TakeMustBeGreaterThanOrEqualToZero, "take");
+                throw new ArgumentException(ProviderResources.TakeMustBeGreaterThanOrEqualToZero, "take");
             }
             
             IMongoQuery authenticationQuery;

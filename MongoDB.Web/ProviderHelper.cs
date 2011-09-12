@@ -23,9 +23,9 @@ namespace DigitalLiberationFront.MongoDB.Web {
             if (string.IsNullOrEmpty(applicationName)) {
                 applicationName = HostingEnvironment.ApplicationVirtualPath;
             } else if (applicationName.Contains('\0')) {
-                throw new ProviderException(string.Format(ProviderResources.Common_ApplicationNameCannotContainCharacter, @"\0"));
+                throw new ProviderException(string.Format(ProviderResources.ApplicationNameCannotContainCharacter, @"\0"));
             } else if (applicationName.Contains('$')) {
-                throw new ProviderException(string.Format(ProviderResources.Common_ApplicationNameCannotContainCharacter, @"$"));
+                throw new ProviderException(string.Format(ProviderResources.ApplicationNameCannotContainCharacter, @"$"));
             }
             return applicationName;
         }
