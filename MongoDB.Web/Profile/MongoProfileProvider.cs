@@ -242,11 +242,31 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         }
 
         public override ProfileInfoCollection FindProfilesByUserName(ProfileAuthenticationOption authenticationOption, string userNameToMatch, int pageIndex, int pageSize, out int totalRecords) {
-            throw new NotImplementedException();
+            if (pageIndex < 0) {
+                throw new ArgumentException(ProviderResources.PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+            }
+            if (pageSize < 0) {
+                throw new ArgumentException(ProviderResources.PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+            }
+
+            var query = Query.Matches("UserName", userNameToMatch);
+            var profiles = FindProfiles(authenticationOption, query, SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
+            return ConvertProfileInfoEnumerableToCollection(profiles);
         }
 
         public override ProfileInfoCollection FindInactiveProfilesByUserName(ProfileAuthenticationOption authenticationOption, string userNameToMatch, DateTime userInactiveSinceDate, int pageIndex, int pageSize, out int totalRecords) {
-            throw new NotImplementedException();
+            if (pageIndex < 0) {
+                throw new ArgumentException(ProviderResources.PageIndexMustBeGreaterThanOrEqualToZero, "pageIndex");
+            }
+            if (pageSize < 0) {
+                throw new ArgumentException(ProviderResources.PageSizeMustBeGreaterThanOrEqualToZero, "pageSize");
+            }
+
+            var query = Query.And(
+                Query.Matches("UserName", userNameToMatch),
+                Query.LTE("Profile.LastActivityDate.Ticks", userInactiveSinceDate.Ticks));
+            var profiles = FindProfiles(authenticationOption, query, SortBy.Null, pageIndex * pageSize, pageSize, out totalRecords);
+            return ConvertProfileInfoEnumerableToCollection(profiles);
         }
 
         public virtual IEnumerable<ProfileInfo> FindProfiles(ProfileAuthenticationOption authenticationOption, IMongoQuery query, IMongoSortBy sortBy, int skip, int take, out int totalRecords) {
