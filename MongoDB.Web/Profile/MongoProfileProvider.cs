@@ -209,11 +209,32 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         }
 
         public override int DeleteInactiveProfiles(ProfileAuthenticationOption authenticationOption, DateTime userInactiveSinceDate) {
-            throw new NotImplementedException();
+            var authenticationQuery = ConvertProfileAuthenticationOptionToMongoQuery(authenticationOption);
+            
+            try {
+                var query = Query.And(
+                    Query.Exists("Profile", true), authenticationQuery,
+                    Query.LTE("Profile.LastActivityDate.Ticks", userInactiveSinceDate.Ticks));
+                var users = GetUserCollection();
+                var result = users.Remove(query);
+                return result.DocumentsAffected;
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not remove inactive profiles.", e);
+            }
         }
 
         public override int GetNumberOfInactiveProfiles(ProfileAuthenticationOption authenticationOption, DateTime userInactiveSinceDate) {
-            throw new NotImplementedException();
+            var authenticationQuery = ConvertProfileAuthenticationOptionToMongoQuery(authenticationOption);
+
+            try {
+                var query = Query.And(
+                    Query.Exists("Profile", true), authenticationQuery,
+                    Query.LTE("Profile.LastActivityDate.Ticks", userInactiveSinceDate.Ticks));
+                var users = GetUserCollection();
+                return users.Count(query);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not count inactive profiles.", e);
+            }
         }
 
         public override ProfileInfoCollection GetAllProfiles(ProfileAuthenticationOption authenticationOption, int pageIndex, int pageSize, out int totalRecords) {
@@ -276,22 +297,8 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
             if (take < 0) {
                 throw new ArgumentException(ProviderResources.TakeMustBeGreaterThanOrEqualToZero, "take");
             }
-            
-            IMongoQuery authenticationQuery;
-            switch (authenticationOption) {
-                case ProfileAuthenticationOption.Anonymous:
-                    authenticationQuery = Query.EQ("IsAnonymous", true);
-                    break;
-                case ProfileAuthenticationOption.Authenticated:
-                    authenticationQuery = Query.EQ("IsAnonymous", false);
-                    break;
-                case ProfileAuthenticationOption.All:
-                    authenticationQuery = Query.Null;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("authenticationOption");
-            }
 
+            var authenticationQuery = ConvertProfileAuthenticationOptionToMongoQuery(authenticationOption);
             var modifiedQuery = Query.And(Query.Exists("Profile", true), authenticationQuery, query);
             var users = GetUserCollection();
             var matches = users.Find(modifiedQuery).SetSkip(skip).SetLimit(take);
@@ -305,6 +312,29 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 u.Profile.LastActivityDate, 
                 u.Profile.LastUpdateDate, 
                 u.Profile.ToBson().Length));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="authenticationOption"></param>
+        /// <returns></returns>
+        private static IMongoQuery ConvertProfileAuthenticationOptionToMongoQuery(ProfileAuthenticationOption authenticationOption) {
+            IMongoQuery query;
+            switch (authenticationOption) {
+                case ProfileAuthenticationOption.Anonymous:
+                    query = Query.EQ("IsAnonymous", true);
+                    break;
+                case ProfileAuthenticationOption.Authenticated:
+                    query = Query.EQ("IsAnonymous", false);
+                    break;
+                case ProfileAuthenticationOption.All:
+                    query = Query.Null;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("authenticationOption");
+            }
+            return query;
         }
 
         /// <summary>

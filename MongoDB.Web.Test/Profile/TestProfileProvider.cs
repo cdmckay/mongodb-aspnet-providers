@@ -263,7 +263,117 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
         #endregion
 
-        #region GetAllProfiles        
+        #region DeleteInactiveProfiles
+
+        [Test]
+        public void TestDeleteInactiveProfiles() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            var numberOfInactiveProfilesDeleted = profileProvider.DeleteInactiveProfiles(ProfileAuthenticationOption.All, DateTime.Now.AddDays(-1));
+            var numberOfInactiveProfiles = profileProvider.GetNumberOfInactiveProfiles(ProfileAuthenticationOption.All, DateTime.Now.AddDays(-1));
+            Assert.AreEqual(40, numberOfInactiveProfilesDeleted);
+            Assert.AreEqual(0, numberOfInactiveProfiles);
+        }
+
+        [Test]
+        public void TestDeleteInactiveProfilesThatAreAuthenticated() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            var numberOfInactiveProfilesDeleted = profileProvider.DeleteInactiveProfiles(ProfileAuthenticationOption.Authenticated, DateTime.Now.AddDays(-1));
+            var numberOfInactiveProfiles = profileProvider.GetNumberOfInactiveProfiles(ProfileAuthenticationOption.Authenticated, DateTime.Now.AddDays(-1));
+            Assert.AreEqual(20, numberOfInactiveProfilesDeleted);
+            Assert.AreEqual(0, numberOfInactiveProfiles);
+        }
+
+        [Test]
+        public void TestDeleteInactiveProfilesThatAreAnonymous() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            var numberOfInactiveProfilesDeleted = profileProvider.DeleteInactiveProfiles(ProfileAuthenticationOption.Anonymous, DateTime.Now.AddDays(-1));
+            var numberOfInactiveProfiles = profileProvider.GetNumberOfInactiveProfiles(ProfileAuthenticationOption.Anonymous, DateTime.Now.AddDays(-1));
+            Assert.AreEqual(20, numberOfInactiveProfilesDeleted);
+            Assert.AreEqual(0, numberOfInactiveProfiles);
+        }
+
+        #endregion
+
+        #region GetNumberOfInactiveProfiles
+
+        [Test]
+        public void TestGetNumberOfInactiveProfiles() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            var numberOfInactiveProfiles = profileProvider.GetNumberOfInactiveProfiles(ProfileAuthenticationOption.All, DateTime.Now.AddDays(-1));
+            Assert.AreEqual(40, numberOfInactiveProfiles);
+        }
+
+        [Test]
+        public void TestGetNumberOfInactiveProfilesThatAreAuthenticated() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            var numberOfInactiveProfiles = profileProvider.GetNumberOfInactiveProfiles(ProfileAuthenticationOption.Authenticated, DateTime.Now.AddDays(-1));
+            Assert.AreEqual(20, numberOfInactiveProfiles);
+        }
+
+        [Test]
+        public void TestGetNumberOfInactiveProfilesThatAreAnonymous() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            var numberOfInactiveProfiles = profileProvider.GetNumberOfInactiveProfiles(ProfileAuthenticationOption.Anonymous, DateTime.Now.AddDays(-1));
+            Assert.AreEqual(20, numberOfInactiveProfiles);
+        }
+
+        #endregion
+
+        #region GetAllProfiles
 
         [Test]
         public void TestGetAllProfiles() {
@@ -346,7 +456,30 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
         #endregion
 
-        #region GetAllInactiveProfiles                
+        #region GetAllInactiveProfiles
+
+        [Test]
+        public void TestGetAllInactiveProfiles() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            int totalRecords = 0;
+            var profiles = profileProvider.GetAllInactiveProfiles(ProfileAuthenticationOption.All, DateTime.Now.AddDays(-1), 0, 30, out totalRecords);
+
+            Assert.AreEqual(40, totalRecords);
+            Assert.AreEqual(30, profiles.Count);
+            foreach (ProfileInfo p in profiles) {
+                Assert.AreEqual("user", p.UserName.Substring(0, 4));
+                Assert.Greater(p.Size, 0);
+            }
+        }
 
         [Test]
         public void TestGetAllInActiveProfilesThatAreAuthenticated() {
@@ -409,6 +542,29 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
         #region FindProfilesByUserName
 
         [Test]
+        public void TestFindProfilesByUserName() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            int totalRecords = 0;
+            var profiles = profileProvider.FindProfilesByUserName(ProfileAuthenticationOption.All, @"user2\d*", 0, 2, out totalRecords);
+
+            Assert.AreEqual(10, totalRecords);
+            Assert.AreEqual(2, profiles.Count);
+            foreach (ProfileInfo p in profiles) {
+                Assert.IsTrue(p.UserName.StartsWith("user2"));
+                Assert.Greater(p.Size, 0);
+            }
+        }
+
+        [Test]
         public void TestFindProfilesByUserNameThatAreAuthenticated() {
             var membershipConfig = new NameValueCollection(_membershipConfig);
             var membershipProvider = new MongoMembershipProvider();
@@ -467,6 +623,30 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
         #endregion
 
         #region FindInactiveProfilesByUserName
+
+        [Test]
+        public void TestFindInactiveProfilesByUserName() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            int totalRecords = 0;
+            var profiles = profileProvider.FindInactiveProfilesByUserName(
+                ProfileAuthenticationOption.All, @"user\d*(0|1)", DateTime.Now.AddDays(-1), 0, 2, out totalRecords);
+
+            Assert.AreEqual(8, totalRecords);
+            Assert.AreEqual(2, profiles.Count);
+            foreach (ProfileInfo p in profiles) {
+                Assert.IsTrue(p.UserName.StartsWith("user") && (p.UserName.EndsWith("0") || p.UserName.EndsWith("1")));
+                Assert.Greater(p.Size, 0);
+            }
+        }
 
         [Test]
         public void TestFindInactiveProfilesByUserNameThatAreAuthenticated() {
@@ -530,6 +710,11 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
         #region Helpers
 
+        /// <summary>
+        /// Creates 100 users, 80 of which have profiles, 40 are inactive, 40 are active, 40 are authenticated and 40 are anonymous.
+        /// </summary>
+        /// <param name="membershipProvider"></param>
+        /// <param name="profileProvider"></param>
         private void SetUpTestProfiles(MongoMembershipProvider membershipProvider, MongoProfileProvider profileProvider) {
             // Make 20 users that have no profiles.            
             for (int i = 0; i < 20; i++) {
