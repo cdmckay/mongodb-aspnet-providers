@@ -20,7 +20,6 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
 using System.Linq;
-using System.Text;
 using System.Web.Profile;
 using DigitalLiberationFront.MongoDB.Web.Resources;
 using DigitalLiberationFront.MongoDB.Web.Security;
@@ -201,11 +200,35 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         }
 
         public override int DeleteProfiles(ProfileInfoCollection profiles) {
-            throw new NotImplementedException();
+            if (profiles == null) {
+                throw new ArgumentNullException("profiles");
+            }
+            if (profiles.Count == 0) {
+                return 0;
+            }
+
+            return DeleteProfiles(profiles.Cast<ProfileInfo>().Select(p => p.UserName).ToArray());
         }
 
         public override int DeleteProfiles(string[] userNames) {
-            throw new NotImplementedException();
+            if (userNames == null) {
+                throw new ArgumentNullException("userNames");
+            }
+            if (userNames.Length == 0) {
+                return 0;
+            }
+
+            try {
+                var query = Query.And(
+                    Query.Exists("Profile", true), 
+                    Query.In("UserName", BsonArray.Create(userNames.AsEnumerable())));                                       
+                var update = Update.Unset("Profile");
+                var users = GetUserCollection();
+                var result = users.Update(query, update, UpdateFlags.Multi);
+                return result.DocumentsAffected;
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not update profile.", e);
+            }
         }
 
         public override int DeleteInactiveProfiles(ProfileAuthenticationOption authenticationOption, DateTime userInactiveSinceDate) {
@@ -215,8 +238,9 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 var query = Query.And(
                     Query.Exists("Profile", true), authenticationQuery,
                     Query.LTE("Profile.LastActivityDate.Ticks", userInactiveSinceDate.Ticks));
+                var update = Update.Unset("Profile");
                 var users = GetUserCollection();
-                var result = users.Remove(query);
+                var result = users.Update(query, update, UpdateFlags.Multi);
                 return result.DocumentsAffected;
             } catch (MongoSafeModeException e) {
                 throw new ProviderException("Could not remove inactive profiles.", e);

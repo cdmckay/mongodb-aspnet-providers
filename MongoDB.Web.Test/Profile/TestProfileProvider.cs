@@ -263,6 +263,71 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
         #endregion
 
+        #region DeleteProfiles
+
+        [Test]
+        public void TestDeleteProfilesUsingStringArray() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            int numberOfUsersBefore, numberOfUsersAfter;
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersBefore);
+
+            // Note that user0 does not have a profile.
+            var numberOfProfilesDeleted = profileProvider.DeleteProfiles(new [] { "user0", "user44", "user56" });
+            
+            int numberOfProfilesRemaining;
+            profileProvider.GetAllProfiles(ProfileAuthenticationOption.All, 0, int.MaxValue, out numberOfProfilesRemaining);
+
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersAfter);
+
+            Assert.AreEqual(2, numberOfProfilesDeleted);
+            Assert.AreEqual(78, numberOfProfilesRemaining);
+
+            // No users should be removed by this process.
+            Assert.AreEqual(numberOfUsersBefore, numberOfUsersAfter);
+        }
+
+        [Test]
+        public void TestDeleteProfilesUsingProfileInfoCollection() {
+            var membershipConfig = new NameValueCollection(_membershipConfig);
+            var membershipProvider = new MongoMembershipProvider();
+            membershipProvider.Initialize(DefaultMembershipName, membershipConfig);
+
+            var profileConfig = new NameValueCollection(_profileConfig);
+            var profileProvider = new MongoProfileProvider();
+            profileProvider.Initialize(DefaultProfileName, profileConfig);
+
+            SetUpTestProfiles(membershipProvider, profileProvider);
+
+            int numberOfUsersBefore, numberOfUsersAfter;
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersBefore);
+
+            int totalRecords;
+            var profiles = profileProvider.FindProfilesByUserName(ProfileAuthenticationOption.All, @"user3\d", 0, int.MaxValue, out totalRecords);
+            var numberOfProfilesDeleted = profileProvider.DeleteProfiles(profiles);
+
+            int numberOfProfilesRemaining;
+            profileProvider.GetAllProfiles(ProfileAuthenticationOption.All, 0, int.MaxValue, out numberOfProfilesRemaining);
+
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersAfter);
+
+            Assert.AreEqual(10, numberOfProfilesDeleted);
+            Assert.AreEqual(70, numberOfProfilesRemaining);
+
+            // No users should be removed by this process.
+            Assert.AreEqual(numberOfUsersBefore, numberOfUsersAfter);
+        }
+
+        #endregion
+
         #region DeleteInactiveProfiles
 
         [Test]
@@ -277,10 +342,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
             SetUpTestProfiles(membershipProvider, profileProvider);
 
+            int numberOfUsersBefore, numberOfUsersAfter;
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersBefore);
+
             var numberOfInactiveProfilesDeleted = profileProvider.DeleteInactiveProfiles(ProfileAuthenticationOption.All, DateTime.Now.AddDays(-1));
             var numberOfInactiveProfiles = profileProvider.GetNumberOfInactiveProfiles(ProfileAuthenticationOption.All, DateTime.Now.AddDays(-1));
+
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersAfter);
+
             Assert.AreEqual(40, numberOfInactiveProfilesDeleted);
             Assert.AreEqual(0, numberOfInactiveProfiles);
+            
+            // No users should be removed by this process.
+            Assert.AreEqual(numberOfUsersBefore, numberOfUsersAfter);
         }
 
         [Test]
@@ -295,10 +369,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
             SetUpTestProfiles(membershipProvider, profileProvider);
 
+            int numberOfUsersBefore, numberOfUsersAfter;
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersBefore);
+
             var numberOfInactiveProfilesDeleted = profileProvider.DeleteInactiveProfiles(ProfileAuthenticationOption.Authenticated, DateTime.Now.AddDays(-1));
             var numberOfInactiveProfiles = profileProvider.GetNumberOfInactiveProfiles(ProfileAuthenticationOption.Authenticated, DateTime.Now.AddDays(-1));
+
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersAfter);
+
             Assert.AreEqual(20, numberOfInactiveProfilesDeleted);
             Assert.AreEqual(0, numberOfInactiveProfiles);
+
+            // No users should be removed by this process.
+            Assert.AreEqual(numberOfUsersBefore, numberOfUsersAfter);
         }
 
         [Test]
@@ -313,10 +396,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Profile {
 
             SetUpTestProfiles(membershipProvider, profileProvider);
 
+            int numberOfUsersBefore, numberOfUsersAfter;
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersBefore);
+
             var numberOfInactiveProfilesDeleted = profileProvider.DeleteInactiveProfiles(ProfileAuthenticationOption.Anonymous, DateTime.Now.AddDays(-1));
             var numberOfInactiveProfiles = profileProvider.GetNumberOfInactiveProfiles(ProfileAuthenticationOption.Anonymous, DateTime.Now.AddDays(-1));
+
+            membershipProvider.GetAllUsers(0, int.MaxValue, out numberOfUsersAfter);
+
             Assert.AreEqual(20, numberOfInactiveProfilesDeleted);
             Assert.AreEqual(0, numberOfInactiveProfiles);
+
+            // No users should be removed by this process.
+            Assert.AreEqual(numberOfUsersBefore, numberOfUsersAfter);
         }
 
         #endregion
