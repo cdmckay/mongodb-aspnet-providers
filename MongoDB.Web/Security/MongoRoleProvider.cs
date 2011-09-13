@@ -40,6 +40,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             if (name.Length == 0) {
                 throw new ArgumentException(ProviderResources.ProviderNameHasZeroLength, "name");
             }
+            if (string.IsNullOrWhiteSpace(config["description"])) {
+                config.Remove("description");
+                config["description"] = "MongoDB Role Provider";
+            }
 
             // Initialize the base class.
             base.Initialize(name, config);

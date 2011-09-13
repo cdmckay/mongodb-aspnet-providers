@@ -44,6 +44,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
             if (name.Length == 0) {
                 throw new ArgumentException(ProviderResources.ProviderNameHasZeroLength, "name");
             }
+            if (string.IsNullOrWhiteSpace(config["description"])) {
+                config.Remove("description");
+                config["description"] = "MongoDB Profile Provider";
+            }
 
             // Initialize the base class.
             base.Initialize(name, config);

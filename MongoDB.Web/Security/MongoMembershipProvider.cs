@@ -91,11 +91,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         private string _passwordStrengthRegularExpression;
         public override string PasswordStrengthRegularExpression {
             get { return _passwordStrengthRegularExpression; }
-        }
-     
-        public override string Description {
-            get { return "MongoDB-backed Membership Provider"; }
-        }
+        }          
 
         private string _connectionString;
         private string _databaseName;
@@ -106,6 +102,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             }
             if (name.Length == 0) {
                 throw new ArgumentException(ProviderResources.ProviderNameHasZeroLength, "name");
+            }
+            if (string.IsNullOrWhiteSpace(config["description"])) {
+                config.Remove("description");
+                config["description"] = "MongoDB Membership Provider";
             }
 
             // Initialize the base class.

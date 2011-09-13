@@ -63,6 +63,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ProviderResources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SessionState\MongoSession.cs" />
+    <Compile Include="SessionState\MongoSessionStateStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
