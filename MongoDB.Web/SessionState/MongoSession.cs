@@ -9,15 +9,15 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         [BsonId]
         public string Id { get; set; }
 
-        [BsonDateTimeOptions(Representation = BsonType.Document)]
+        [BsonDateTimeOptions(Representation = BsonType.Document, Kind = DateTimeKind.Local)]
         public DateTime CreatedDate { get; set; }
 
-        [BsonDateTimeOptions(Representation = BsonType.Document)]
+        [BsonDateTimeOptions(Representation = BsonType.Document, Kind = DateTimeKind.Local)]
         public DateTime ExpiresDate { get; set; }
 
         public ObjectId LockId { get; set; }
 
-        [BsonDateTimeOptions(Representation = BsonType.Document)]
+        [BsonDateTimeOptions(Representation = BsonType.Document, Kind = DateTimeKind.Local)]
         public DateTime LockedDate { get; set; }
 
         public bool IsLocked { get; set; }

@@ -54,7 +54,7 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <param name="value"></param>
         /// <returns></returns>
         public static BsonDocument SerializeDateTime(DateTime value) {
-            return Serialize(typeof (DateTime), value, new DateTimeSerializationOptions(DateTimeKind.Utc, BsonType.Document));
+            return Serialize(typeof (DateTime), value, new DateTimeSerializationOptions(DateTimeKind.Local, BsonType.Document));
         }
 
     }

@@ -21,6 +21,8 @@ using System.Web;
 using System.Web.SessionState;
 using DigitalLiberationFront.MongoDB.Web.Resources;
 using MongoDB.Bson;
+using MongoDB.Bson.IO;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
@@ -91,7 +93,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         }
 
         public override bool SetItemExpireCallback(SessionStateItemExpireCallback expireCallback) {
-            throw new NotImplementedException();
+            // TODO Come back to this and look into implementing it.
+            return false;
         }
 
         public override SessionStateStoreData GetItem(
@@ -132,7 +135,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             if (exclusive) {
                 try {
                     var query = Query.And(
-                        Query.EQ("Id", id),
+                        Query.EQ("_id", id),
                         Query.EQ("IsLocked", false),
                         Query.GT("ExpiresDate.Ticks", DateTime.Now.Ticks));
                     var update = Update
@@ -141,7 +144,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     var result = sessions.Update(query, update);
                     lockAcquired = result.DocumentsAffected == 1;
                 } catch (MongoSafeModeException e) {
-                    throw new ProviderException("Could not update session lock.", e);
+                    throw new ProviderException("Could not update session data.", e);
                 }
             }
 
@@ -149,7 +152,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             var session = GetMongoSession(id);
 
             // Make sure it exists and has not expired.
-            var sessionHasExpired = session != null && DateTime.Now > session.ExpiresDate;
+            bool sessionHasExpired = session != null && DateTime.Now > session.ExpiresDate;
             if (session == null || sessionHasExpired) {
                 locked = false;
                 lockAge = TimeSpan.Zero;
@@ -157,11 +160,16 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 actions = SessionStateActions.None;                
 
                 if (sessionHasExpired) {
-                    // TODO Delete session.
+                    try {
+                        var query = Query.EQ("Id", id);
+                        sessions.Remove(query);
+                    } catch (MongoSafeModeException e) {
+                        throw new ProviderException("Could not remove expired session.", e);
+                    }
                 }
 
                 return null;
-            }                                   
+            }            
 
             // Make sure it is not locked or that we acquired a lock.
             if (!lockAcquired && session.IsLocked) {
@@ -181,20 +189,19 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             actions = session.Actions;
 
             try {
-                var query = Query.EQ("Id", id);
+                var query = Query.EQ("_id", id);
                 var update = Update
                     .Set("LockId", (ObjectId) lockId)
                     .Set("Actions", SessionStateActions.None);
                 sessions.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update session lock.", e);
+                throw new ProviderException("Could not update session data.", e);
             }
 
             SessionStateStoreData storeData;
             switch (actions) {
                 case SessionStateActions.None:
-                    // TODO Convert BsonDocument to SessionStateStoreData.
-                    storeData = null;
+                    storeData = ConvertBsonDocumentToStoreData(context, session.Timeout, session.Properties);
                     break;
                 case SessionStateActions.InitializeItem:
                     storeData = CreateNewStoreData(context, session.Timeout);
@@ -210,11 +217,40 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             throw new NotImplementedException();
         }
 
-        public override void SetAndReleaseItemExclusive(HttpContext context, string id, SessionStateStoreData item, object lockId, bool newItem) {
-            throw new NotImplementedException();
-        }
+        public override void SetAndReleaseItemExclusive(HttpContext context, string id, SessionStateStoreData storeData, object lockId, bool newStoreData) {            
+            try {
+                var sessions = GetSessionCollection();
+                if (newStoreData) {
+                    // Ensure expired session is removed first, if it exists.
+                    sessions.Remove(Query.EQ("_id", id));
+                    var session = new MongoSession {
+                        Id = id,
+                        CreatedDate = DateTime.Now,
+                        ExpiresDate = DateTime.Now.AddMinutes(storeData.Timeout),
+                        LockId = ObjectId.Empty,
+                        LockedDate = DateTime.Now,
+                        IsLocked = false,
+                        Timeout = storeData.Timeout,
+                        Properties = ConvertStoreDataToBsonDocument(storeData),
+                        Actions = SessionStateActions.None
+                    };
+                    sessions.Insert(session);
+                } else {
+                    var query = Query.And(
+                        Query.EQ("_id", id),
+                        Query.EQ("LockId", (ObjectId) lockId));
+                    var update = Update
+                        .Set("ExpiresDate", DateTime.Now.AddMinutes(storeData.Timeout))
+                        .Set("IsLocked", false)
+                        .Set("Properties", ConvertStoreDataToBsonDocument(storeData));
+                    sessions.Update(query, update);
+                }
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not insert or update session data.", e);
+            }
+        }        
 
-        public override void RemoveItem(HttpContext context, string id, object lockId, SessionStateStoreData item) {
+        public override void RemoveItem(HttpContext context, string id, object lockId, SessionStateStoreData storeData) {
             throw new NotImplementedException();
         }
 
@@ -227,7 +263,49 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 new SessionStateItemCollection(), 
                 SessionStateUtility.GetSessionStaticObjects(context), 
                 timeout);
-        }               
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="timeout"></param>
+        /// <param name="document"></param>
+        /// <returns></returns>
+        private static SessionStateStoreData ConvertBsonDocumentToStoreData(HttpContext context, int timeout, BsonDocument document) {
+            if (document == null) {
+                document = new BsonDocument();
+            }
+
+            var collection = new SessionStateItemCollection();
+            foreach (var field in document) {
+                collection[field.Name] = field.Value.RawValue;
+            }
+            return new SessionStateStoreData(
+                collection,
+                SessionStateUtility.GetSessionStaticObjects(context),
+                timeout);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="storeData"></param>
+        /// <returns></returns>
+        private static BsonDocument ConvertStoreDataToBsonDocument(SessionStateStoreData storeData) {
+            var items = storeData.Items;
+            var document = new BsonDocument();
+            var documentWriterSettings = new BsonDocumentWriterSettings();
+            var documentWriter = new BsonDocumentWriter(document, documentWriterSettings);
+            documentWriter.WriteStartDocument();
+            foreach (string key in items.Keys) {
+                var value = items[key];
+                documentWriter.WriteName(key);
+                BsonSerializer.Serialize(documentWriter, value.GetType(), value);                
+            }
+            documentWriter.WriteEndDocument();
+            return document;
+        }
 
         /// <summary>
         /// 

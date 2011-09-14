@@ -175,12 +175,12 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// 
         /// </summary>
         /// <param name="sessions"></param>
-        /// <param name="sessionId"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        public static MongoSession GetMongoSession(MongoCollection<MongoSession> sessions, string sessionId) {
+        public static MongoSession GetMongoSession(MongoCollection<MongoSession> sessions, string id) {
             MongoSession session;
             try {
-                session = sessions.FindOneAs<MongoSession>(Query.EQ("SessionId", sessionId));
+                session = sessions.FindOneAs<MongoSession>(Query.EQ("_id", id));
             } catch (MongoSafeModeException e) {
                 throw new ProviderException("Could not retrieve session.", e);
             }
