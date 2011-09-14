@@ -15,16 +15,14 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration.Provider;
-using System.Linq;
-using System.Text;
 using System.Web;
 using System.Web.SessionState;
 using DigitalLiberationFront.MongoDB.Web.Resources;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 
 namespace DigitalLiberationFront.MongoDB.Web.SessionState {
     public class MongoSessionStateStore : SessionStateStoreProviderBase {
@@ -42,7 +40,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             }
             if (string.IsNullOrWhiteSpace(config["description"])) {
                 config.Remove("description");
-                config["description"] = "MongoDB Session State Store Provider";
+                config["description"] = "MongoDB Session State Store";
             }
 
             // Initialize the base class.
@@ -81,7 +79,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 IsLocked = false,
                 Timeout = timeout,
                 Properties = null,
-                Flags = SessionStateActions.InitializeItem
+                Actions = SessionStateActions.InitializeItem
             };
 
             try {
@@ -96,12 +94,116 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             throw new NotImplementedException();
         }
 
-        public override SessionStateStoreData GetItem(HttpContext context, string id, out bool locked, out TimeSpan lockAge, out object lockId, out SessionStateActions actions) {
-            throw new NotImplementedException();
+        public override SessionStateStoreData GetItem(
+            HttpContext context, 
+            string id, 
+            out bool locked, 
+            out TimeSpan lockAge, 
+            out object lockId, 
+            out SessionStateActions actions
+        ) {
+            return GetItemOptionalExclusive(false, context, id, out locked, out lockAge, out lockId, out actions);
         }
 
-        public override SessionStateStoreData GetItemExclusive(HttpContext context, string id, out bool locked, out TimeSpan lockAge, out object lockId, out SessionStateActions actions) {
-            throw new NotImplementedException();
+        public override SessionStateStoreData GetItemExclusive(
+            HttpContext context, 
+            string id, 
+            out bool locked, 
+            out TimeSpan lockAge, 
+            out object lockId, 
+            out SessionStateActions actions
+        ) {
+            return GetItemOptionalExclusive(true, context, id, out locked, out lockAge, out lockId, out actions);
+        }
+
+        private SessionStateStoreData GetItemOptionalExclusive(
+            bool exclusive,
+            HttpContext context,
+            string id,
+            out bool locked,
+            out TimeSpan lockAge,
+            out object lockId,
+            out SessionStateActions actions
+        ) {
+            var sessions = GetSessionCollection();
+
+            // Obtain lock if this is an exclusive call.
+            bool lockAcquired = false;
+            if (exclusive) {
+                try {
+                    var query = Query.And(
+                        Query.EQ("Id", id),
+                        Query.EQ("IsLocked", false),
+                        Query.GT("ExpiresDate.Ticks", DateTime.Now.Ticks));
+                    var update = Update
+                        .Set("IsLocked", true)
+                        .Set("LockedDate", SerializationHelper.SerializeDateTime(DateTime.Now));
+                    var result = sessions.Update(query, update);
+                    lockAcquired = result.DocumentsAffected == 1;
+                } catch (MongoSafeModeException e) {
+                    throw new ProviderException("Could not update session lock.", e);
+                }
+            }
+
+            // Retrieve the session.
+            var session = GetMongoSession(id);
+
+            // Make sure it exists and has not expired.
+            var sessionHasExpired = session != null && DateTime.Now > session.ExpiresDate;
+            if (session == null || sessionHasExpired) {
+                locked = false;
+                lockAge = TimeSpan.Zero;
+                lockId = ObjectId.Empty;
+                actions = SessionStateActions.None;                
+
+                if (sessionHasExpired) {
+                    // TODO Delete session.
+                }
+
+                return null;
+            }                                   
+
+            // Make sure it is not locked or that we acquired a lock.
+            if (!lockAcquired && session.IsLocked) {
+                locked = true;
+                lockAge = DateTime.Now.Subtract(session.LockedDate);
+                lockId = session.LockId;
+                actions = SessionStateActions.None;
+
+                return null;
+            }
+
+            // Getting here means that the record was either unlocked,
+            // or a lock was acquired.
+            locked = false;
+            lockAge = DateTime.Now.Subtract(session.LockedDate);
+            lockId = ObjectId.GenerateNewId();
+            actions = session.Actions;
+
+            try {
+                var query = Query.EQ("Id", id);
+                var update = Update
+                    .Set("LockId", (ObjectId) lockId)
+                    .Set("Actions", SessionStateActions.None);
+                sessions.Update(query, update);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not update session lock.", e);
+            }
+
+            SessionStateStoreData storeData;
+            switch (actions) {
+                case SessionStateActions.None:
+                    // TODO Convert BsonDocument to SessionStateStoreData.
+                    storeData = null;
+                    break;
+                case SessionStateActions.InitializeItem:
+                    storeData = CreateNewStoreData(context, session.Timeout);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("actions");
+            }
+
+            return storeData;
         }
 
         public override void ReleaseItemExclusive(HttpContext context, string id, object lockId) {
@@ -125,7 +227,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 new SessionStateItemCollection(), 
                 SessionStateUtility.GetSessionStaticObjects(context), 
                 timeout);
-        }        
+        }               
 
         /// <summary>
         /// 
@@ -133,6 +235,15 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         /// <returns></returns>
         private MongoCollection<MongoSession> GetSessionCollection() {
             return ProviderHelper.GetCollectionAs<MongoSession>(_applicationName, _connectionString, _databaseName, "sessions");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
+        private MongoSession GetMongoSession(string sessionId) {
+            return ProviderHelper.GetMongoSession(GetSessionCollection(), sessionId);
         }
 
     }

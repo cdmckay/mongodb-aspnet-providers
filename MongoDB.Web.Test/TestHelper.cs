@@ -19,9 +19,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Security.Cryptography;
+using System.Web;
 using System.Web.Configuration;
+using System.Web.SessionState;
 using DigitalLiberationFront.MongoDB.Web.Profile;
 using DigitalLiberationFront.MongoDB.Web.Security;
+using DigitalLiberationFront.MongoDB.Web.SessionState;
 
 namespace DigitalLiberationFront.MongoDB.Web.Test {
     public static class TestHelper {
@@ -30,6 +33,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Test {
         public const string DefaultMembershipName = "MongoMembershipProvider";
         public const string DefaultRoleName = "MongoRoleProvider";
         public const string DefaultProfileName = "MongoProfileProvider";
+        public const string DefaultSessionName = "MongoSessionStateStore";
 
         public static void ConfigureConnectionStrings() {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -114,27 +118,33 @@ namespace DigitalLiberationFront.MongoDB.Web.Test {
             provider.Parameters["connectionStringName"] = ConnectionStringName;
             profile.Providers.Clear();
             profile.Providers.Add(provider);
-            
             profile.PropertySettings.Clear();
-
-            // For testing regular string properties.
-            profile.PropertySettings.Add(new ProfilePropertySettings("firstName"));
-            profile.PropertySettings.Add(new ProfilePropertySettings("lastName"));
-
-            // For testing regualr DateTime properties.
-            profile.PropertySettings.Add(new ProfilePropertySettings("birthDate"));
-
-            // For testing anonymous settings.
-            profile.PropertySettings.Add(new ProfilePropertySettings("clickCount") { AllowAnonymous = true });
-
-            // For testing read-only.
-            // For testing default value.
-            // For testing forcing string serialization.
-            // For testing forcing XML serialization.
-            // For testing forcing byte[] serialization.           
 
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("system.web/profile");
+
+            return new NameValueCollection {
+                {"connectionStringName", ConnectionStringName}
+            };
+        }
+
+        public static NameValueCollection ConfigureSessionProvider(string name) {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+            // Add the provider.            
+            var sessionState = (SessionStateSection) config.GetSection("system.web/sessionState");
+            sessionState.CustomProvider = DefaultSessionName;
+
+            var provider = new ProviderSettings(DefaultSessionName, typeof(MongoSessionStateStore).AssemblyQualifiedName);
+            provider.Parameters["connectionStringName"] = ConnectionStringName;
+            sessionState.RegenerateExpiredSessionId = true;
+            sessionState.Mode = SessionStateMode.Custom;
+
+            sessionState.Providers.Clear();
+            sessionState.Providers.Add(provider);
+
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("system.web/sessionState");
 
             return new NameValueCollection {
                 {"connectionStringName", ConnectionStringName}
@@ -147,15 +157,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Test {
                 { "IsAuthenticated", isAuthenticated },
             };
         }
-
-        //public static SettingsPropertyValueCollection GenerateSettingsPropertyValueCollection(IDictionary<string, object> map) {
-        //    var collection = new SettingsPropertyValueCollection();
-        //    foreach (var pair in map) {
-        //        var property = new SettingsProperty()
-        //        collection.Add(new SettingsPropertyValue());
-        //    }
-        //    return collection;
-        //}
 
     }
 }

@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Profile\TestProfileProvider.cs" />
+    <Compile Include="SessionState\TestSessionStateStore.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="Security\TestRoleProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

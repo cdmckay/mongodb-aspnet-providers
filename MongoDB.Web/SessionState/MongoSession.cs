@@ -23,7 +23,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         public bool IsLocked { get; set; }
         public int Timeout { get; set; }
         public BsonDocument Properties { get; set; }
-        public SessionStateActions Flags { get; set; }
+        public SessionStateActions Actions { get; set; }
 
     }
 }

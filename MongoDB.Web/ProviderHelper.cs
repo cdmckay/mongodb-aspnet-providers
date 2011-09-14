@@ -64,7 +64,7 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <param name="connectionString"></param>
         /// <param name="databaseName"></param>
         public static void InitializeCollections(string applicationName, string connectionString, string databaseName) {
-            // Add users collection.
+            // Initialize users collection.
             var users = GetCollectionAs<MongoMembershipUser>(applicationName, connectionString, databaseName, "users");
             if (!users.Exists()) {
                 users.ResetIndexCache();
@@ -73,17 +73,18 @@ namespace DigitalLiberationFront.MongoDB.Web {
                 users.EnsureIndex(IndexKeys.Ascending("IsAnonymous"));
             }
 
-            // Add roles collection.
+            // Initialize roles collection.
             var roles = GetCollectionAs<MongoRole>(applicationName, connectionString, databaseName, "roles");
             if (!roles.Exists()) {
                 roles.ResetIndexCache();
                 roles.EnsureIndex(IndexKeys.Ascending("RoleName"), IndexOptions.SetUnique(true));
             }
 
-            // Add sessions collection.
+            // Initialize sessions collection.
             var sessions = GetCollectionAs<MongoSession>(applicationName, connectionString, databaseName, "sessions");
             if (!sessions.Exists()) {
-                sessions.ResetIndexCache();                
+                sessions.ResetIndexCache();
+                sessions.EnsureIndex(IndexKeys.Ascending("SessionId"));
             }
         }
 
