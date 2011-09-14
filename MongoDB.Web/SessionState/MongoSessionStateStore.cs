@@ -18,6 +18,8 @@ using System;
 using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Web;
+using System.Web.Configuration;
+using System.Web.Hosting;
 using System.Web.SessionState;
 using DigitalLiberationFront.MongoDB.Web.Resources;
 using MongoDB.Bson;
@@ -29,6 +31,7 @@ using MongoDB.Driver.Builders;
 namespace DigitalLiberationFront.MongoDB.Web.SessionState {
     public class MongoSessionStateStore : SessionStateStoreProviderBase {
 
+        private int _timeout;
         private string _applicationName;
         private string _connectionString;
         private string _databaseName;
@@ -46,7 +49,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             }
 
             // Initialize the base class.
-            base.Initialize(name, config);
+            base.Initialize(name, config);            
 
             // Deal with the application name.           
             _applicationName = ProviderHelper.ResolveApplicationName(config);
@@ -60,6 +63,11 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
 
             // Initialize collections.
             ProviderHelper.InitializeCollections(_applicationName, _connectionString, _databaseName);
+
+            // Get the timeout value.
+            var webConfig = WebConfigurationManager.OpenWebConfiguration(HostingEnvironment.ApplicationVirtualPath);
+            var sessionStateSection = (SessionStateSection) webConfig.GetSection("system.web/sessionState");
+            _timeout = sessionStateSection.Timeout.Minutes;
         }
 
         public override void InitializeRequest(HttpContext context) {
@@ -214,10 +222,29 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         }
 
         public override void ReleaseItemExclusive(HttpContext context, string id, object lockId) {
-            throw new NotImplementedException();
+            if (!(lockId is ObjectId)) {
+                throw new ArgumentException(ProviderResources.LockIdMustBeAnObjectId, "lockId");
+            }
+
+            try {
+                var sessions = GetSessionCollection();
+                var query = Query.And(
+                    Query.EQ("_id", id),
+                    Query.EQ("LockId", (ObjectId) lockId));
+                var update = Update
+                    .Set("ExpiresDate", DateTime.Now.AddMinutes(_timeout))
+                    .Set("IsLocked", false);
+                sessions.Update(query, update);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not update session data.", e);
+            }
         }
 
-        public override void SetAndReleaseItemExclusive(HttpContext context, string id, SessionStateStoreData storeData, object lockId, bool newStoreData) {            
+        public override void SetAndReleaseItemExclusive(HttpContext context, string id, SessionStateStoreData storeData, object lockId, bool newStoreData) {
+            if (!(lockId is ObjectId)) {
+                throw new ArgumentException(ProviderResources.LockIdMustBeAnObjectId, "lockId");
+            }
+
             try {
                 var sessions = GetSessionCollection();
                 if (newStoreData) {

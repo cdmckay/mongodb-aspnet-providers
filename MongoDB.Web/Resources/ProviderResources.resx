@@ -201,4 +201,7 @@
   <data name="UserIsNotInRole" xml:space="preserve">
     <value>User is not in role.</value>
   </data>
+  <data name="LockIdMustBeAnObjectId">
+    <value xml:space="preserve">Lock id must be an ObjectId.</value>
+  </data>
 </root>

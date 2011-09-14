@@ -142,6 +142,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Lock id must be an ObjectId..
+        /// </summary>
+        internal static string LockIdMustBeAnObjectId {
+            get {
+                return ResourceManager.GetString("LockIdMustBeAnObjectId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to New password answer cannot be null or white space..
         /// </summary>
         internal static string NewPasswordAnswerCannotBeNullOrWhiteSpace {
