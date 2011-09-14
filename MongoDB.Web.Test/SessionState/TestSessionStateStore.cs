@@ -87,133 +87,6 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.SessionState {
 
         #endregion
 
-        #region SetAndReleaseItemExclusive
-
-        [Test]
-        public void TestSetAndReleaseItemExclusiveWhenDoesNotExist() {
-            var config = new NameValueCollection(_sessionConfig);
-            var provider = new MongoSessionStateStore();
-            provider.Initialize(DefaultSessionName, config);
-           
-            var context = CreateHttpContext();
-            var sessionId = GenerateSessionId();
-
-            var storeData = provider.CreateNewStoreData(context, DefaultTimeout);
-            storeData.Items["field"] = "value";            
-            provider.SetAndReleaseItemExclusive(context, sessionId, storeData, ObjectId.Empty, true);
-           
-            bool locked;
-            TimeSpan lockAge;
-            object lockId;
-            SessionStateActions actions;
-            var retrievedStoreData = provider.GetItem(context, sessionId, out locked, out lockAge, out lockId, out actions);
-
-            Assert.IsNotNull(retrievedStoreData);
-            Assert.AreEqual("value", retrievedStoreData.Items["field"]);
-            Assert.IsFalse(locked);
-            Assert.AreEqual(SessionStateActions.None, actions);                        
-        }
-
-        [Test]
-        public void TestSetAndReleaseItemExclusiveWhenExists() {
-            var config = new NameValueCollection(_sessionConfig);
-            var provider = new MongoSessionStateStore();
-            provider.Initialize(DefaultSessionName, config);
-
-            var context = CreateHttpContext();
-            var sessionId = GenerateSessionId();
-            provider.CreateUninitializedItem(context, sessionId, DefaultTimeout);
-
-            bool locked1;
-            TimeSpan lockAge1;
-            object lockId1;
-            SessionStateActions actions1;
-            var storeData = provider.GetItem(context, sessionId, out locked1, out lockAge1, out lockId1, out actions1);
-
-            Assert.IsNotNull(storeData);
-            storeData.Items["field"] = "value";
-            // GetItemExclusive does not lock the item.
-            provider.SetAndReleaseItemExclusive(context, sessionId, storeData, lockId1, false);
-
-            bool locked2;
-            TimeSpan lockAge2;
-            object lockId2;
-            SessionStateActions actions2;
-            var retrievedStoreData = provider.GetItem(context, sessionId, out locked2, out lockAge2, out lockId2, out actions2);
-
-            Assert.IsNotNull(retrievedStoreData);
-            Assert.AreEqual("value", retrievedStoreData.Items["field"]);
-            Assert.IsFalse(locked2);
-            Assert.AreEqual(SessionStateActions.None, actions2);
-        }
-
-        [Test]
-        public void TestSetAndReleaseItemExclusiveWhenExistsAndLocked() {
-            var config = new NameValueCollection(_sessionConfig);
-            var provider = new MongoSessionStateStore();
-            provider.Initialize(DefaultSessionName, config);
-
-            var context = CreateHttpContext();
-            var sessionId = GenerateSessionId();
-            provider.CreateUninitializedItem(context, sessionId, DefaultTimeout);
-
-            bool locked1;
-            TimeSpan lockAge1;
-            object lockId1;
-            SessionStateActions actions1;
-            // GetItemExclusive locks the item.
-            var storeData = provider.GetItemExclusive(context, sessionId, out locked1, out lockAge1, out lockId1, out actions1);
-
-            Assert.IsNotNull(storeData);
-            storeData.Items["field"] = "value";
-            provider.SetAndReleaseItemExclusive(context, sessionId, storeData, lockId1, false);
-
-            bool locked2;
-            TimeSpan lockAge2;
-            object lockId2;
-            SessionStateActions actions2;
-            var retrievedStoreData = provider.GetItem(context, sessionId, out locked2, out lockAge2, out lockId2, out actions2);
-
-            Assert.IsNotNull(retrievedStoreData);
-            Assert.AreEqual("value", retrievedStoreData.Items["field"]);
-            Assert.IsFalse(locked2);
-            Assert.AreEqual(SessionStateActions.None, actions2);
-        }
-
-        [Test]
-        public void TestSetAndReleaseItemExclusiveWhenExistsWithInvalidLockId() {
-            var config = new NameValueCollection(_sessionConfig);
-            var provider = new MongoSessionStateStore();
-            provider.Initialize(DefaultSessionName, config);
-
-            var context = CreateHttpContext();
-            var sessionId = GenerateSessionId();
-            provider.CreateUninitializedItem(context, sessionId, DefaultTimeout);
-
-            bool locked1;
-            TimeSpan lockAge1;
-            object lockId1;
-            SessionStateActions actions1;
-            var storeData = provider.GetItem(context, sessionId, out locked1, out lockAge1, out lockId1, out actions1);
-
-            Assert.IsNotNull(storeData);
-            storeData.Items["field"] = "value";
-            provider.SetAndReleaseItemExclusive(context, sessionId, storeData, ObjectId.GenerateNewId() /* Invalid lock id */, false);
-
-            bool locked2;
-            TimeSpan lockAge2;
-            object lockId2;
-            SessionStateActions actions2;
-            var retrievedStoreData = provider.GetItem(context, sessionId, out locked2, out lockAge2, out lockId2, out actions2);
-
-            Assert.IsNotNull(retrievedStoreData);
-            Assert.IsNull(retrievedStoreData.Items["field"]);
-            Assert.IsFalse(locked2);
-            Assert.AreEqual(SessionStateActions.None, actions2);
-        }
-
-        #endregion
-
         #region GetItem
 
         [Test]
@@ -350,6 +223,200 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.SessionState {
             Assert.AreEqual(SessionStateActions.None, actions2);
         }
         
+        #endregion
+
+        #region SetAndReleaseItemExclusive
+
+        [Test]
+        public void TestSetAndReleaseItemExclusiveWhenDoesNotExist() {
+            var config = new NameValueCollection(_sessionConfig);
+            var provider = new MongoSessionStateStore();
+            provider.Initialize(DefaultSessionName, config);
+
+            var context = CreateHttpContext();
+            var sessionId = GenerateSessionId();
+
+            var storeData = provider.CreateNewStoreData(context, DefaultTimeout);
+            storeData.Items["field"] = "value";
+            provider.SetAndReleaseItemExclusive(context, sessionId, storeData, ObjectId.Empty, true);
+
+            bool locked;
+            TimeSpan lockAge;
+            object lockId;
+            SessionStateActions actions;
+            var retrievedStoreData = provider.GetItem(context, sessionId, out locked, out lockAge, out lockId, out actions);
+
+            Assert.IsNotNull(retrievedStoreData);
+            Assert.AreEqual("value", retrievedStoreData.Items["field"]);
+            Assert.IsFalse(locked);
+            Assert.AreEqual(SessionStateActions.None, actions);
+        }
+
+        [Test]
+        public void TestSetAndReleaseItemExclusiveWhenExists() {
+            var config = new NameValueCollection(_sessionConfig);
+            var provider = new MongoSessionStateStore();
+            provider.Initialize(DefaultSessionName, config);
+
+            var context = CreateHttpContext();
+            var sessionId = GenerateSessionId();
+            provider.CreateUninitializedItem(context, sessionId, DefaultTimeout);
+
+            bool locked1;
+            TimeSpan lockAge1;
+            object lockId1;
+            SessionStateActions actions1;
+            var storeData = provider.GetItem(context, sessionId, out locked1, out lockAge1, out lockId1, out actions1);
+
+            Assert.IsNotNull(storeData);
+            storeData.Items["field"] = "value";
+            // GetItemExclusive does not lock the item.
+            provider.SetAndReleaseItemExclusive(context, sessionId, storeData, lockId1, false);
+
+            bool locked2;
+            TimeSpan lockAge2;
+            object lockId2;
+            SessionStateActions actions2;
+            var retrievedStoreData = provider.GetItem(context, sessionId, out locked2, out lockAge2, out lockId2, out actions2);
+
+            Assert.IsNotNull(retrievedStoreData);
+            Assert.AreEqual("value", retrievedStoreData.Items["field"]);
+            Assert.IsFalse(locked2);
+            Assert.AreEqual(SessionStateActions.None, actions2);
+        }
+
+        [Test]
+        public void TestSetAndReleaseItemExclusiveWhenExistsAndLocked() {
+            var config = new NameValueCollection(_sessionConfig);
+            var provider = new MongoSessionStateStore();
+            provider.Initialize(DefaultSessionName, config);
+
+            var context = CreateHttpContext();
+            var sessionId = GenerateSessionId();
+            provider.CreateUninitializedItem(context, sessionId, DefaultTimeout);
+
+            bool locked1;
+            TimeSpan lockAge1;
+            object lockId1;
+            SessionStateActions actions1;
+            // GetItemExclusive locks the item.
+            var storeData = provider.GetItemExclusive(context, sessionId, out locked1, out lockAge1, out lockId1, out actions1);
+
+            Assert.IsNotNull(storeData);
+            storeData.Items["field"] = "value";
+            provider.SetAndReleaseItemExclusive(context, sessionId, storeData, lockId1, false);
+
+            bool locked2;
+            TimeSpan lockAge2;
+            object lockId2;
+            SessionStateActions actions2;
+            var retrievedStoreData = provider.GetItem(context, sessionId, out locked2, out lockAge2, out lockId2, out actions2);
+
+            Assert.IsNotNull(retrievedStoreData);
+            Assert.AreEqual("value", retrievedStoreData.Items["field"]);
+            Assert.IsFalse(locked2);
+            Assert.AreEqual(SessionStateActions.None, actions2);
+        }
+
+        [Test]
+        public void TestSetAndReleaseItemExclusiveWhenExistsWithInvalidLockId() {
+            var config = new NameValueCollection(_sessionConfig);
+            var provider = new MongoSessionStateStore();
+            provider.Initialize(DefaultSessionName, config);
+
+            var context = CreateHttpContext();
+            var sessionId = GenerateSessionId();
+            provider.CreateUninitializedItem(context, sessionId, DefaultTimeout);
+
+            bool locked1;
+            TimeSpan lockAge1;
+            object lockId1;
+            SessionStateActions actions1;
+            var storeData = provider.GetItem(context, sessionId, out locked1, out lockAge1, out lockId1, out actions1);
+
+            Assert.IsNotNull(storeData);
+            storeData.Items["field"] = "value";
+            provider.SetAndReleaseItemExclusive(context, sessionId, storeData, ObjectId.GenerateNewId() /* Invalid lock id */, false);
+
+            bool locked2;
+            TimeSpan lockAge2;
+            object lockId2;
+            SessionStateActions actions2;
+            var retrievedStoreData = provider.GetItem(context, sessionId, out locked2, out lockAge2, out lockId2, out actions2);
+
+            Assert.IsNotNull(retrievedStoreData);
+            Assert.IsNull(retrievedStoreData.Items["field"]);
+            Assert.IsFalse(locked2);
+            Assert.AreEqual(SessionStateActions.None, actions2);
+        }
+
+        #endregion
+
+        #region RemoveItem
+
+        [Test]
+        public void TestRemoveItem() {
+            var config = new NameValueCollection(_sessionConfig);
+            var provider = new MongoSessionStateStore();
+            provider.Initialize(DefaultSessionName, config);
+
+            var context = CreateHttpContext();
+            var sessionId = GenerateSessionId();
+            provider.CreateUninitializedItem(context, sessionId, DefaultTimeout);
+
+            bool locked1;
+            TimeSpan lockAge1;
+            object lockId1;
+            SessionStateActions actions1;
+            var storeData1 = provider.GetItem(context, sessionId, out locked1, out lockAge1, out lockId1, out actions1);
+
+            provider.RemoveItem(context, sessionId, lockId1, storeData1);
+
+            bool locked2;
+            TimeSpan lockAge2;
+            object lockId2;
+            SessionStateActions actions2;
+            var storeData2 = provider.GetItem(context, sessionId, out locked2, out lockAge2, out lockId2, out actions2);
+
+            Assert.IsNull(storeData2);
+            Assert.IsFalse(locked2);
+        }
+
+        #endregion
+
+        #region ResetItemTimeout
+
+        [Test]
+        public void TestResetItemTimeout() {
+            var config = new NameValueCollection(_sessionConfig);
+            var provider = new MongoSessionStateStore();
+            provider.Initialize(DefaultSessionName, config);
+
+            var context = CreateHttpContext();
+            var sessionId = GenerateSessionId();
+            provider.CreateUninitializedItem(context, sessionId, 0);
+
+            // Give the session a chance to expire.
+            Thread.Sleep(100);
+
+            // Now reset the timeout.
+            provider.ResetItemTimeout(context, sessionId);
+
+            bool locked;
+            TimeSpan lockAge;
+            object lockId;
+            SessionStateActions actions;
+            var storeData = provider.GetItem(context, sessionId, out locked, out lockAge, out lockId, out actions);
+
+            // Give the lock a chance to accumulate age.
+            Thread.Sleep(100);
+
+            Assert.IsNotNull(storeData);
+            Assert.IsFalse(locked);
+            Assert.Greater(lockAge, TimeSpan.Zero);
+            Assert.AreNotEqual(ObjectId.Empty, lockId);
+        }
+
         #endregion
 
         #region "Helpers"

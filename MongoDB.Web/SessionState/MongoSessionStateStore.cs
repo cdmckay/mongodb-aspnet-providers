@@ -96,12 +96,11 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 var sessions = GetSessionCollection();
                 sessions.Insert(newSession);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not create uninitialized item.", e);
+                throw new ProviderException("Could not create uninitialized session.", e);
             }
         }
 
         public override bool SetItemExpireCallback(SessionStateItemExpireCallback expireCallback) {
-            // TODO Come back to this and look into implementing it.
             return false;
         }
 
@@ -152,7 +151,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     var result = sessions.Update(query, update);
                     lockAcquired = result.DocumentsAffected == 1;
                 } catch (MongoSafeModeException e) {
-                    throw new ProviderException("Could not update session data.", e);
+                    throw new ProviderException("Could not update session.", e);
                 }
             }
 
@@ -203,7 +202,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     .Set("Actions", SessionStateActions.None);
                 sessions.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update session data.", e);
+                throw new ProviderException("Could not update session.", e);
             }
 
             SessionStateStoreData storeData;
@@ -231,12 +230,13 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 var query = Query.And(
                     Query.EQ("_id", id),
                     Query.EQ("LockId", (ObjectId) lockId));
+                var expiresDate = SerializationHelper.SerializeDateTime(DateTime.Now.AddMinutes(_timeout));
                 var update = Update
-                    .Set("ExpiresDate", DateTime.Now.AddMinutes(_timeout))
+                    .Set("ExpiresDate", expiresDate)
                     .Set("IsLocked", false);
                 sessions.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update session data.", e);
+                throw new ProviderException("Could not update session.", e);
             }
         }
 
@@ -262,27 +262,48 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                         Actions = SessionStateActions.None
                     };
                     sessions.Insert(session);
-                } else {
+                } else {                    
                     var query = Query.And(
                         Query.EQ("_id", id),
                         Query.EQ("LockId", (ObjectId) lockId));
+                    var expiresDate = SerializationHelper.SerializeDateTime(DateTime.Now.AddMinutes(storeData.Timeout));
                     var update = Update
-                        .Set("ExpiresDate", DateTime.Now.AddMinutes(storeData.Timeout))
+                        .Set("ExpiresDate", expiresDate)
                         .Set("IsLocked", false)
                         .Set("Properties", ConvertStoreDataToBsonDocument(storeData));
                     sessions.Update(query, update);
                 }
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not insert or update session data.", e);
+                throw new ProviderException("Could not insert or update session.", e);
             }
         }        
 
         public override void RemoveItem(HttpContext context, string id, object lockId, SessionStateStoreData storeData) {
-            throw new NotImplementedException();
+            if (!(lockId is ObjectId)) {
+                throw new ArgumentException(ProviderResources.LockIdMustBeAnObjectId, "lockId");
+            }
+
+            try {
+                var sessions = GetSessionCollection();
+                var query = Query.And(
+                    Query.EQ("_id", id),
+                    Query.EQ("LockId", (ObjectId) lockId));                
+                sessions.Remove(query);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not remove session.", e);
+            }
         }
 
         public override void ResetItemTimeout(HttpContext context, string id) {
-            throw new NotImplementedException();
+            try {
+                var sessions = GetSessionCollection();
+                var query = Query.EQ("_id", id);
+                var expiresDate = SerializationHelper.SerializeDateTime(DateTime.Now.AddMinutes(_timeout));
+                var update = Update.Set("ExpiresDate", expiresDate);
+                sessions.Update(query, update);
+            } catch (MongoSafeModeException e) {
+                throw new ProviderException("Could not remove session.", e);
+            }
         }
 
         public override SessionStateStoreData CreateNewStoreData(HttpContext context, int timeout) {
