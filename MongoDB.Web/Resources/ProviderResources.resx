@@ -231,4 +231,37 @@
   <data name="UserIsLockedOut" xml:space="preserve">
     <value>User is locked out.</value>
   </data>
+  <data name="CannotDeletePopulatedRoles" xml:space="preserve">
+    <value>Cannot delete populated roles.</value>
+  </data>
+  <data name="CouldNotAddUsersToRoles" xml:space="preserve">
+    <value>Could not add users to roles.</value>
+  </data>
+  <data name="CouldNotCountUsersInRoles" xml:space="preserve">
+    <value>Could not count users in roles.</value>
+  </data>
+  <data name="CouldNotCreateRole" xml:space="preserve">
+    <value>Could not create role.</value>
+  </data>
+  <data name="CouldNotRemoveRole" xml:space="preserve">
+    <value>Could not delete role.</value>
+  </data>
+  <data name="CouldNotRemoveUsersFromRoles" xml:space="preserve">
+    <value>Could not remove users from roles.</value>
+  </data>
+  <data name="CouldNotRetrieveRoles" xml:space="preserve">
+    <value>Could not retrieve roles.</value>
+  </data>
+  <data name="CouldNotRetrieveUser" xml:space="preserve">
+    <value>Could not retrieve user.</value>
+  </data>
+  <data name="CouldNotRetrieveUsersInRoles" xml:space="preserve">
+    <value>Could not retrieve users in roles.</value>
+  </data>
+  <data name="RoleNameAlreadyExists" xml:space="preserve">
+    <value>Role name already exists.</value>
+  </data>
+  <data name="RoleNameCannotContainCharacter" xml:space="preserve">
+    <value>Role name cannot contain the '{0}' character.</value>
+  </data>
 </root>

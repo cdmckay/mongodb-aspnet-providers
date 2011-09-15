@@ -600,6 +600,13 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             return user != null ? user.UserName : null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="deleteAllRelatedData">This parameter is not applicable for this provider,
+        /// as all related data is part of the user record and will be deleted with the user regardless.</param>
+        /// <returns></returns>
         public override bool DeleteUser(string userName, bool deleteAllRelatedData) {
             if (string.IsNullOrWhiteSpace(userName)) {
                 throw new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace, "userName");
@@ -608,11 +615,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var user = GetMongoUser(userName);
             if (user == null) {
                 return false;
-            }
-
-            if (deleteAllRelatedData) {
-                // TODO Delete all related data.
-            }
+            }           
 
             var query = Query.EQ("_id", user.Id);
 

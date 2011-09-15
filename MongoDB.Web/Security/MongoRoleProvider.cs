@@ -75,10 +75,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 Query.EQ("Roles", roleName));
             try {
                 var users = GetUserCollection();
-                var userCount = users.Count(query);
-                return userCount != 0;
+                var user = users.FindOne(query);
+                return user != null;
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not check for user or role existence.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveUsersInRoles, e);
             }
         }
 
@@ -91,7 +91,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 throw new ArgumentException(ProviderResources.RoleNameCannotBeNullOrWhiteSpace, "roleName");
             }
             if (roleName.Contains(",")) {
-                throw new ArgumentException(string.Format("Role name cannot contain the '{0}' character.", ','));
+                throw new ArgumentException(string.Format(ProviderResources.RoleNameCannotContainCharacter, ','));
             }
 
             var newRole = new MongoRole {
@@ -104,10 +104,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 roles.Insert(newRole);
             } catch (MongoSafeModeException e) {
                 if (e.Message.Contains("RoleName_1")) {
-                    throw new ProviderException("Role name already exists.");
+                    throw new ProviderException(ProviderResources.RoleNameAlreadyExists);
                 }
                 
-                throw new ProviderException("Could not create role.", e);                
+                throw new ProviderException(ProviderResources.CouldNotCreateRole, e);                
             }
         }
 
@@ -117,7 +117,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             }
 
             if (throwOnPopulatedRole && GetUsersInRole(roleName).Length > 0) {
-                throw new ProviderException("Cannot delete populated role.");
+                throw new ProviderException(ProviderResources.CannotDeletePopulatedRoles);
             }
             
             try {
@@ -130,7 +130,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var users = GetUserCollection();
                 users.Update(userQuery, userUpdate, UpdateFlags.Multi);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not delete role.", e); 
+                throw new ProviderException(ProviderResources.CouldNotRemoveRole, e); 
             }
 
             return true;
@@ -177,14 +177,14 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 }
                     
                 // Make sure none of the users already have some of the roles.
-                var userInRoleCount = users.Count(Query.And(
+                var userInRole = users.FindOne(Query.And(
                     Query.In("UserName", userNamesBsonArray),
                     Query.In("Roles", roleNamesBsonArray)));
-                if (userInRoleCount != 0) {
+                if (userInRole != null) {
                     throw new ProviderException(ProviderResources.UserIsAlreadyInRole);
                 }
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not check for user or role existence.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveUsersInRoles, e);
             }
 
             try {                
@@ -192,7 +192,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var update = Update.PushAll("Roles", roleNames.Select(BsonValue.Create));
                 users.Update(query, update, UpdateFlags.Multi);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not add users to roles.", e);
+                throw new ProviderException(ProviderResources.CouldNotAddUsersToRoles, e);
             }
         }
 
@@ -236,7 +236,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                     throw new ProviderException(ProviderResources.UserIsNotInRole);
                 }
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not check for user or role existence.", e);
+                throw new ProviderException(ProviderResources.CouldNotCountUsersInRoles, e);
             }
 
             try {
@@ -244,7 +244,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var update = Update.PullAll("Roles", roleNames.Select(BsonValue.Create));
                 users.Update(query, update, UpdateFlags.Multi);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not remove users from roles.", e);
+                throw new ProviderException(ProviderResources.CouldNotRemoveUsersFromRoles, e);
             }
         }
 
@@ -260,7 +260,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                     .Select(u => u.UserName)
                     .ToArray();
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve users in role.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveUsersInRoles, e);
             }
         }
 
@@ -271,7 +271,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                     .Select(r => r.RoleName)
                     .ToArray();
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve roles.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveRoles, e);
             }
         }
 
@@ -292,7 +292,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                     .Select(u => u.UserName)
                     .ToArray();
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve users in role.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveUsersInRoles, e);
             }
         }
 

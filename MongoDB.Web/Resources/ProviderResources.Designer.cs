@@ -79,11 +79,29 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot delete populated roles..
+        /// </summary>
+        internal static string CannotDeletePopulatedRoles {
+            get {
+                return ResourceManager.GetString("CannotDeletePopulatedRoles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot retrieve passwords when &apos;{0}&apos; is the password format..
         /// </summary>
         internal static string CannotRetrievePasswords {
             get {
                 return ResourceManager.GetString("CannotRetrievePasswords", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not add users to roles..
+        /// </summary>
+        internal static string CouldNotAddUsersToRoles {
+            get {
+                return ResourceManager.GetString("CouldNotAddUsersToRoles", resourceCulture);
             }
         }
         
@@ -115,11 +133,38 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not count users in roles..
+        /// </summary>
+        internal static string CouldNotCountUsersInRoles {
+            get {
+                return ResourceManager.GetString("CouldNotCountUsersInRoles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not create role..
+        /// </summary>
+        internal static string CouldNotCreateRole {
+            get {
+                return ResourceManager.GetString("CouldNotCreateRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find user..
         /// </summary>
         internal static string CouldNotFindUser {
             get {
                 return ResourceManager.GetString("CouldNotFindUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not delete role..
+        /// </summary>
+        internal static string CouldNotRemoveRole {
+            get {
+                return ResourceManager.GetString("CouldNotRemoveRole", resourceCulture);
             }
         }
         
@@ -133,11 +178,47 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not remove users from roles..
+        /// </summary>
+        internal static string CouldNotRemoveUsersFromRoles {
+            get {
+                return ResourceManager.GetString("CouldNotRemoveUsersFromRoles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not reset password..
         /// </summary>
         internal static string CouldNotResetPassword {
             get {
                 return ResourceManager.GetString("CouldNotResetPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve roles..
+        /// </summary>
+        internal static string CouldNotRetrieveRoles {
+            get {
+                return ResourceManager.GetString("CouldNotRetrieveRoles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve user..
+        /// </summary>
+        internal static string CouldNotRetrieveUser {
+            get {
+                return ResourceManager.GetString("CouldNotRetrieveUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve users in roles..
+        /// </summary>
+        internal static string CouldNotRetrieveUsersInRoles {
+            get {
+                return ResourceManager.GetString("CouldNotRetrieveUsersInRoles", resourceCulture);
             }
         }
         
@@ -313,11 +394,29 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Role name already exists..
+        /// </summary>
+        internal static string RoleNameAlreadyExists {
+            get {
+                return ResourceManager.GetString("RoleNameAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Role name cannot be null or white space..
         /// </summary>
         internal static string RoleNameCannotBeNullOrWhiteSpace {
             get {
                 return ResourceManager.GetString("RoleNameCannotBeNullOrWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Role name cannot contain the &apos;{0}&apos; character..
+        /// </summary>
+        internal static string RoleNameCannotContainCharacter {
+            get {
+                return ResourceManager.GetString("RoleNameCannotContainCharacter", resourceCulture);
             }
         }
         
