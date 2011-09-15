@@ -127,7 +127,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
             // Make sure that passwords are at least 1 character long.
             if (_minRequiredPasswordLength <= 0) {
-                throw new ProviderException("Minimum required password length must be > 0.");
+                throw new ProviderException(ProviderResources.MinimumPasswordLengthMustBeGreaterThanZero);
             }
 
             // Handle password format.
@@ -292,7 +292,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var passwordEventArgs = new ValidatePasswordEventArgs(userName, newPassword, true);
             OnValidatingPassword(passwordEventArgs);
             if (passwordEventArgs.Cancel) {
-                throw new ProviderException("Change password cancelled.");
+                throw new ProviderException(ProviderResources.PasswordChangeCancelled);
             }
             if (!ValidatePassword(newPassword)) {
                 return false;
@@ -368,15 +368,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 throw new ArgumentException(ProviderResources.PasswordAnswerCannotBeNullOrWhiteSpace, "answer");
             }
             if (!EnablePasswordRetrieval) {
-                throw new ProviderException("Password retrieval not enabled.");
+                throw new ProviderException(ProviderResources.PasswordRetrievalIsDisabled);
             }
             
             var user = GetMongoUser(userName);
             if (user == null) {
-                throw new ProviderException("User not found.");
+                throw new ProviderException(ProviderResources.CouldNotFindUser);
             }
             if (user.IsLockedOut) {
-                throw new ProviderException("User is locked out.");
+                throw new ProviderException(ProviderResources.UserIsLockedOut);
             }
 
             if (RequiresQuestionAndAnswer
@@ -396,15 +396,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 throw new ArgumentException(ProviderResources.PasswordAnswerCannotBeNullOrWhiteSpace, "answer");
             }
             if (!EnablePasswordReset) {
-                throw new ProviderException("Password reset not enabled.");
+                throw new ProviderException(ProviderResources.PasswordResetIsDisabled);
             }
 
             var user = GetMongoUser(userName);
             if (user == null) {
-                throw new ProviderException("User not found.");
+                throw new ProviderException(ProviderResources.CouldNotFindUser);
             }
             if (user.IsLockedOut) {
-                throw new ProviderException("User is locked out.");
+                throw new ProviderException(ProviderResources.UserIsLockedOut);
             }
 
             if (RequiresQuestionAndAnswer
@@ -417,7 +417,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var passwordEventArgs = new ValidatePasswordEventArgs(userName, newPassword, true);
             OnValidatingPassword(passwordEventArgs);
             if (passwordEventArgs.Cancel) {
-                throw new ProviderException("Change password cancelled.");
+                throw new ProviderException(ProviderResources.PasswordChangeCancelled);
             }
 
             var query = Query.EQ("_id", user.Id);
@@ -466,7 +466,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 }
             } catch (MongoSafeModeException e) {
                 if (e.Message.Contains("UserName_1")) {
-                    throw new ProviderException("User has a duplicate name.");
+                    throw new ProviderException(ProviderResources.UserHasADuplicateName);
                 }
 
                 throw new ProviderException(ProviderResources.CouldNotUpdateUser, e);
@@ -506,7 +506,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update user record.", e);
+                throw new ProviderException(ProviderResources.CouldNotUpdateUser, e);
             }
 
             return true;
@@ -537,7 +537,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update user record.", e);
+                throw new ProviderException(ProviderResources.CouldNotUpdateUser, e);
             }
 
             return true;
@@ -620,7 +620,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var users = GetUserCollection();
                 users.Remove(query);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not remove user record.", e);
+                throw new ProviderException(ProviderResources.CouldNotRemoveUser, e);
             }
 
             return true;
@@ -635,7 +635,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var users = GetUserCollection();
                 numberOfUsersOnline = users.Count(query);                
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not count user records.", e);
+                throw new ProviderException(ProviderResources.CouldNotCountUsers, e);
             }
             return numberOfUsersOnline;
         }
@@ -837,7 +837,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                     break;
 
                 default:
-                    throw new ProviderException(string.Format("Unrecogized password format: {0}", passwordFormat));
+                    throw new ProviderException(string.Format(ProviderResources.PasswordFormatNotSupported, passwordFormat));
             }
 
             return Convert.ToBase64String(encodedBytes);
@@ -917,7 +917,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                     attemptWindowStartDate = "FailedPasswordAnswerAttemptWindowStartDate";
                     break;
                 default:
-                    throw new ProviderException(string.Format("Unknown failed attempt type: {0}.", failedAttemptType));
+                    throw new ArgumentOutOfRangeException("failedAttemptType");
             }
 
             try {
@@ -942,7 +942,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not record failed attempt.", e);
+                throw new ProviderException(ProviderResources.CouldNotUpdateUser, e);
             }
         }
 

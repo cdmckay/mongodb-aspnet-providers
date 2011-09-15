@@ -201,7 +201,34 @@
   <data name="UserIsNotInRole" xml:space="preserve">
     <value>User is not in role.</value>
   </data>
-  <data name="LockIdMustBeAnObjectId">
-    <value xml:space="preserve">Lock id must be an ObjectId.</value>
+  <data name="LockIdMustBeAnObjectId" xml:space="preserve">
+    <value>Lock id must be an ObjectId.</value>
+  </data>
+  <data name="CouldNotCountUsers" xml:space="preserve">
+    <value>Could not count users.</value>
+  </data>
+  <data name="CouldNotFindUser" xml:space="preserve">
+    <value>Could not find user.</value>
+  </data>
+  <data name="CouldNotRemoveUser" xml:space="preserve">
+    <value>Could not remove user.</value>
+  </data>
+  <data name="MinimumPasswordLengthMustBeGreaterThanZero" xml:space="preserve">
+    <value>Minimum required password length must be &gt; 0.</value>
+  </data>
+  <data name="PasswordChangeCancelled" xml:space="preserve">
+    <value>Password change cancelled.</value>
+  </data>
+  <data name="PasswordResetIsDisabled" xml:space="preserve">
+    <value>Password reset is disabled.</value>
+  </data>
+  <data name="PasswordRetrievalIsDisabled" xml:space="preserve">
+    <value>Password retrieval is disabled.</value>
+  </data>
+  <data name="UserHasADuplicateName" xml:space="preserve">
+    <value>User has a duplicate name.</value>
+  </data>
+  <data name="UserIsLockedOut" xml:space="preserve">
+    <value>User is locked out.</value>
   </data>
 </root>

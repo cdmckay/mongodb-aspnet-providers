@@ -106,6 +106,33 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not count users..
+        /// </summary>
+        internal static string CouldNotCountUsers {
+            get {
+                return ResourceManager.GetString("CouldNotCountUsers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find user..
+        /// </summary>
+        internal static string CouldNotFindUser {
+            get {
+                return ResourceManager.GetString("CouldNotFindUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not remove user..
+        /// </summary>
+        internal static string CouldNotRemoveUser {
+            get {
+                return ResourceManager.GetString("CouldNotRemoveUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not reset password..
         /// </summary>
         internal static string CouldNotResetPassword {
@@ -147,6 +174,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         internal static string LockIdMustBeAnObjectId {
             get {
                 return ResourceManager.GetString("LockIdMustBeAnObjectId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimum required password length must be &gt; 0..
+        /// </summary>
+        internal static string MinimumPasswordLengthMustBeGreaterThanZero {
+            get {
+                return ResourceManager.GetString("MinimumPasswordLengthMustBeGreaterThanZero", resourceCulture);
             }
         }
         
@@ -223,11 +259,38 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Password change cancelled..
+        /// </summary>
+        internal static string PasswordChangeCancelled {
+            get {
+                return ResourceManager.GetString("PasswordChangeCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Password format &apos;{0}&apos; not supported..
         /// </summary>
         internal static string PasswordFormatNotSupported {
             get {
                 return ResourceManager.GetString("PasswordFormatNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password reset is disabled..
+        /// </summary>
+        internal static string PasswordResetIsDisabled {
+            get {
+                return ResourceManager.GetString("PasswordResetIsDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password retrieval is disabled..
+        /// </summary>
+        internal static string PasswordRetrievalIsDisabled {
+            get {
+                return ResourceManager.GetString("PasswordRetrievalIsDisabled", resourceCulture);
             }
         }
         
@@ -295,11 +358,29 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to User has a duplicate name..
+        /// </summary>
+        internal static string UserHasADuplicateName {
+            get {
+                return ResourceManager.GetString("UserHasADuplicateName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User is already in role..
         /// </summary>
         internal static string UserIsAlreadyInRole {
             get {
                 return ResourceManager.GetString("UserIsAlreadyInRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User is locked out..
+        /// </summary>
+        internal static string UserIsLockedOut {
+            get {
+                return ResourceManager.GetString("UserIsLockedOut", resourceCulture);
             }
         }
         
