@@ -96,7 +96,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 var sessions = GetSessionCollection();
                 sessions.Insert(newSession);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not create uninitialized session.", e);
+                throw new ProviderException(ProviderResources.CouldNotCreateSession, e);
             }
         }
 
@@ -151,7 +151,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     var result = sessions.Update(query, update);
                     lockAcquired = result.DocumentsAffected == 1;
                 } catch (MongoSafeModeException e) {
-                    throw new ProviderException("Could not update session.", e);
+                    throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
                 }
             }
 
@@ -171,7 +171,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                         var query = Query.EQ("Id", id);
                         sessions.Remove(query);
                     } catch (MongoSafeModeException e) {
-                        throw new ProviderException("Could not remove expired session.", e);
+                        throw new ProviderException(ProviderResources.CouldNotRemoveSession, e);
                     }
                 }
 
@@ -202,7 +202,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     .Set("Actions", SessionStateActions.None);
                 sessions.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update session.", e);
+                throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
             }
 
             SessionStateStoreData storeData;
@@ -236,7 +236,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     .Set("IsLocked", false);
                 sessions.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update session.", e);
+                throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
             }
         }
 
@@ -245,10 +245,10 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 throw new ArgumentException(ProviderResources.LockIdMustBeAnObjectId, "lockId");
             }
 
-            try {
-                var sessions = GetSessionCollection();
-                if (newStoreData) {
-                    // Ensure expired session is removed first, if it exists.
+            var sessions = GetSessionCollection();
+            if (newStoreData) {
+                // Ensure expired session is removed first, if it exists.
+                try {
                     sessions.Remove(Query.EQ("_id", id));
                     var session = new MongoSession {
                         Id = id,
@@ -262,7 +262,11 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                         Actions = SessionStateActions.None
                     };
                     sessions.Insert(session);
-                } else {                    
+                } catch (MongoSafeModeException e) {
+                    throw new ProviderException(ProviderResources.CouldNotCreateSession, e);
+                }
+            } else {
+                try {
                     var query = Query.And(
                         Query.EQ("_id", id),
                         Query.EQ("LockId", (ObjectId) lockId));
@@ -272,9 +276,9 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                         .Set("IsLocked", false)
                         .Set("Properties", ConvertStoreDataToBsonDocument(storeData));
                     sessions.Update(query, update);
+                } catch (MongoSafeModeException e) {
+                    throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
                 }
-            } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not insert or update session.", e);
             }
         }        
 
@@ -290,7 +294,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     Query.EQ("LockId", (ObjectId) lockId));                
                 sessions.Remove(query);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not remove session.", e);
+                throw new ProviderException(ProviderResources.CouldNotRemoveSession, e);
             }
         }
 
@@ -302,7 +306,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 var update = Update.Set("ExpiresDate", expiresDate);
                 sessions.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not remove session.", e);
+                throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
             }
         }
 

@@ -160,6 +160,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not create session..
+        /// </summary>
+        internal static string CouldNotCreateSession {
+            get {
+                return ResourceManager.GetString("CouldNotCreateSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not create user..
         /// </summary>
         internal static string CouldNotCreateUser {
@@ -196,6 +205,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not remove session..
+        /// </summary>
+        internal static string CouldNotRemoveSession {
+            get {
+                return ResourceManager.GetString("CouldNotRemoveSession", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not remove user..
         /// </summary>
         internal static string CouldNotRemoveUser {
@@ -223,11 +241,38 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve profile..
+        /// </summary>
+        internal static string CouldNotRetrieveProfile {
+            get {
+                return ResourceManager.GetString("CouldNotRetrieveProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve role..
+        /// </summary>
+        internal static string CouldNotRetrieveRole {
+            get {
+                return ResourceManager.GetString("CouldNotRetrieveRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not retrieve roles..
         /// </summary>
         internal static string CouldNotRetrieveRoles {
             get {
                 return ResourceManager.GetString("CouldNotRetrieveRoles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve session..
+        /// </summary>
+        internal static string CouldNotRetrieveSession {
+            get {
+                return ResourceManager.GetString("CouldNotRetrieveSession", resourceCulture);
             }
         }
         
@@ -255,6 +300,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         internal static string CouldNotUpdateProfile {
             get {
                 return ResourceManager.GetString("CouldNotUpdateProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not update session..
+        /// </summary>
+        internal static string CouldNotUpdateSession {
+            get {
+                return ResourceManager.GetString("CouldNotUpdateSession", resourceCulture);
             }
         }
         

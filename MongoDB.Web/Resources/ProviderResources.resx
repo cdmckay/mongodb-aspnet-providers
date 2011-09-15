@@ -246,6 +246,9 @@
   <data name="CouldNotCreateRole" xml:space="preserve">
     <value>Could not create role.</value>
   </data>
+  <data name="CouldNotCreateSession" xml:space="preserve">
+    <value>Could not create session.</value>
+  </data>
   <data name="CouldNotCreateUser" xml:space="preserve">
     <value>Could not create user.</value>
   </data>
@@ -255,11 +258,23 @@
   <data name="CouldNotRemoveRole" xml:space="preserve">
     <value>Could not delete role.</value>
   </data>
+  <data name="CouldNotRemoveSession" xml:space="preserve">
+    <value>Could not remove session.</value>
+  </data>
   <data name="CouldNotRemoveUsersFromRoles" xml:space="preserve">
     <value>Could not remove users from roles.</value>
   </data>
+  <data name="CouldNotRetrieveProfile" xml:space="preserve">
+    <value>Could not retrieve profile.</value>
+  </data>
+  <data name="CouldNotRetrieveRole" xml:space="preserve">
+    <value>Could not retrieve role.</value>
+  </data>
   <data name="CouldNotRetrieveRoles" xml:space="preserve">
     <value>Could not retrieve roles.</value>
+  </data>
+  <data name="CouldNotRetrieveSession" xml:space="preserve">
+    <value>Could not retrieve session.</value>
   </data>
   <data name="CouldNotRetrieveUser" xml:space="preserve">
     <value>Could not retrieve user.</value>
@@ -269,6 +284,9 @@
   </data>
   <data name="CouldNotUpdateProfile" xml:space="preserve">
     <value>Could not update profile.</value>
+  </data>
+  <data name="CouldNotUpdateSession" xml:space="preserve">
+    <value>Could not update session.</value>
   </data>
   <data name="RoleNameAlreadyExists" xml:space="preserve">
     <value>Role name already exists.</value>

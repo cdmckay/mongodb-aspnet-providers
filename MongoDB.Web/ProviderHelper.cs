@@ -115,7 +115,7 @@ namespace DigitalLiberationFront.MongoDB.Web {
             try {                
                 user = users.FindOneAs<MongoMembershipUser>(Query.EQ("_id", id));
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve user.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveUser, e);
             }
             return user;
         }
@@ -131,7 +131,7 @@ namespace DigitalLiberationFront.MongoDB.Web {
             try {
                 user = users.FindOneAs<MongoMembershipUser>(Query.EQ("UserName", userName));
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve user.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveUser, e);
             }
             return user;
         }
@@ -150,7 +150,7 @@ namespace DigitalLiberationFront.MongoDB.Web {
                     .Select(u => u.Profile)                    
                     .FirstOrDefault();
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve profile.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveProfile, e);
             }
             return profile;
         }
@@ -166,7 +166,7 @@ namespace DigitalLiberationFront.MongoDB.Web {
             try {
                 role = roles.FindOneAs<MongoRole>(Query.EQ("RoleName", roleName));
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve role.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveRole, e);
             }
             return role;
         }
@@ -182,7 +182,7 @@ namespace DigitalLiberationFront.MongoDB.Web {
             try {
                 session = sessions.FindOneAs<MongoSession>(Query.EQ("_id", id));
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not retrieve session.", e);
+                throw new ProviderException(ProviderResources.CouldNotRetrieveSession, e);
             }
             return session;
         }
