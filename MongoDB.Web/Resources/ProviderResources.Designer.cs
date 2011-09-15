@@ -124,6 +124,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not count profiles..
+        /// </summary>
+        internal static string CouldNotCountProfiles {
+            get {
+                return ResourceManager.GetString("CouldNotCountProfiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not count users..
         /// </summary>
         internal static string CouldNotCountUsers {
@@ -151,11 +160,29 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not create user..
+        /// </summary>
+        internal static string CouldNotCreateUser {
+            get {
+                return ResourceManager.GetString("CouldNotCreateUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find user..
         /// </summary>
         internal static string CouldNotFindUser {
             get {
                 return ResourceManager.GetString("CouldNotFindUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not remove profiles..
+        /// </summary>
+        internal static string CouldNotRemoveProfiles {
+            get {
+                return ResourceManager.GetString("CouldNotRemoveProfiles", resourceCulture);
             }
         }
         
@@ -219,6 +246,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         internal static string CouldNotRetrieveUsersInRoles {
             get {
                 return ResourceManager.GetString("CouldNotRetrieveUsersInRoles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not update profile..
+        /// </summary>
+        internal static string CouldNotUpdateProfile {
+            get {
+                return ResourceManager.GetString("CouldNotUpdateProfile", resourceCulture);
             }
         }
         

@@ -90,7 +90,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update last activity date for profile.", e);
+                throw new ProviderException(ProviderResources.CouldNotUpdateProfile, e);
             }
 
             var values = new SettingsPropertyValueCollection();
@@ -155,10 +155,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                         users.Insert(user);
                     }
                     catch (MongoSafeModeException e) {
-                        throw new ProviderException("Could not create anonymous user.", e);
+                        throw new ProviderException(ProviderResources.CouldNotCreateUser, e);
                     }
                 } else {
-                    throw new ProviderException("User was authenticated but could not be found.");    
+                    throw new ProviderException(ProviderResources.CouldNotFindUser);    
                 }
             }
 
@@ -199,7 +199,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update profile.", e);
+                throw new ProviderException(ProviderResources.CouldNotUpdateProfile, e);
             }
         }
 
@@ -231,7 +231,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 var result = users.Update(query, update, UpdateFlags.Multi);
                 return result.DocumentsAffected;
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not update profile.", e);
+                throw new ProviderException(ProviderResources.CouldNotRemoveProfiles, e);
             }
         }
 
@@ -247,7 +247,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 var result = users.Update(query, update, UpdateFlags.Multi);
                 return result.DocumentsAffected;
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not remove inactive profiles.", e);
+                throw new ProviderException(ProviderResources.CouldNotRemoveProfiles, e);
             }
         }
 
@@ -261,7 +261,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 var users = GetUserCollection();
                 return users.Count(query);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException("Could not count inactive profiles.", e);
+                throw new ProviderException(ProviderResources.CouldNotCountProfiles, e);
             }
         }
 

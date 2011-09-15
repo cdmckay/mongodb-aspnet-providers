@@ -237,11 +237,20 @@
   <data name="CouldNotAddUsersToRoles" xml:space="preserve">
     <value>Could not add users to roles.</value>
   </data>
+  <data name="CouldNotCountProfiles" xml:space="preserve">
+    <value>Could not count profiles.</value>
+  </data>
   <data name="CouldNotCountUsersInRoles" xml:space="preserve">
     <value>Could not count users in roles.</value>
   </data>
   <data name="CouldNotCreateRole" xml:space="preserve">
     <value>Could not create role.</value>
+  </data>
+  <data name="CouldNotCreateUser" xml:space="preserve">
+    <value>Could not create user.</value>
+  </data>
+  <data name="CouldNotRemoveProfiles" xml:space="preserve">
+    <value>Could not remove profiles.</value>
   </data>
   <data name="CouldNotRemoveRole" xml:space="preserve">
     <value>Could not delete role.</value>
@@ -257,6 +266,9 @@
   </data>
   <data name="CouldNotRetrieveUsersInRoles" xml:space="preserve">
     <value>Could not retrieve users in roles.</value>
+  </data>
+  <data name="CouldNotUpdateProfile" xml:space="preserve">
+    <value>Could not update profile.</value>
   </data>
   <data name="RoleNameAlreadyExists" xml:space="preserve">
     <value>Role name already exists.</value>
