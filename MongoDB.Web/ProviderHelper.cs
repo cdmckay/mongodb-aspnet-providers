@@ -14,6 +14,7 @@
 // limitations under the License.
 #endregion
 
+using System;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
@@ -60,12 +61,31 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        public static SafeMode GenerateSafeMode(NameValueCollection config) {            
+            var enableFSync = Convert.ToBoolean(config["enableFSync"] ?? "false");
+            var numberOfWriteReplications = Convert.ToInt32(config["numberOfWriteReplications"] ?? "0");
+            var writeReplicationTimeout = Convert.ToInt32(config["writeReplicationTimeout"] ?? "0");
+
+            return new SafeMode(true, enableFSync, numberOfWriteReplications, TimeSpan.FromMilliseconds(writeReplicationTimeout));    
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="applicationName"></param>
         /// <param name="connectionString"></param>
         /// <param name="databaseName"></param>
-        public static void InitializeCollections(string applicationName, string connectionString, string databaseName) {
+        /// <param name="safeMode"></param>
+        public static void InitializeCollections(
+            string applicationName,
+            string connectionString, 
+            string databaseName,
+            SafeMode safeMode
+        ) {
             // Initialize users collection.
-            var users = GetCollectionAs<MongoMembershipUser>(applicationName, connectionString, databaseName, "users");
+            var users = GetCollectionAs<MongoMembershipUser>(applicationName, connectionString, databaseName, safeMode, "users");
             if (!users.Exists()) {
                 users.ResetIndexCache();
                 users.EnsureIndex(IndexKeys.Ascending("UserName"), IndexOptions.SetUnique(true));
@@ -74,14 +94,14 @@ namespace DigitalLiberationFront.MongoDB.Web {
             }
 
             // Initialize roles collection.
-            var roles = GetCollectionAs<MongoRole>(applicationName, connectionString, databaseName, "roles");
+            var roles = GetCollectionAs<MongoRole>(applicationName, connectionString, databaseName, safeMode, "roles");
             if (!roles.Exists()) {
                 roles.ResetIndexCache();
                 roles.EnsureIndex(IndexKeys.Ascending("RoleName"), IndexOptions.SetUnique(true));
             }
 
             // Initialize sessions collection.
-            var sessions = GetCollectionAs<MongoSession>(applicationName, connectionString, databaseName, "sessions");
+            var sessions = GetCollectionAs<MongoSession>(applicationName, connectionString, databaseName, safeMode, "sessions");
             if (!sessions.Exists()) {
                 sessions.ResetIndexCache();
                 sessions.EnsureIndex(IndexKeys.Ascending("SessionId"));
@@ -95,10 +115,16 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <param name="applicationName"></param>
         /// <param name="connectionString"></param>
         /// <param name="databaseName"></param>
+        /// <param name="safeMode"></param>
         /// <param name="collectionName"></param>
         /// <returns></returns>
-        public static MongoCollection<T> GetCollectionAs<T>(string applicationName, string connectionString, string databaseName,
-                                                            string collectionName) {
+        public static MongoCollection<T> GetCollectionAs<T>(
+            string applicationName, 
+            string connectionString, 
+            string databaseName,
+            SafeMode safeMode,                                               
+            string collectionName
+        ) {            
             var server = MongoServer.Create(connectionString);
             var database = server.GetDatabase(databaseName, SafeMode.True);
             return database.GetCollection<T>(applicationName + "." + collectionName);

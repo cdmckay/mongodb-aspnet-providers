@@ -95,6 +95,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         private string _connectionString;
         private string _databaseName;
+        private SafeMode _safeMode;
 
         public override void Initialize(string name, NameValueCollection config) {
             if (name == null) {
@@ -123,7 +124,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             _requiresUniqueEmail = Convert.ToBoolean(config["requiresUniqueEmail"] ?? "true");
             _minRequiredPasswordLength = Convert.ToInt32(config["minRequiredPasswordLength"] ?? "1");
             _minRequiredNonAlphanumericCharacters = Convert.ToInt32(config["minRequiredNonAlphanumericCharacters"] ?? "1");
-            _passwordStrengthRegularExpression = config["passwordStrengthRegularExpression"] ?? string.Empty;
+            _passwordStrengthRegularExpression = config["passwordStrengthRegularExpression"] ?? string.Empty;            
 
             // Make sure that passwords are at least 1 character long.
             if (_minRequiredPasswordLength <= 0) {
@@ -158,8 +159,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             var mongoUrl = new MongoUrl(_connectionString);
             _databaseName = mongoUrl.DatabaseName;
 
+            _safeMode = ProviderHelper.GenerateSafeMode(config);
+
             // Initialize collections.
-            ProviderHelper.InitializeCollections(ApplicationName, _connectionString, _databaseName);
+            ProviderHelper.InitializeCollections(ApplicationName, _connectionString, _databaseName, _safeMode);
         }
 
         public override MembershipUser CreateUser(string userName, string password, string email, string passwordQuestion, string passwordAnswer,
@@ -715,7 +718,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         /// </summary>
         /// <returns></returns>
         private MongoCollection<MongoMembershipUser> GetUserCollection() {
-            return ProviderHelper.GetCollectionAs<MongoMembershipUser>(ApplicationName, _connectionString, _databaseName, "users");
+            return ProviderHelper.GetCollectionAs<MongoMembershipUser>(ApplicationName, _connectionString, _databaseName, _safeMode, "users");
         }
 
         /// <summary>

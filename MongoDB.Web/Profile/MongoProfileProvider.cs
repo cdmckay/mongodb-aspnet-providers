@@ -36,6 +36,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
 
         private string _connectionString;
         private string _databaseName;
+        private SafeMode _safeMode;
 
         public override void Initialize(string name, NameValueCollection config) {
             if (name == null) {
@@ -62,8 +63,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
             var mongoUrl = new MongoUrl(_connectionString);
             _databaseName = mongoUrl.DatabaseName;
 
+            _safeMode = ProviderHelper.GenerateSafeMode(config);
+
             // Initialize collections.
-            ProviderHelper.InitializeCollections(ApplicationName, _connectionString, _databaseName);            
+            ProviderHelper.InitializeCollections(ApplicationName, _connectionString, _databaseName, _safeMode);            
         }
 
         public override SettingsPropertyValueCollection GetPropertyValues(SettingsContext context, SettingsPropertyCollection properties) {
@@ -383,7 +386,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         /// </summary>
         /// <returns></returns>
         private MongoCollection<MongoMembershipUser> GetUserCollection() {
-            return ProviderHelper.GetCollectionAs<MongoMembershipUser>(ApplicationName, _connectionString, _databaseName, "users");
+            return ProviderHelper.GetCollectionAs<MongoMembershipUser>(ApplicationName, _connectionString, _databaseName, _safeMode, "users");
         }
 
         /// <summary>

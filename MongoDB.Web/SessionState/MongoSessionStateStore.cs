@@ -35,6 +35,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         private string _applicationName;
         private string _connectionString;
         private string _databaseName;
+        private SafeMode _safeMode;
 
         public override void Initialize(string name, NameValueCollection config) {
             if (name == null) {
@@ -61,8 +62,10 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             var mongoUrl = new MongoUrl(_connectionString);
             _databaseName = mongoUrl.DatabaseName;
 
+            _safeMode = ProviderHelper.GenerateSafeMode(config);
+
             // Initialize collections.
-            ProviderHelper.InitializeCollections(_applicationName, _connectionString, _databaseName);
+            ProviderHelper.InitializeCollections(_applicationName, _connectionString, _databaseName, _safeMode);
 
             // Get the timeout value.
             var webConfig = WebConfigurationManager.OpenWebConfiguration(HostingEnvironment.ApplicationVirtualPath);
@@ -364,7 +367,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         /// </summary>
         /// <returns></returns>
         private MongoCollection<MongoSession> GetSessionCollection() {
-            return ProviderHelper.GetCollectionAs<MongoSession>(_applicationName, _connectionString, _databaseName, "sessions");
+            return ProviderHelper.GetCollectionAs<MongoSession>(_applicationName, _connectionString, _databaseName, _safeMode, "sessions");
         }
 
         /// <summary>
