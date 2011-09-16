@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration.Provider;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -91,7 +92,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         private string _passwordStrengthRegularExpression;
         public override string PasswordStrengthRegularExpression {
             get { return _passwordStrengthRegularExpression; }
-        }          
+        }
+
+        private bool _enableExceptionTrace;
+        private TraceSource _traceSource;
 
         private string _connectionString;
         private string _databaseName;
@@ -112,6 +116,11 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             // Initialize the base class.
             base.Initialize(name, config);
 
+            _enableExceptionTrace = Convert.ToBoolean(config["enableExceptionTrace"] ?? "false");
+            if (_enableExceptionTrace) {
+                _traceSource = new TraceSource(GetType().Name, SourceLevels.All);
+            }
+
             // Deal with the application name.           
             ApplicationName = ProviderHelper.ResolveApplicationName(config);
 
@@ -127,8 +136,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             _passwordStrengthRegularExpression = config["passwordStrengthRegularExpression"] ?? string.Empty;            
 
             // Make sure that passwords are at least 1 character long.
-            if (_minRequiredPasswordLength <= 0) {
-                throw new ProviderException(ProviderResources.MinimumPasswordLengthMustBeGreaterThanZero);
+            if (_minRequiredPasswordLength <= 0) {  
+                var e = new ProviderException(ProviderResources.MinimumPasswordLengthMustBeGreaterThanZero);                
+                TraceException("Initialize", e);
+                throw e;
             }
 
             // Handle password format.
@@ -149,8 +160,10 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
             bool passwordsAreIrretrievable = PasswordFormat == MembershipPasswordFormat.Hashed;
             if (_enablePasswordRetrieval && passwordsAreIrretrievable) {
-                throw new ProviderException(string.Format(ProviderResources.CannotRetrievePasswords, PasswordFormat));
-            }
+                var e = new ProviderException(string.Format(ProviderResources.CannotRetrievePasswords, PasswordFormat));
+                TraceException("Initialize", e);
+                throw e;
+            }            
 
             // Get the connection string.
             _connectionString = ProviderHelper.ResolveConnectionString(config);
@@ -168,10 +181,14 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         public override MembershipUser CreateUser(string userName, string password, string email, string passwordQuestion, string passwordAnswer,
             bool isApproved, object providerUserKey, out MembershipCreateStatus status) {
             if (string.IsNullOrWhiteSpace(userName)) {
-                throw new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace, "userName");
+                var e = new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace, "userName");
+                TraceException("CreateUser", e);
+                throw e;
             }
             if (string.IsNullOrWhiteSpace(password)) {
-                throw new ArgumentException(ProviderResources.PasswordCannotBeNullOrWhiteSpace, "password");
+                var e = new ArgumentException(ProviderResources.PasswordCannotBeNullOrWhiteSpace, "password");
+                TraceException("CreateUser", e);
+                throw e;
             }
 
             if (email != null) {
@@ -279,13 +296,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override bool ChangePassword(string userName, string oldPassword, string newPassword) {
             if (string.IsNullOrWhiteSpace(userName)) {
-                throw new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace, "userName");
+                var e = new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace, "userName");
+                TraceException("ChangePassword", e);
+                throw e;
             }
             if (string.IsNullOrWhiteSpace(oldPassword)) {
-                throw new ArgumentException(ProviderResources.OldPasswordCannotBeNullOrWhiteSpace, "oldPassword");
+                var e = new ArgumentException(ProviderResources.OldPasswordCannotBeNullOrWhiteSpace, "oldPassword");
+                TraceException("ChangePassword", e);
+                throw e;
             }
             if (string.IsNullOrWhiteSpace(newPassword)) {
-                throw new ArgumentException(ProviderResources.NewPasswordCannotBeNullOrWhiteSpace, "newPassword");
+                var e = new ArgumentException(ProviderResources.NewPasswordCannotBeNullOrWhiteSpace, "newPassword");
+                TraceException("ChangePassword", e);
+                throw e;
             }
 
             if (!ValidateUser(userName, oldPassword)) {
@@ -315,7 +338,9 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotChangePassword, e);
+                var p = new ProviderException(ProviderResources.CouldNotChangePassword, e);
+                TraceException("ChangePassword", p);
+                throw p;
             }
 
             return true;
@@ -323,17 +348,25 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
 
         public override bool ChangePasswordQuestionAndAnswer(string userName, string password, string newPasswordQuestion, string newPasswordAnswer) {
             if (string.IsNullOrWhiteSpace(userName)) {
-                throw new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace, "userName");
+                var e = new ArgumentException(ProviderResources.UserNameCannotBeNullOrWhiteSpace, "userName");
+                TraceException("ChangePasswordQuestionAndAnswer", e);
+                throw e;
             }
             if (string.IsNullOrWhiteSpace(password)) {
-                throw new ArgumentException(ProviderResources.PasswordCannotBeNullOrWhiteSpace, "password");
+                var e = new ArgumentException(ProviderResources.PasswordCannotBeNullOrWhiteSpace, "password");
+                TraceException("ChangePasswordQuestionAndAnswer", e);
+                throw e;
             }
             if (RequiresQuestionAndAnswer && string.IsNullOrWhiteSpace(newPasswordQuestion)) {
-                throw new ArgumentException(ProviderResources.NewPasswordQuestionCannotBeNullOrWhiteSpace, "newPasswordQuestion");
+                var e = new ArgumentException(ProviderResources.NewPasswordQuestionCannotBeNullOrWhiteSpace, "newPasswordQuestion");
+                TraceException("ChangePasswordQuestionAndAnswer", e);
+                throw e;
             }
 
             if (RequiresQuestionAndAnswer && string.IsNullOrWhiteSpace(newPasswordAnswer)) {
-                throw new ArgumentException(ProviderResources.NewPasswordAnswerCannotBeNullOrWhiteSpace, "newPasswordAnswer");
+                var e = new ArgumentException(ProviderResources.NewPasswordAnswerCannotBeNullOrWhiteSpace, "newPasswordAnswer");
+                TraceException("ChangePasswordQuestionAndAnswer", e);
+                throw e;
             }
 
             newPasswordQuestion = newPasswordQuestion.Trim();
@@ -357,7 +390,9 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotChangePasswordQuestionAndAnswer, e);
+                var p = new ProviderException(ProviderResources.CouldNotChangePasswordQuestionAndAnswer, e);
+                TraceException("ChangePasswordQuestionAndAnswer", p);
+                throw p;
             }
 
             return true;
@@ -432,6 +467,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var users = GetUserCollection();
                 users.Update(query, update);
             } catch (MongoSafeModeException e) {
+                TraceException("ResetPassword", e);
                 throw new ProviderException(ProviderResources.CouldNotResetPassword, e);
             }
 
@@ -465,14 +501,19 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var users = GetUserCollection();
                 var result = users.Update(query, update);
                 if (result.DocumentsAffected == 0) {
-                    throw new ProviderException(ProviderResources.UserDoesNotExist);
+                    var providerException = new ProviderException(ProviderResources.UserDoesNotExist);
+                    TraceException("UpdateUser", providerException);
+                    throw providerException;
                 }
             } catch (MongoSafeModeException e) {
+                ProviderException providerException;
                 if (e.Message.Contains("UserName_1")) {
-                    throw new ProviderException(ProviderResources.UserHasADuplicateName);
+                    providerException = new ProviderException(ProviderResources.UserHasADuplicateName, e);                    
+                } else {
+                    providerException = new ProviderException(ProviderResources.CouldNotUpdateUser, e);    
                 }
-
-                throw new ProviderException(ProviderResources.CouldNotUpdateUser, e);
+                TraceException("UpdateUser", providerException);
+                throw providerException;
             }
         }
 
@@ -950,6 +991,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             } catch (MongoSafeModeException e) {
                 throw new ProviderException(ProviderResources.CouldNotUpdateUser, e);
             }
+        }
+
+        private void TraceException(string methodName, Exception e) {
+            if (!_enableExceptionTrace) {
+                return;                
+            }
+            _traceSource.TraceEvent(TraceEventType.Error, -1,
+                "An exception occurred in the '{0}' method:" + Environment.NewLine + e.StackTrace, 
+                methodName);
         }
 
     }

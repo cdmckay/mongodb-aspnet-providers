@@ -18,6 +18,7 @@ using System;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
+using System.Diagnostics;
 using System.Linq;
 using System.Web.Hosting;
 using DigitalLiberationFront.MongoDB.Web.Profile;
@@ -211,7 +212,7 @@ namespace DigitalLiberationFront.MongoDB.Web {
                 throw new ProviderException(ProviderResources.CouldNotRetrieveSession, e);
             }
             return session;
-        }
+        }        
 
     }
 }
