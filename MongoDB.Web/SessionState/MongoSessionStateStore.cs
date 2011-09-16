@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Configuration.Provider;
+using System.Diagnostics;
 using System.Web;
 using System.Web.Configuration;
 using System.Web.Hosting;
@@ -33,6 +34,10 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
 
         private int _timeout;
         private string _applicationName;
+
+        private bool _enableExceptionTrace;
+        private TraceSource _traceSource;
+
         private string _connectionString;
         private string _databaseName;
         private SafeMode _safeMode;
@@ -50,7 +55,12 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             }
 
             // Initialize the base class.
-            base.Initialize(name, config);            
+            base.Initialize(name, config);
+
+            _enableExceptionTrace = Convert.ToBoolean(config["enableExceptionTrace"] ?? "false");
+            if (_enableExceptionTrace) {
+                _traceSource = new TraceSource(GetType().Name, SourceLevels.All);
+            }
 
             // Deal with the application name.           
             _applicationName = ProviderHelper.ResolveApplicationName(config);
@@ -377,6 +387,15 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         /// <returns></returns>
         private MongoSession GetMongoSession(string sessionId) {
             return ProviderHelper.GetMongoSession(GetSessionCollection(), sessionId);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <param name="e"></param>
+        private Exception TraceException(string methodName, Exception e) {
+            return ProviderHelper.TraceException(_traceSource, methodName, e);
         }
 
     }

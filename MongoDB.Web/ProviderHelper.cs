@@ -134,15 +134,18 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="traceSource"></param>
         /// <param name="users"></param>
-        /// <param name="id"></param>
+        /// <param name="id"></param>        
         /// <returns></returns>
-        public static MongoMembershipUser GetMongoUser(MongoCollection<MongoMembershipUser> users, ObjectId id) {
+        public static MongoMembershipUser GetMongoUser(TraceSource traceSource, MongoCollection<MongoMembershipUser> users, ObjectId id) {
             MongoMembershipUser user;
             try {                
                 user = users.FindOneAs<MongoMembershipUser>(Query.EQ("_id", id));
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotRetrieveUser, e);
+                var p = new ProviderException(ProviderResources.CouldNotRetrieveUser, e);
+                TraceException(traceSource, "GetMongoUser", p);
+                throw p;
             }
             return user;
         }
@@ -150,15 +153,18 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="traceSource"></param>
         /// <param name="users"></param>
         /// <param name="userName"></param>
         /// <returns></returns>
-        public static MongoMembershipUser GetMongoUser(MongoCollection<MongoMembershipUser> users, string userName) {
+        public static MongoMembershipUser GetMongoUser(TraceSource traceSource, MongoCollection<MongoMembershipUser> users, string userName) {
             MongoMembershipUser user;
             try {
                 user = users.FindOneAs<MongoMembershipUser>(Query.EQ("UserName", userName));
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotRetrieveUser, e);
+                var p = new ProviderException(ProviderResources.CouldNotRetrieveUser, e);
+                TraceException(traceSource, "GetMongoUser", p);
+                throw p;
             }
             return user;
         }
@@ -166,18 +172,20 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="traceSource"></param>
         /// <param name="users"></param>
         /// <param name="userName"></param>
         /// <returns></returns>
-        public static MongoProfile GetMongoProfile(MongoCollection<MongoMembershipUser> users, string userName) {
+        public static MongoProfile GetMongoProfile(TraceSource traceSource, MongoCollection<MongoMembershipUser> users, string userName) {
             MongoProfile profile;
             try {
                 profile = users.Find(Query.EQ("UserName", userName))
-                    
                     .Select(u => u.Profile)                    
                     .FirstOrDefault();
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotRetrieveProfile, e);
+                var p = new ProviderException(ProviderResources.CouldNotRetrieveProfile, e);
+                TraceException(traceSource, "GetMongoProfile", p);
+                throw p;
             }
             return profile;
         }
@@ -185,15 +193,18 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="traceSource"></param>
         /// <param name="roles"></param>
         /// <param name="roleName"></param>
         /// <returns></returns>
-        public static MongoRole GetMongoRole(MongoCollection<MongoRole> roles, string roleName) {
+        public static MongoRole GetMongoRole(TraceSource traceSource, MongoCollection<MongoRole> roles, string roleName) {
             MongoRole role;
             try {
                 role = roles.FindOneAs<MongoRole>(Query.EQ("RoleName", roleName));
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotRetrieveRole, e);
+                var p = new ProviderException(ProviderResources.CouldNotRetrieveRole, e);
+                TraceException(traceSource, "GetMongoRole", p);
+                throw p;
             }
             return role;
         }
@@ -201,18 +212,35 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="traceSource"></param>
         /// <param name="sessions"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static MongoSession GetMongoSession(MongoCollection<MongoSession> sessions, string id) {
+        public static MongoSession GetMongoSession(TraceSource traceSource, MongoCollection<MongoSession> sessions, string id) {
             MongoSession session;
             try {
                 session = sessions.FindOneAs<MongoSession>(Query.EQ("_id", id));
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotRetrieveSession, e);
+                var p = new ProviderException(ProviderResources.CouldNotRetrieveSession, e);
+                TraceException(traceSource, "GetMongoSession", p);
+                throw p;
             }
             return session;
-        }        
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="traceSource"></param>
+        /// <param name="methodName"></param>
+        /// <param name="e"></param>
+        public static Exception TraceException(TraceSource traceSource, string methodName, Exception e) {
+            if (traceSource != null) {
+                var format = "An exception occurred in the '{0}' method:" + Environment.NewLine + e.StackTrace;
+                traceSource.TraceEvent(TraceEventType.Error, -1, format, methodName);
+            }
+            return e;
+        }
 
     }
 }

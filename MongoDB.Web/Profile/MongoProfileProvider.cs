@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Configuration.Provider;
+using System.Diagnostics;
 using System.Linq;
 using System.Web.Profile;
 using DigitalLiberationFront.MongoDB.Web.Resources;
@@ -33,6 +34,9 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
     public class MongoProfileProvider : ProfileProvider {
 
         public override string ApplicationName { get; set; }
+
+        private bool _enableExceptionTrace;
+        private TraceSource _traceSource;
 
         private string _connectionString;
         private string _databaseName;
@@ -52,6 +56,11 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
 
             // Initialize the base class.
             base.Initialize(name, config);
+
+            _enableExceptionTrace = Convert.ToBoolean(config["enableExceptionTrace"] ?? "false");
+            if (_enableExceptionTrace) {
+                _traceSource = new TraceSource(GetType().Name, SourceLevels.All);
+            }
 
             // Deal with the application name.           
             ApplicationName = ProviderHelper.ResolveApplicationName(config);
@@ -405,6 +414,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
         /// <returns></returns>
         private MongoProfile GetMongoProfile(string userName) {
             return ProviderHelper.GetMongoProfile(GetUserCollection(), userName);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <param name="e"></param>
+        private Exception TraceException(string methodName, Exception e) {
+            return ProviderHelper.TraceException(_traceSource, methodName, e);
         }
 
     }
