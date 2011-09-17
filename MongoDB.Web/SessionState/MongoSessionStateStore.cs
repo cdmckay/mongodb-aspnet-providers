@@ -35,7 +35,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         private int _timeout;
         private string _applicationName;
 
-        private bool _enableExceptionTrace;
+        private bool _enableTrace;
         private TraceSource _traceSource;
 
         private string _connectionString;
@@ -57,8 +57,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             // Initialize the base class.
             base.Initialize(name, config);
 
-            _enableExceptionTrace = Convert.ToBoolean(config["enableExceptionTrace"] ?? "false");
-            if (_enableExceptionTrace) {
+            _enableTrace = Convert.ToBoolean(config["enableTrace"] ?? "false");
+            if (_enableTrace) {
                 _traceSource = new TraceSource(GetType().Name, SourceLevels.All);
             }
 
@@ -109,7 +109,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 var sessions = GetSessionCollection();
                 sessions.Insert(newSession);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotCreateSession, e);
+                var message = ProviderResources.CouldNotCreateSession;
+                throw TraceException("CreateUninitializedItem", new ProviderException(message, e));
             }
         }
 
@@ -164,7 +165,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     var result = sessions.Update(query, update);
                     lockAcquired = result.DocumentsAffected == 1;
                 } catch (MongoSafeModeException e) {
-                    throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
+                    var message = ProviderResources.CouldNotUpdateSession;
+                    throw TraceException("GetItemOptionalExclusive", new ProviderException(message, e));
                 }
             }
 
@@ -184,7 +186,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                         var query = Query.EQ("Id", id);
                         sessions.Remove(query);
                     } catch (MongoSafeModeException e) {
-                        throw new ProviderException(ProviderResources.CouldNotRemoveSession, e);
+                        var message = ProviderResources.CouldNotRemoveSession;
+                        throw TraceException("GetItemOptionalExclusive", new ProviderException(message, e));
                     }
                 }
 
@@ -215,7 +218,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     .Set("Actions", SessionStateActions.None);
                 sessions.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
+                var message = ProviderResources.CouldNotUpdateSession;
+                throw TraceException("GetItemOptionalExclusive", new ProviderException(message, e));
             }
 
             SessionStateStoreData storeData;
@@ -227,7 +231,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     storeData = CreateNewStoreData(context, session.Timeout);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("actions");
+                    throw TraceException("GetItemOptionalExclusive", new ArgumentOutOfRangeException("actions"));
             }
 
             return storeData;
@@ -235,7 +239,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
 
         public override void ReleaseItemExclusive(HttpContext context, string id, object lockId) {
             if (!(lockId is ObjectId)) {
-                throw new ArgumentException(ProviderResources.LockIdMustBeAnObjectId, "lockId");
+                var message = ProviderResources.LockIdMustBeAnObjectId;
+                throw TraceException("ReleaseItemExclusive", new ArgumentException(message, "lockId"));
             }
 
             try {
@@ -249,13 +254,15 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     .Set("IsLocked", false);
                 sessions.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
+                var message = ProviderResources.CouldNotUpdateSession;
+                throw TraceException("ReleaseItemExclusive", new ProviderException(message, e));
             }
         }
 
         public override void SetAndReleaseItemExclusive(HttpContext context, string id, SessionStateStoreData storeData, object lockId, bool newStoreData) {
             if (!(lockId is ObjectId)) {
-                throw new ArgumentException(ProviderResources.LockIdMustBeAnObjectId, "lockId");
+                var message = ProviderResources.LockIdMustBeAnObjectId;
+                throw TraceException("SetAndReleaseItemExclusive", new ArgumentException(message, "lockId"));
             }
 
             var sessions = GetSessionCollection();
@@ -276,7 +283,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     };
                     sessions.Insert(session);
                 } catch (MongoSafeModeException e) {
-                    throw new ProviderException(ProviderResources.CouldNotCreateSession, e);
+                    var message = ProviderResources.CouldNotCreateSession;
+                    throw TraceException("SetAndReleaseItemExclusive", new ProviderException(message, e));
                 }
             } else {
                 try {
@@ -290,14 +298,16 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                         .Set("Properties", ConvertStoreDataToBsonDocument(storeData));
                     sessions.Update(query, update);
                 } catch (MongoSafeModeException e) {
-                    throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
+                    var message = ProviderResources.CouldNotUpdateSession;
+                    throw TraceException("SetAndReleaseItemExclusive", new ProviderException(message, e));
                 }
             }
         }        
 
         public override void RemoveItem(HttpContext context, string id, object lockId, SessionStateStoreData storeData) {
             if (!(lockId is ObjectId)) {
-                throw new ArgumentException(ProviderResources.LockIdMustBeAnObjectId, "lockId");
+                var message = ProviderResources.LockIdMustBeAnObjectId;
+                throw TraceException("RemoveItem", new ArgumentException(message, "lockId"));
             }
 
             try {
@@ -307,7 +317,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                     Query.EQ("LockId", (ObjectId) lockId));                
                 sessions.Remove(query);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotRemoveSession, e);
+                var message = ProviderResources.CouldNotRemoveSession;
+                throw TraceException("RemoveItem", new ProviderException(message, e));
             }
         }
 
@@ -319,7 +330,8 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 var update = Update.Set("ExpiresDate", expiresDate);
                 sessions.Update(query, update);
             } catch (MongoSafeModeException e) {
-                throw new ProviderException(ProviderResources.CouldNotUpdateSession, e);
+                var message = ProviderResources.CouldNotUpdateSession;
+                throw TraceException("ResetItemTimeout", new ProviderException(message, e));
             }
         }
 
@@ -386,7 +398,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         /// <param name="sessionId"></param>
         /// <returns></returns>
         private MongoSession GetMongoSession(string sessionId) {
-            return ProviderHelper.GetMongoSession(GetSessionCollection(), sessionId);
+            return ProviderHelper.GetMongoSession(_traceSource, GetSessionCollection(), sessionId);
         }
 
         /// <summary>
