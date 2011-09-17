@@ -82,11 +82,9 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
                 var message = ProviderResources.RoleDoesNotExist;
                 throw TraceException("IsUserInRole", new ArgumentException(message, "roleName"));
             }
-
-            var query = Query.And(
-                Query.EQ("UserName", userName),
-                Query.EQ("Roles", roleName));
+            
             try {
+                var query = Query.And(Query.EQ("UserName", userName), Query.EQ("Roles", roleName));
                 var users = GetUserCollection();
                 var user = users.FindOne(query);
                 return user != null;
@@ -97,8 +95,20 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
         }
 
         public override string[] GetRolesForUser(string userName) {
-            // TODO Implement.
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(userName)) {
+                var message = ProviderResources.UserNameCannotBeNullOrWhiteSpace;
+                throw TraceException("GetRolesForUser", new ArgumentException(message, "userName"));
+            }
+
+            try {
+                var query = Query.EQ("UserName", userName);
+                var users = GetUserCollection();
+                var roles = users.Find(query).Select(u => u.Roles).FirstOrDefault();
+                return roles != null ? roles.ToArray() : new string[0];
+            } catch (MongoSafeModeException e) {
+                var message = ProviderResources.CouldNotRetrieveUser;
+                throw TraceException("GetRolesForUser", new ProviderException(message, e));
+            }
         }
 
         public override void CreateRole(string roleName) {
