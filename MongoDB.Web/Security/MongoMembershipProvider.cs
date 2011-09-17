@@ -132,7 +132,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Security {
             _passwordAttemptWindow = Convert.ToInt32(config["passwordAttemptWindow"] ?? "10");
             _requiresUniqueEmail = Convert.ToBoolean(config["requiresUniqueEmail"] ?? "true");
             _minRequiredPasswordLength = Convert.ToInt32(config["minRequiredPasswordLength"] ?? "1");
-            _minRequiredNonAlphanumericCharacters = Convert.ToInt32(config["minRequiredNonAlphanumericCharacters"] ?? "1");
+            _minRequiredNonAlphanumericCharacters = Convert.ToInt32(config["minRequiredNonalphanumericCharacters"] ?? "1");
             _passwordStrengthRegularExpression = config["passwordStrengthRegularExpression"] ?? string.Empty;            
 
             // Make sure that passwords are at least 1 character long.
