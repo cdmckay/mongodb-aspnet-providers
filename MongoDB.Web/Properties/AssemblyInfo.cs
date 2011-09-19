@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DigitalLiberationFront.MongoDB.Web")]
-[assembly: AssemblyDescription("MongoDB ASP.NET Providers. This version supports the Membership provider.")]
+[assembly: AssemblyTitle("DLF ASP.NET Providers for MongoDB")]
+[assembly: AssemblyDescription("MongoDB ASP.NET Providers including Membership, Role, Profile and Session State Providers.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Cameron McKay")]
-[assembly: AssemblyProduct("DigitalLiberationFront.MongoDB.Web")]
+[assembly: AssemblyProduct("DLF ASP.NET Providers for MongoDB")]
 [assembly: AssemblyCopyright("Copyright © Cameron McKay 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
