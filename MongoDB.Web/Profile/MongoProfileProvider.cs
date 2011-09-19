@@ -90,13 +90,21 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 return new SettingsPropertyValueCollection();
             }
 
+            var values = new SettingsPropertyValueCollection();
+            foreach (SettingsProperty p in properties) {
+                values.Add(new SettingsPropertyValue(p));
+            }
+
             var userName = (string) context["UserName"];
             if (string.IsNullOrWhiteSpace(userName)) {
-                var message = ProviderResources.UserNameCannotBeNullOrWhiteSpace;
-                throw TraceException("GetPropertyValues", new ProviderException(message));
+                return values;
             }
 
             var profile = GetMongoProfile(userName);
+            if (profile == null) {
+                return values;
+            }
+
             try {
                 var query = Query.EQ("UserName", userName);
                 var update = Update.Set("Profile.LastActivityDate", SerializationHelper.SerializeDateTime(DateTime.Now));
@@ -107,25 +115,37 @@ namespace DigitalLiberationFront.MongoDB.Web.Profile {
                 throw TraceException("GetPropertyValues", new ProviderException(message, e));
             }
 
-            var values = new SettingsPropertyValueCollection();
-            foreach (SettingsProperty p in properties) {
-                var value = new SettingsPropertyValue(p);
+            var bsonReader = BsonReader.Create(profile.Properties); 
+            bsonReader.ReadStartDocument();
+
+            while (bsonReader.ReadBsonType() != BsonType.EndOfDocument) {
+                var elementName = bsonReader.ReadName();
+
+                var value = values[elementName];
+                if (value == null) {
+                    bsonReader.SkipValue();
+                    continue;
+                }
+
                 switch (value.Property.SerializeAs) {
-                    case SettingsSerializeAs.String:                        
+                    case SettingsSerializeAs.String:
                     case SettingsSerializeAs.Xml:
-                        value.SerializedValue = profile.Properties[p.Name].AsString;
+                        value.SerializedValue = bsonReader.ReadString();
                         break;
                     case SettingsSerializeAs.Binary:
-                        value.SerializedValue = profile.Properties[p.Name].AsByteArray;
+                        byte[] bytes;
+                        BsonBinarySubType subType;
+                        bsonReader.ReadBinaryData(out bytes, out subType);
+                        value.SerializedValue = bytes;
                         break;
                     case SettingsSerializeAs.ProviderSpecific:
-                        value.PropertyValue = profile.Properties[p.Name].RawValue;
+                        value.PropertyValue = BsonSerializer.Deserialize(bsonReader, value.Property.PropertyType);
                         break;
                     default:
                         throw TraceException("GetPropertyValues", new ArgumentOutOfRangeException());
                 }
-                values.Add(value);
-            }           
+            }
+           
             return values;
         }
 

@@ -20,6 +20,7 @@ using System.Configuration;
 using System.Configuration.Provider;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Web.Hosting;
 using DigitalLiberationFront.MongoDB.Web.Profile;
 using DigitalLiberationFront.MongoDB.Web.Resources;
@@ -236,8 +237,10 @@ namespace DigitalLiberationFront.MongoDB.Web {
         /// <param name="e"></param>
         public static Exception TraceException(TraceSource traceSource, string methodName, Exception e) {
             if (traceSource != null) {
-                var format = "An exception occurred in the '{0}' method:" + Environment.NewLine + e.StackTrace;
-                traceSource.TraceEvent(TraceEventType.Error, -1, format, methodName);
+                var builder = new StringBuilder();
+                builder.AppendFormat("An exception occurred in the '{0}' method: {1}" + Environment.NewLine, methodName, e.Message);
+                builder.Append(new StackTrace(1));
+                traceSource.TraceEvent(TraceEventType.Error, 0, builder.ToString().TrimEnd('\r', '\n'));
             }
             return e;
         }

@@ -791,7 +791,7 @@ namespace DigitalLiberationFront.MongoDB.Web.Test.Security {
 
         [Test]
         public void TestUpdateUserWithInvalidProviderUserKey() {
-            var provider = new MongoMembershipProvider();
+            var provider = new MongoMembershipProvider();            
             provider.Initialize(DefaultName, _config);
 
             var user = new MembershipUser(
