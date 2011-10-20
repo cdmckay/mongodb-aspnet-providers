@@ -260,7 +260,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
         }
 
         public override void SetAndReleaseItemExclusive(HttpContext context, string id, SessionStateStoreData storeData, object lockId, bool newStoreData) {
-            if (!(lockId is ObjectId)) {
+            if (!newStoreData && !(lockId is ObjectId)) {
                 var message = ProviderResources.LockIdMustBeAnObjectId;
                 throw TraceException("SetAndReleaseItemExclusive", new ArgumentException(message, "lockId"));
             }
