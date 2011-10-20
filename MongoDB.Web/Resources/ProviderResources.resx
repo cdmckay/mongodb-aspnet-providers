@@ -294,4 +294,7 @@
   <data name="RoleNameCannotContainCharacter" xml:space="preserve">
     <value>Role name cannot contain the '{0}' character.</value>
   </data>
+  <data name="IllegalSessionKeyName" xml:space="preserve">
+    <value>Illegal session key name.  Session key names must not contain '.' or start with '$'.</value>
+  </data>
 </root>

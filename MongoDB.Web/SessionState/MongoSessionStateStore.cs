@@ -18,6 +18,7 @@ using System;
 using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Diagnostics;
+using System.Linq;
 using System.Web;
 using System.Web.Configuration;
 using System.Web.Hosting;
@@ -264,6 +265,10 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 var message = ProviderResources.LockIdMustBeAnObjectId;
                 throw TraceException("SetAndReleaseItemExclusive", new ArgumentException(message, "lockId"));
             }
+            if (!StoreDataKeysAreValid(storeData)) {
+                var message = ProviderResources.IllegalSessionKeyName;
+                throw TraceException("SetAndReleaseItemExclusive", new ProviderException(message));
+            }
 
             var sessions = GetSessionCollection();
             if (newStoreData) {
@@ -308,6 +313,10 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
             if (!(lockId is ObjectId)) {
                 var message = ProviderResources.LockIdMustBeAnObjectId;
                 throw TraceException("RemoveItem", new ArgumentException(message, "lockId"));
+            }
+            if (!StoreDataKeysAreValid(storeData)) {
+                var message = ProviderResources.IllegalSessionKeyName;
+                throw TraceException("SetAndReleaseItemExclusive", new ProviderException(message));
             }
 
             try {
@@ -362,6 +371,16 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
                 collection,
                 SessionStateUtility.GetSessionStaticObjects(context),
                 timeout);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="storeData"></param>
+        /// <returns></returns>
+        private static bool StoreDataKeysAreValid(SessionStateStoreData storeData) {
+            var items = storeData.Items;
+            return !items.Keys.Cast<string>().Any(key => key.StartsWith("$") || key.Contains("."));
         }
 
         /// <summary>

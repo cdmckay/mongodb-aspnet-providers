@@ -331,6 +331,15 @@ namespace DigitalLiberationFront.MongoDB.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Illegal session key name.  Session key names must not contain &apos;.&apos; or start with &apos;$&apos;..
+        /// </summary>
+        internal static string IllegalSessionKeyName {
+            get {
+                return ResourceManager.GetString("IllegalSessionKeyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Incorrect password answer..
         /// </summary>
         internal static string IncorrectPasswordAnswer {
