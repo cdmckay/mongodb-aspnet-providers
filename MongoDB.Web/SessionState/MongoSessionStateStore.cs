@@ -184,7 +184,7 @@ namespace DigitalLiberationFront.MongoDB.Web.SessionState {
 
                 if (sessionHasExpired) {
                     try {
-                        var query = Query.EQ("Id", id);
+                        var query = Query.EQ("_id", id);
                         sessions.Remove(query);
                     } catch (MongoSafeModeException e) {
                         var message = ProviderResources.CouldNotRemoveSession;
